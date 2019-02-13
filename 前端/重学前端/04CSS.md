@@ -222,6 +222,6 @@ h1 {
 - `font-size` 控制显示的文本大小。
 - `font-weight` 定义如何显示细文本或粗文本。
 - 该`text-align`属性将文本放在其父容器的左侧，右侧或中心。
-- 文本可以有两种不同的颜色属性：`colo`r和`background-color`。color定义文本的颜色，同时`background-color`定义文本背后的颜色。
+- 文本可以有两种不同的颜色属性：`color`和`background-color`。color定义文本的颜色，同时`background-color`定义文本背后的颜色。
 - CSS可以使元素透明化`opacity`。
 - CSS还可以使用`background-image`属性将元素的背景设置为图像。

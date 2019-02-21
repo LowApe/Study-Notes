@@ -59,3 +59,58 @@ h1 {
 }
 ```
 上面 h1 就是 40px;
+
+## 4. Percentages: Height & Width 百分比：高度和宽度
+
+使用百分比时，元素的大小相对于其父元素（也称为容器）的大小。
+
+## 5. Percentages: Padding & Margin
+
+当百分比用于设置填充和边距时，它们仅基于父元素的`宽度`计算。
+
+## 6. Width: Minimum & Maximum
+
+尽管相对测量在不同屏幕尺寸的设备上提供一致的布局，但是当网站上的元素变得太小或太大时，它们可能会失去其完整性。您可以使用以下属性限制元素的宽度：
+
+- min-width - 确保元素的最小宽度。
+- max-width - 确保元素的最大宽度。
+
+## 7. Scaling Images and Videos 缩放图片和视频
+
+```css
+.container {
+  width: 50%;
+  height: 200px;
+  overflow: hidden;
+}
+
+.container img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+```
+
+## 8. Scaling Background Images 缩放背景图片
+
+```css
+body {
+  background-image: url('#');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+}
+```
+
+# 总结
+
+- 可以使用相对度量相对于页面上的其他元素来确定网站上的内容的大小。
+- `em`字体的单位相对于父元素的字体大小。
+- `rem`尺寸单位字体相对于根元素的字体大小。根元素是`<html>`元素。
+- 百分比通常用于调整框模型特征的大小，例如元素的宽度 ，高度，填充或边距。
+- 当百分比用于调整宽度和高度时，子元素的大小将相对于父元素的大小（请记住必须首先设置父级）。
+- 百分比可用于设置填充和边距。水平和垂直填充和边距相对于父元素的宽度设置。
+- 可以使用`min-width`和设置元素的最小和最大宽度`max-width`。
+- 可以使用`min-height`和设置元素的最小和最大高度`max-height`。
+- 当设置图像或视频的高度时，可以将其宽度设置为`auto`使得媒体按比例缩放。反转这两个属性和值也将实现相同的结果。
+- HTML元素的背景图像将在其`background-size`属性设置为时按比例缩放cover。

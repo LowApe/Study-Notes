@@ -155,3 +155,52 @@ console.log(typeof unknown3); // Output: boolean
 - 该`+`运算符用于连接字符串包括变量举行的字符串值
 - 在`ES6`中，模板文字使用反引号`并将`${}`值插入到字符串中。
 - 的`typeof`关键字返回一值的数据类型（字符串）。
+
+
+## JavaScript版本：ES6和之前版本
+
+您可能已经看过“ES6”或“Javascript ES6”一词，并想知道它的实际含义。不用多说了，因为我们将深入研究ES6是什么以及它与Javascript的关系！
+
+首先，让我们介绍一些历史。JavaScript于1995年由Netscape Communications公司引入，作为网页设计师和程序员与网页交互的脚本语言。第二年，Netscape向一家名为Ecma International的标准开发组织提交了JavaScript，以创建脚本语言（一种编程语言）的标准。1997年，Ecma International发布了ECMA-262，它为第一版称为ECMAScript的脚本语言设定了标准，缩写为ES。
+
+这些新的ECMAScript标准为JavaScript功能的体系结构提供了规则。随着新的编程范例的出现以及开发人员寻求新功能，新版本的ECMAScript为新旧JavaScript版本之间的一致性提供了基础。
+
+要完全区分JavaScript和ECMAScript之间的区别：
+- 如果要创建应用程序或程序，可以使用JavaScript
+- 如果要创建新的脚本语言，可以遵循ECMAScript中的指导原则。
+
+因此，当您看到ES6或JavaScript ES6时，这意味着该版本的JavaScript遵循第六版ECMAScript中的规范！您可能还会看到ES2015而不是ES6，但这两个术语都指的是2015年发布的第6版ECMAScript。请查看下面的时间表，了解JavaScript多年来的演变情况：
+
+![](http://ww1.sinaimg.cn/large/006rAlqhly1g0iwlni69nj30xq0q5afn.jpg)
+
+时间表显示JS版本从开始到2018年的演变
+现在，您可能会问，当ES7和ES8等更新的更新时，2015年的更新仍然与今天有关？
+
+好吧，尽管发布了更新版本，ES6实际上是自1997年第一版发布以来对ECMAScript的最大更新！一些开发人员甚至将ES6称为“现代JavaScript”，因为所有主要的增加。添加了许多强大的功能来帮助JavaScript开发人员，包括：
+
+新的关键字喜欢let和const声明变量，
+使用Arrow函数的新函数语法，
+创建类，
+具有默认值的参数，
+承诺异步操作，
+还有很多！
+最新的浏览器现在支持大多数ES6功能，允许开发人员利用这些新增功能。ES6最终允许程序员节省时间并编写更简洁的代码。以函数表达式的ES6前语法为例：
+
+```js
+
+var  greeting  =  function()
+{
+    console。log('Hello World！');
+} ;
+
+```
+
+使用ES6箭头函数，我们可以将上面的表达式转换为：
+
+```js
+const  greeting  = ()=> console.log（'Hello World'）;   
+```
+
+但是，箭头函数不仅仅是语法重写。与其他ES6功能一样，还有其他潜在的好处和权衡需要考虑。尽管如此，ES6在开发社区中得到了广泛采用。诸如新的ES6语法之类的好处使得使用流行的编程范例（面向对象编程（OOP））变得更加容易。这种变化允许习惯于OOP的其他语言的开发人员现在可以转换为学习和使用JavaScript。ES6流行的另一个原因与在React等流行框架中使用ES6有关。因此，如果您想学习最新的工具和框架，您将不得不在此过程中学习ES6。
+
+话虽如此，我们不应该忽视遗留代码，即旧版本的JavaScript。实际上，仍有许多项目是使用遗留代码构建和维护的！如果您希望能够自由地处理任何类型的JavaScript项目，那么您应该熟悉pre-ES6和ES6 JavaScript语法。但不要担心，我们在JavaScript课程中涵盖了ES6和ES6之前的版本。看看它成为JavaScript基础知识的摇滚明星，并学习基本的编程技巧！

@@ -109,7 +109,7 @@ console.log('I own a pet ' + myPet + '.');
 // Output: 'I own a pet armadillo.'
 ```
 
-## 7. String Interpolation 字符串插值
+## 7. String Interpolation 字符串插值 模版字符串
 在ES6版本的JavaScript中，我们可以使用模板文字将变量插入或插入到字符串中。请查看以下示例，其中使用模板文字将字符串记录在一起：
 ```js
 const myPet = 'armadillo';

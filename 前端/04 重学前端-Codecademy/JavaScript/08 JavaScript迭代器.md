@@ -106,4 +106,64 @@ const greaterThan1000 = jumbledNums.findIndex(num => {
 console.log(greaterThan1000); // Output: -1
 ```
 如果数组中没有单个元素满足回调中的条件，则.findIndex()返回-1。
-## 5. 
+## 5. The .reduce() Method
+另一种广泛使用的迭代方法是`.reduce()`。`.reduce()`迭代遍历数组的元素后，该方法返回单个值，从而减少数组。看看下面的例子：
+
+```js
+const numbers = [1, 2, 4, 10];
+
+const summedNums = numbers.reduce((accumulator, currentValue) => {
+  return accumulator + currentValue
+})
+
+console.log(summedNums) // Output: 17
+```
+
+以下是迭代数组的值accumulator和：currentValuenumbers
+![](http://ww1.sinaimg.cn/large/006rAlqhly1g0mcxvit7fj30g204jmx4.jpg)
+
+- `numbers` 是一个包含数字的数组。
+- `summedNums`是存储在调用的返回值的变量`.reduce()`上`numbers`。
+- `numbers.reduce()`调用数组`.reduce()`上的方法`numbers`并接受回调函数作为参数。
+- 回调函数有两个参数，`accumulator`和`currentValue`。值`accumulator`以数组中第一个元素的值`currentValue`开始，以第二个元素开始。要查看accumulator和currentValue更改的值，请查看上面的图表。
+- 当`.reduce()`遍历数组时，回调函数的返回值变为accumulator下一次迭代`currentValue`的值，在循环过程中采用当前元素的值。
+
+----
+
+```js
+const numbers = [1, 2, 4, 10];
+
+const summedNums = numbers.reduce((accumulator, currentValue) => {
+  return accumulator + currentValue
+}, 100)  // <- Second argument for .reduce()
+
+console.log(summedNums); // Output: 117
+```
+![](http://ww1.sinaimg.cn/large/006rAlqhly1g0mdkvmmaxj30gj05ht8q.jpg)
+解释 100 为初始值
+
+## 6. Iterator Documentation 迭代器文档
+
+还有许多其他内置数组方法，其完整列表位于 MDN的Array迭代方法页面上。
+
+每种方法的文档包含几个部分：
+
+1. 一个简短的定义。
+2. 具有使用该方法的正确语法的块。
+3. 方法接受或要求的参数列表。
+4. 函数的返回值。
+5. 扩展说明。
+6. 该方法的使用示例。
+7. 其他附加信息。
+
+# 总结
+
+
+
+- `.forEach()`用于在数组中的每个元素上执行相同的代码，但不更改数组并返回undefined。
+- `.map() `在数组中的每个元素上执行相同的代码，并返回带有更新元素的新数组。
+- `.filter()` 检查数组中的每个元素以查看它是否满足特定条件并返回一个新数组，其中包含返回条件的truthy元素。
+- `.findIndex()`返回满足回调函数条件的数组的第一个元素的索引。它返回-1如果没有一个阵列中的元件的满足条件。
+- `.reduce() `遍历数组并获取元素的值并返回单个值。
+- 所有迭代器方法都采用可以预定义的回调函数，或函数表达式或箭头函数。
+您可以访问Mozilla Developer Network以了解有关迭代器方法（以及JavaScript的所有其他部分！）的更多信息。

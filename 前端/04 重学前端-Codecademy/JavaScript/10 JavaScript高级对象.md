@@ -60,7 +60,7 @@ goat.diet();
 
 该`this`关键字的引用调用对象提供访问调用对象的`属性`。在上面的例子中，调用对象`goat`，并通过使用`this`我们所访问的`goat`对象本身，然后`dietType`物业`goat`使用性质点符号。
 
-## 3. Arrow Functions and this 箭头功能和这个
+## 3. Arrow Functions and this 箭头功能和 this
 对于方法，调用对象是方法所属的对象。如果我们`this`在方法中使用关键字，那么值`this`是调用对象。但是，当我们开始使用方法的箭头函数时，它会变得有点复杂。看看下面的例子：
 
 ```js

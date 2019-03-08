@@ -190,7 +190,7 @@ console.log(typeof unknown3); // Output: boolean
 
 var  greeting  =  function()
 {
-    console。log('Hello World！');
+    console.log('Hello World！');
 } ;
 
 ```
@@ -198,7 +198,7 @@ var  greeting  =  function()
 使用ES6箭头函数，我们可以将上面的表达式转换为：
 
 ```js
-const  greeting  = ()=> console.log（'Hello World'）;   
+const  greeting  = ()=> console.log('Hello World');   
 ```
 
 但是，箭头函数不仅仅是语法重写。与其他ES6功能一样，还有其他潜在的好处和权衡需要考虑。尽管如此，ES6在开发社区中得到了广泛采用。诸如新的ES6语法之类的好处使得使用流行的编程范例（面向对象编程（OOP））变得更加容易。这种变化允许习惯于OOP的其他语言的开发人员现在可以转换为学习和使用JavaScript。ES6流行的另一个原因与在React等流行框架中使用ES6有关。因此，如果您想学习最新的工具和框架，您将不得不在此过程中学习ES6。

@@ -1,4 +1,8 @@
 # JavaScript数组
+
+> 参考数组的所有方法[MDN Array
+](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array)
+
 ```js
 let newYearsResolutions = ['Keep a journal', 'Take a falconry class', 'Learn to juggle'];
 ```

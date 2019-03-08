@@ -75,7 +75,7 @@ console.log(shortWords); // Output: ['chair', 'music', 'brick', 'pen', 'door']
 
 ## 4. The .findIndex() 方法
 
-我们有时想在数组中找到元素的位置。这就是`.findIndex()`方法的用武之地！调用.findIndex()数组将返回true在回调函数中求值的第一个元素的索引。
+我们有时想在数组中找到元素的位置。这就是`.findIndex()`方法的用武之地！调用.findIndex()数组将返回true在回调函数中求值的第一个元素(符合条件的)的索引。
 
 ```js
 const jumbledNums = [123, 25, 78, 5, 9];

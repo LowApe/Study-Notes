@@ -75,6 +75,7 @@ const goat = {
 };
 
 goat.diet(); // Prints undefined
+// 上面把 `diet` 当初 `goat` 对象的属性,这个函数的啊this调用该对象的`dietType`,但是它的对象是 `diet`
 ```
 - 引入箭头函数有两个方面的作用：更简短的函数并且不绑定`this`
 - `箭头函数没有自己的this指针`<br>

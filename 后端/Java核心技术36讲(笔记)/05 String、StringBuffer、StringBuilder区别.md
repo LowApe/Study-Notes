@@ -1,8 +1,15 @@
 # String-StringBuffer-StringBuilder 区别
 
--   String 是 Java 语言非常基础和重要的类,
-    提供了构造和管理字符串的各种基本逻辑。
-    它是典型的 Immuatable 类,被声明成为 final class,所有属性也都是 final 的.也由于它的`不可变性`,类似拼接、裁剪字符串等动作,都会产生`新的 String 对象`。由于字符串操作的普遍性,所以相关操作的效率往往对性能有明显的影响
+g、StringBuffer、StringBuilder区别
+- String 是 Java 语言非常基础和重要的类,提供了构造和管理字符串的各种基本逻辑。它是典型的 Immuatable 类,被声明成为 final class,所有属性也都是 final 的.也由于它的`不可变性`,类似拼接、裁剪字符串等动作,都会产生新的 String 对象。由于字符串操作的普遍性,所以相关操作的效率往往对请用性能有明显的影响
+
+- String 是 Java 语言非常基础和重要的类,
+提供了构造和管理字符串的各种基本逻辑。
+它是典型的 Immuatable 类,被声明成为 final class,
+所有属性也都是 final 的.也由于它的`不可变性`,
+类似拼接、裁剪字符串等动作,都会产生新的 String 对象。
+由于字符串操作的普遍性,所以相关操作的效率往往对请用性能有明显的影响
+>>>>>>> 912f8f495cc1d7878b0b9abeb5f44038d1008c31:后端/Java核心技术36讲(笔记)/05 String、StringBuffer、StringBuilder区别
 
 -   StringBuffer 是为了解决上面所提到`拼接`产生太多中间对象的问题而提供的一个类,它是 Java 1.5 中新增的,我们可以用 append 或者 add 方法,把字符串添加到已有序列的末尾或者定位置。StringBuffer 本质是一个线程安全的可修改字符序列,它保证了线程安全,也随之带来了额外的性能开销,所以除非有线程安全的需要,不然还是推荐使用它的后继者,也就是 StringBuilder
 

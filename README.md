@@ -4,18 +4,18 @@
 
 ## 目录
 
-```
-+-- 前端
-|   +-- 01 响应式Web设计-2012
+.
++-- [前端](https://github.com/LowApe/Study-Notes/tree/master/前端)
+|   +-- [01 响应式Web设计-2012]()
 |   +-- 02 现代前端技术
 |   +-- 03 东软实训
 |   +-- 04 重学前端-Codecademy
 |   +-- 05 React入门
-+-- 后端
++-- [后端](https://github.com/LowApe/Study-Notes/tree/master/后端)
 |   +-- Java 虚拟机
 |   +-- 设计模式
 |   +--
-|   +-- 
+|   +--
 |   +--
 +-- 命令行CLI
 +-- 学习方法
@@ -25,5 +25,3 @@
 +-- 计算机网络
 +-- 软件设计师
 +-- 高等数学
-
-```

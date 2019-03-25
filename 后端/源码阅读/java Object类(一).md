@@ -15,6 +15,12 @@ private static native void registerNatives();
  [Java native方法详解](https://blog.csdn.net/wangaiheng/article/details/78350687)
 
 ****
+```java
+public final native Class<?> getClass();
+```
+> 获取运行时类的 Class 对象
+
+****
 
 ```java
  public native int hashCode();
@@ -288,7 +294,3 @@ public String toString() {
 > 得到 对象名+@+十六进制的hasCode;
 
 ****
-
-```java
-public final native void notify();
-```

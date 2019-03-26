@@ -294,3 +294,38 @@ public String toString() {
 > 得到 对象名+@+十六进制的hasCode;
 
 ****
+
+> 一旦编译器碰到一个字串，后面跟随一个“+”，就一旦编译器碰到一个字串，后面跟随一个“+”，就
+
+```java
+
+class TestOne{
+
+}
+public class ToStringP {
+    public static void main(String[] args) {
+        System.out.println("显示"+(new TestOne()));
+    }
+}
+
+//打印
+// 显示eight.TestOne@1540e19d
+
+```
+
+
+```java
+class TestOne{
+    public String toString(){
+       return "aaaa";
+    }
+}
+public class ToStringP {
+    public static void main(String[] args) {
+        System.out.println("显示"+(new TestOne()));
+    }
+}
+
+// 打印
+// 显示aaaa
+```

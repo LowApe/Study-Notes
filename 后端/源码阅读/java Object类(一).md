@@ -1,10 +1,11 @@
-## Object类
+# Object类(一)
 第一次很正式的把一个类拿出来分析,虽然很多人说应该具体项目遇到的问题再去研读源码,但是总觉得你先得知道有什么,问题能通过对源码的熟悉程度能被解决把..
 
 ![java 8 目录](http://ww1.sinaimg.cn/large/006rAlqhly1g1a65qztzlj308i0ad74n.jpg)
 
 ****
 
+#  registerNatives
 ```java
 private static native void registerNatives();
     static {
@@ -15,6 +16,8 @@ private static native void registerNatives();
  [Java native方法详解](https://blog.csdn.net/wangaiheng/article/details/78350687)
 
 ****
+
+# getClass
 ```java
 public final native Class<?> getClass();
 ```
@@ -22,10 +25,11 @@ public final native Class<?> getClass();
 
 ****
 
+#  hashCode
 ```java
  public native int hashCode();
 ```
-## Object 中的hashCode() 与 System 中静态方法 identityHashCode(Object obj) 区别?
+## Q:Object 中的hashCode() 与 System 中静态方法 identityHashCode(Object obj) 区别?
 
 ```java
 Student student = new Student();
@@ -62,7 +66,7 @@ public boolean equals(Object obj) {
    }
 ```
 
-## '==' 和 equals方法区别 ?
+## Q:'==' 和 equals方法区别 ?
 
 **==**:判断两个变量之间的值是否相等,变量可以分为`基本数据类型`,和`引用数据类型`
 - 基本数据类型直接比较`值`
@@ -96,6 +100,7 @@ int a=7;
 > 稍微解读一下:上面的前两个打印,可以说明我们所说的基本数据类型和引用数据类型;我查看了一下源码,Integer 分装类的 hashCode 就是数值,equals 的比较方法是比较两个值;还有就是基本数据类型没有 equals 方法;
 
 ****
+# clone
 
 ```java
 protected native Object clone() throws CloneNotSupportedException;
@@ -285,6 +290,8 @@ public class Main{
 
 - [clone() 的参考连接](https://www.kawabangga.com/posts/374)
 ****
+
+# toString
 
 ```java
 public String toString() {

@@ -102,6 +102,45 @@ index.html 查看
 - `javax.servlet.annotation`
 - `javax.servlet.descriptor`
 
+## 练习1. 简单登录
+> 很简单,所以讲一下,就是一个jsp 跳转到一个 servlet ;<br>需要注意的是,uri 的路径=`"request.getContextPath()"`+"/xxx" 或,不加`/`默认之前的添加,"/"表示跟目录
+
+## 练习2. 处理 GET 和  POST 请求
+|操作|GET|POST|
+|:----:|:----:|
+|刷新|不会重复提交|重复提交|
+|数据长度|2048 字符|无限制|
+|数据类型|ASCII 字符|无限制|
+|可见性|URL中可见|URL中不可见|
+|安全性|差|高|
+
+## 练习3. 转发和重定向
+
+转发:
+    1. 只能请求转发给相同应用地址,不能是网站地址
+
+```java
+    RequestDispathcer rd= request.getRequestDispatcher("uri");
+    rd.forword(request,response);
+```
+
+重定向:
+    1. 先进行带参的 servlet 访问将参数加到uri末尾?xx=xx&xx=xx;
+    2. 然后进行指定页面访问
+
+```java
+    response.sendRedirect("www.blogcode.top");
+```
+
+
+
+> 从代码可以看出,请求转发是`Request`,可以添加属性进行传递,但是重定向是`response`
+
+## 练习4: jdbc+dao+controller+转发
+
+
+
+
 # 过滤器
 
 数据的过滤 Demo
@@ -179,7 +218,7 @@ public class FilterDemo implements Filter {
     ```
 
 
-练习1:通过过滤器进行编码设置
+## 练习1:通过过滤器进行编码设置
 
 1. init 初始化获取config的字符编码配置
 2. 定义一个字符集变量
@@ -218,7 +257,7 @@ String initParams=null;
    }
 ```
 
-练习2:登录校验
+### 练习2:登录校验
 1. 完成基本登录调用
 2. 登录成功记录 session ,并记录登录 uri ,如果有 uri 跳转,没有就跳转首页
 3. 首页判断 session 显示退出和登录

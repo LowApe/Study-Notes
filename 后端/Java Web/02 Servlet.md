@@ -162,3 +162,67 @@ public class FilterDemo implements Filter {
             @WebInitParam(name = "param",value = "hellofilter")
     })
     ```
+# 过滤器链
+- 当有两个过滤器,通过 web.xml 注册顺序决定过滤器的执行顺序,这是一种[责任链设计模式]()
+    ```
+    ==========2开始过滤===========
+    ==========开始过滤===========
+    ==========结束过滤===========
+    ==========2结束过滤===========
+    ```
+- 当两个过滤器,通过注解,则包内的顺序,就是执行顺序
+    ```
+    ==========开始过滤===========
+    ==========2开始过滤===========
+    ==========2结束过滤===========
+    ==========结束过滤===========
+    ```
+
+
+练习1:通过过滤器进行编码设置
+
+1. init 初始化获取config的字符编码配置
+2. 定义一个字符集变量
+3. doFilter 获取字符的变量是否等于请求的,
+4. 执行过滤链接  
+
+```java
+String initParams=null;
+
+@Override
+   public void init(FilterConfig filterConfig) throws ServletException {
+       System.out.println("==========初始化方法===========");
+       initParams=filterConfig.getInitParameter("charset");
+       if(initParams ==null){
+           throw new ServletException("EncodingFilter 的编码设置为空!");
+       }
+       System.out.println("=======initParams:"+initParams);
+   }
+
+@Override
+   public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
+       System.out.println("==========开始过滤===========");
+       HttpServletRequest httpServletRequest = (HttpServletRequest)servletRequest;
+       HttpServletResponse httpServletResponse = (HttpServletResponse)servletResponse;
+       /*
+       * 当前设置与请求字符编码不一致,当前
+       * */
+       if(!initParams.equals(httpServletRequest.getCharacterEncoding())){
+           httpServletRequest.setCharacterEncoding(initParams);
+
+       }
+       httpServletResponse.setCharacterEncoding(initParams);
+       System.out.println("initParams="+initParams);
+       filterChain.doFilter(servletRequest,servletResponse);
+       System.out.println("==========结束过滤===========");
+   }
+```
+
+练习2:登录校验
+1. 完成基本登录调用
+2. 登录成功记录 session ,并记录登录 uri ,如果有 uri 跳转,没有就跳转首页
+3. 首页判断 session 显示退出和登录
+4. 退出清除 seesion 跳转首页
+
+
+* 注意: uri 路径

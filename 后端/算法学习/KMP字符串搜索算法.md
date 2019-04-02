@@ -1,17 +1,17 @@
 # KMP 算法
+> KMP 算法通过匹配`关键字符串的子串`寻找不匹配前`相同前缀的位置`来提高效率
 
-> 如果想我一样懂原理,但是在找有几个难点的可以直接跳到下面的难点问题上,看看我的思路
 
-## 暴力匹配
+例如: 主串: asdasdasdadasda<br>
+需要搜索的关键字符串:asdasb<br>
+下图所示当最后移位不匹配时,搜索串不需要一位一位的移动,需要找到之前`匹配串`中最大长度的`子串`(重复出现的最大子串)
 
-所谓暴力匹配就是通过匹配主串S,如果部分匹配,从匹配首位置的下一个开始重写匹配,这种匹配模式效率最低,如果匹配字符串P字段中并没有`重复的-部分匹配值为0`(下面的部分匹配表概念),就会存在不必要的比较.然后有了KMP算法
+![](http://ww1.sinaimg.cn/large/006rAlqhly1g1onlwz9klj30bn05bq2v.jpg)
 
-## KMP 算法
-KMP 算法介绍
+详细原理图解可以看看[阮一峰-字符串匹配的KMP算法](http://www.ruanyifeng.com/blog/2013/05/Knuth%E2%80%93Morris%E2%80%93Pratt_algorithm.html)
 
-详细图解可以看看[阮一峰-字符串匹配的KMP算法](http://www.ruanyifeng.com/blog/2013/05/Knuth%E2%80%93Morris%E2%80%93Pratt_algorithm.html)
 
-下面给出原理的代码
+下面给出原理的代码,先忽略next数组(把他理解为求得我们要移动的位置),还有一个`j==-1` 先理解为没有前面说的最大长度的`子串`.
 ```java
 public static int KMPSearch(char[] s,char[] p){
        int i=0;
@@ -37,21 +37,18 @@ public static int KMPSearch(char[] s,char[] p){
 
 接下来就是难点部分,你说流程都懂,但是所谓那个表怎么求?next数组怎么得到?
 
-## 部分匹配表-PMT数组
-```
-The length of the longest proper prefix in the (sub)pattern that matches a proper suffix in the same (sub)pattern.
-```
+## 部分匹配表-PMT
 
-
-
-这句话是部分匹配表的精髓,前缀和后缀匹配最大长度值,**这个最大长度值就是子匹配串出现的最大子串**,如何理解这句话,如下图"aba"的最大长度值为1,当出现不匹配可以移动到第二个"a","abab"最大长度值为2,当出现不匹配可移动到第二个的"ab";
+因为我们通过`匹配关键字的子串`寻找不匹配前相同前缀的位置
+前缀和后缀匹配最大长度值,**就是前面说的`已匹配的子串`中出现`重复`的最大子串长度**
+如何理解这句话,如下图"aba"(先只看aba盖住后面的ba)的最大长度值为1,当出现不匹配(aba后面的位置)可以移动到第二个"a","abab"(先只看abab盖住后面的a)最大长度值为2,当出现不匹配(abab后面的位置)可移动到第二个的"ab";
 
 ![](http://ww1.sinaimg.cn/large/006rAlqhly1g1hhd94u6yj30e504nmx3.jpg)
 
 
-先理解下面两个概念:
+那如何求这个最大长度的串呢?从而求出最大长度值呢?:
+通过前后缀匹配的方式:
 正确前缀: "ababa" 的正确前缀除最后一个之前的分解字符串:"a","ab","aba","abab";
-
 正确后缀:"ababa" 的正确后缀除第一个之前的分解字符串:"a","ba","aba","baba";
 
 部分匹配值=前后缀交集最大那个字符串的长度-上面的前后缀匹配得有"a","aba" 最大那个长度就是 3
@@ -67,7 +64,7 @@ The length of the longest proper prefix in the (sub)pattern that matches a prope
 ```
 移动的位数=已经匹配的个数-失配前一个的最大长度值;
 ```
-
+flag:
 ## next数组
 当出现部分匹配,可以通过上面的公式进行新位置的匹配
 

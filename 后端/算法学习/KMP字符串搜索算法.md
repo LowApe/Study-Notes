@@ -1,65 +1,143 @@
 > 这个算法总结梳理了半个月,虽然痛苦但是打通了好多个点,我认为最难的点在如何求`最大长度值表`,不管是`PMT表`还是`next表`,都是辅助我们求解问题,如果能看懂主要原理和流程的同学,我认为其实理解了KMP 就是不知道怎么实现?为什么这样实现?
 
+# 暴力匹配
+> 最简单的是使用暴力匹配,也就是不管前面匹配了多少位,只要发生了不匹配,主串(指针) i 就要回溯到开始的下一位继续匹配,这边代码就不放了=>[暴力破解字符串匹配代码](https://github.com/LowApe/JavaAlgorithmImplementation/blob/master/src/BruteForceStringMatching.java)
+
 # KMP 算法
-> KMP 算法通过匹配`关键字符串的子串`寻找不匹配前`相同前缀的位置`来提高效率
+
+> KMP 算法通过匹配`要搜索字符串的子串`寻找不匹配前`相同前缀的位置`来提高效率,利用已经部分匹配这个有效信息，保持i指针不回溯，通过修改j指针，让模式串尽量地移动到有效的位置。下面举个例子
 
 
 例如: 主串: asdasdasdadasda<br>
-需要搜索的关键字符串:asdasb<br>
-下图所示当最后移位不匹配时,搜索串不需要一位一位的移动,需要找到之前`匹配串`中最大长度的`子串`(重复出现的最大子串)
+搜索字符串:asdasb<br>
+
 
 ![](http://ww1.sinaimg.cn/large/006rAlqhly1g1onlwz9klj30bn05bq2v.jpg)
 
-详细原理图解可以看看[阮一峰-字符串匹配的KMP算法](http://www.ruanyifeng.com/blog/2013/05/Knuth%E2%80%93Morris%E2%80%93Pratt_algorithm.html)
+## 那么什么是最大长度串?
 
+基本流程通过上面了解,我们首先需要找到**不匹配位置前,子串的一个规律,从图中我们发现,这个子串有相同的内容,而我们需要移动的就是第二个相同的位置**,
 
+> 不着急,我还需要通过具体描述来说明.
+> 根据上图具体说明:当 i 和 j 下标的数据不相等(s[i]!=p[j]) 具体值使 d!=c,然后找到子串"a s d a s",有个`相同连续且最长字符串`的地方"as",这个子串(说的是"a s d a s")已经是匹配了的,所以整个搜索串移动到第二个"as"的位置.
 
-基本流程通过上面了解,我们首先需要找到**不同不匹配位置的**最大长度的`子串`
-从而需要得到一个表,这个表就是核心部分.
+那么也就是说,当我们发生不匹配的时候,就要查看子串有没有这个最大长度串,如果没有,整体移动到 i 之后,如果有,**j 就移动到最大长度串之后的位置**(因为最大长度串是匹配的,所以从它后以为开始比较)
+
+整个流程得到一个小公式
+
+```
+j=PMT[j-1]
+j:需要比较的位置(下一个比较的位置)
+PMT:理解为发生不匹配位置前的`匹配串`最大长度值的数组(后面会说怎么求)
+j-1:失配前的最大长度值下标
+```
+
+综上我们需要得到一个数组,存放最大长度值,`这个数组就是核心部分`.有了这个表,就能知道比较的下一个位置,所有问题好解决了
 
 ****
 
-## 1. 部分匹配表-PMT
+## 部分匹配表-PMT
 
-因为我们通过`匹配关键字的子串`寻找不匹配前相同前缀的位置
-前缀和后缀匹配最大长度值,**就是前面说的`已匹配的子串`中出现`重复`的最大子串长度**
-
-表中的部分匹配值是当不匹配的位置的前缀(已匹配的最大长度)
 
 那如何求这个最大长度的串呢?从而求出最大长度值呢?:
 通过前后缀匹配的方式:
 正确前缀: "ababa" 的正确前缀除最后一个之前的分解字符串:"a","ab","aba","abab";
 正确后缀:"ababa" 的正确后缀除第一个之前的分解字符串:"a","ba","aba","baba";
 
-部分匹配值=前后缀交集最大那个字符串的长度-上面的前后缀匹配得有"a","aba" 最大那个长度就是 3
-
 ![](http://ww1.sinaimg.cn/large/006rAlqhly1g1hhb67w8jj30fr05tweh.jpg)
 
-
+部分匹配值=前后缀`交集`最长那个字符串的个数(上面的前后缀匹配得有"a","aba" 最大那个长度就是 3)
 ![](http://ww1.sinaimg.cn/large/006rAlqhly1g1hhd94u6yj30e504nmx3.jpg)
 
-现在得到了这个最大长度值,当发生不匹配位置时,如何通过它得到需要移动的位置?
-```
-移动的位数=已经匹配的个数-失配前一个的最大长度值;
-上图移动的位数就是=6-2=4
-```
-> **注意上面是移动的位数而不是移动的位置**
 
-当出现部分匹配,可以通过上面的公式进行新位置的匹配
-```
-具体的做法是，保持i指针(主串的指针)不动，然后将j指针(搜素串)`指向`模式字符串的PMT[j −1]位即可。
-```
+> 前缀和后缀数组交集中最长的串的个数,就是最大长度值,那如何求这个集合?下面是代码,其中有一个概念在代码之后讲解.
 
-`PMT`:我们需要算出的`部分匹配表`数组
-已匹配的字符数: j-1<br>
-PMT[j −1]相当于`需要比较的位置`
+```java
+public class PMT {
+    static int[] pmt;
+    public static int getPMT(char[] s,char[] p){
+        int i=0;
+        int j=0;
+        int sLen = s.length;
+        int pLen = p.length;
+        while (i<sLen&&j<pLen){
+            //j==0 遗漏第一位没有比较
+//            表示没有最大长度值,整体 i 和 j 向后移
+            if(j==-1||s[i]==p[j]){
+                i++;
+                j++;
+            }else{
+                //如果 s[i]!=p[j] 查看最大长度值
+                j--;
+                if(j==-1){
+                    continue;
+                }else{
+                    j=pmt[j];
+                }
+            }
+        }
+        if(j==pLen){
+            return i-j;
+        }
+        return -1;
+    }
 
-此时可以通过这个 PMT 数组就能进行算法的实现,这里不做讨论.
-- [PMT 数组实现传送门]()
+    public static void getMatchLength(char[] p,int pmt[]){
+        //k是最大长度值 初始值0表示没有最大长度值
+        int k=0;
+        int pLen = p.length;
+        //j初识下标为1,因为第一位没有前后缀,p[k],p[j]指向同一个数
+        int j= 1;
+        pmt[0]=0;
+        //循环目的是把整个搜素串的各个位置的最大长度值求出来
+        while(j<pLen){
+
+            if(p[j]==p[k]){
+                //如果 p[j]==p[k],表示当前符合前后缀k++,赋值
+                k++;
+                pmt[j]=k;
+
+            }else {
+                //如果 p[j]!=p[k],表示没有最大长度值,赋值k
+                k=pmt[k];
+            }
+            j++;
+        }
+    }
+
+    public static class TestPMT{
+        public static void main(String[] args) {
+            String s="dabadcabecbaabadcabfasdads";
+            String p="abadcabf";
+            pmt = new int[p.length()];
+            getMatchLength(p.toCharArray(),pmt);
+            System.out.println("PMT 局部匹配表");
+            for (int i = 0; i < pmt.length; i++) {
+                System.out.print(pmt[i]+"\t");
+            }
+            System.out.print("\n");
+            System.out.println("首次出现的位置"+getPMT(s.toCharArray(),p.toCharArray()));
+        }
+    }
+}
+
+
+```
+### 为什么进行p[k]==p[j]判断?
+
+假设存在 k 值,`k为所求最大长度值`,则应该满足 `p[0~k-1]==p[j-k~j-1]`,如果p[k]==p[j] 说明前面那个式子 k 不是最大长度值,如果 p[k]!=p[j] ,k就是最大长度值,有点绕口,
+为什么是这个等式:我们思考上面的特点,不管这个最大长度串有多长,前后缀都是`相同,连续且最长`,`p[0~k-1]`为前缀`p[j-k~j-1]`为后缀,注意j是不匹配位置所以这里是 j-1,p[k] 就是前缀下一个位置,p[j] 就是后缀下一个位置.
+
+通过下图理解上面的公式:
+![](http://ww1.sinaimg.cn/large/006rAlqhly1g1wt46wir5j30dv0fadg1.jpg)
+![](http://ww1.sinaimg.cn/large/006rAlqhly1g1wt4gzjz9j30eh08rmx6.jpg)
+
+> 说明:图上的例子很短,所以造成 k 值并不在前后缀中间,这没关系,一定要理解,我们是要求出最大长度值,也就是到 `p[k]!=p[j]`
+
 
 ****
 
-## 2. 从部分匹配表推出 next 数组
+## 从部分匹配表推出 next 数组
 上面就是 kmp 的一个核心思想,那现在优化这个 pmt 数组
 
 通过`部分匹配表` 我们觉得每次去找上一个的最大长度值比较麻烦,于是我们直接将PMT数组整体后移1位(且首值赋值为-1)得到`next数组`,
@@ -121,22 +199,21 @@ public static void getNext(char[] p,int next[]){
 ```
 
 ### 1. 为什么是  `j=next[j]`?
-
-
-![图1](http://ww1.sinaimg.cn/large/006rAlqhly1g1itap47ddj30fx03kwed.jpg)
-
-比如当在上图空格的位置上出现不匹配,之前都是匹配的,将下面的搜索串移动,需要弄明白一个点:**所谓移动也只是搜素关键串移动,j会发生变化,i 是不变的,移动的位数并不是j 的下标;**
-
-![图2](http://ww1.sinaimg.cn/large/006rAlqhly1g1p7qyyc8ij30jq04f0t3.jpg)
-
-
-这里因为如上图移动四位j的下标变成了2<p style="color:red;display:inline" >这刚好就是这个最大长度值</p>,所以`j=next[j]`
+之前的公式
+```
+j=PMT[j-1]
+因为next 数组整体后移一位,所有j刚好就是失配前最大长度值
+j=next[j]
+```
 
 ### 2. 为什么`next[0]= -1` ?
  next 数组[0] 索引下的值为 -1,我是这样理解的,当整体向后移动,第一位的值表示的含义就不是**失配前最大长度值**,因为在它前面没有子串,所有这表示没有可以匹配的子串,也就是意味无法找子串的移动位置,那找不到,就整体向后移,所有`next[0]= -1`是一个标志量,标志我们主串 i 向后移动.
 
+> 别人的解释:当有匹配的位置就返回它的具体位置，否则返回-1（常用手段）
 
-### 3. 如何通过递推得到最大长度值
+### 3. 如何理解next 优化 `next[j]=next[k]`?
+
+![](http://ww1.sinaimg.cn/large/006rAlqhly1g1wyt1mr2nj30kq07wwfq.jpg)
 
 ```java
 public static void getNext(char[] p,int next[]){
@@ -165,15 +242,14 @@ public static void getNext(char[] p,int next[]){
         }
     }
 ```
-
-> flag: 最后只一步搞懂,就能修炼成功!!!!
+> 这可能是本文我最不理解的地方,如果有弄懂的小伙伴,可以在[博客留言板留言](https://blogcode.top/guestbook/),谢谢了(*^__^*) 嘻嘻……
 
 ****
 
 # 难点 list
 
 ## 1. 局部匹配值的理解
-## 2. 移动位数与比较位置区别
+## 2. 注意移动位数与直接指向位置(本文全为指向位置)
 ## 3. 为什么 next 数组整体向后移位
 ## 4. 为什么 next 数组[0] 索引下的值为 -1
 ## 5. <div style="color:red;display:inline">*获取最大长度值的过程<div>
@@ -181,6 +257,8 @@ public static void getNext(char[] p,int next[]){
 ****
 
 参考连接:<br>
-[jakeboxer 英文理解](http://jakeboxer.com/blog/2009/12/13/the-knuth-morris-pratt-algorithm-in-my-own-words/)<br>
-[阮一峰的理解](http://www.ruanyifeng.com/blog/2013/05/Knuth%E2%80%93Morris%E2%80%93Pratt_algorithm.html)<br>
-[如何更好的理解和掌握 KMP 算法?](https://www.zhihu.com/question/21923021)
+- [所有代码 GitHub](https://github.com/LowApe/JavaAlgorithmImplementation)
+- [blogcode.top](https://blogcode.top/)
+- [jakeboxer 英文理解](http://jakeboxer.com/blog/2009/12/13/the-knuth-morris-pratt-algorithm-in-my-own-words/)<br>
+- [阮一峰的理解](http://www.ruanyifeng.com/blog/2013/05/Knuth%E2%80%93Morris%E2%80%93Pratt_algorithm.html)<br>
+- [从头到尾彻底理解KMP（2014年8月22日版）](https://blog.csdn.net/v_july_v/article/details/7041827)

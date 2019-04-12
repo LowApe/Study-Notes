@@ -1,4 +1,4 @@
-[TOC]<!-- TOC depthFrom:1 depthTo:6 withLinks:1 updateOnSave:1 orderedList:0 -->
+<!-- TOC depthFrom:1 depthTo:6 withLinks:1 updateOnSave:1 orderedList:0 -->
 
 - [动态 SQL](#动态-sql)
 - [if](#if)

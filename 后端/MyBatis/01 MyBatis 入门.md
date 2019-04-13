@@ -1,5 +1,8 @@
+# 目录
+
 <!-- TOC depthFrom:1 depthTo:6 withLinks:1 updateOnSave:1 orderedList:0 -->
 
+- [目录](#目录)
 - [MyBatis 工作流程](#mybatis-工作流程)
 - [使用 XML 中构建 SqlSessionFactory](#使用-xml-中构建-sqlsessionfactory)
 - [不使用 XML 中构建 SqlSessionFactory](#不使用-xml-中构建-sqlsessionfactory)
@@ -13,7 +16,6 @@
 - [参考链接](#参考链接)
 
 <!-- /TOC -->
-
 # MyBatis 工作流程
 - 读取配置文件
 - 生成 SqlSessionFactory

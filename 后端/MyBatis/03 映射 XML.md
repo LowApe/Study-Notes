@@ -1,5 +1,7 @@
+# 目录
 <!-- TOC depthFrom:1 depthTo:6 withLinks:1 updateOnSave:1 orderedList:0 -->
 
+- [目录](#目录)
 - [Mapper XML 文件](#mapper-xml-文件)
 - [select](#select)
 - [insert,update and delete](#insertupdate-and-delete)
@@ -11,22 +13,7 @@
 		- [id & result](#id-result)
 		- [支持的 JDBC 类型](#支持的-jdbc-类型)
 		- [构造方法](#构造方法)
-
-<!-- /TOC -->
-- [Mapper XML 文件](#mapper-xml-文件)
-- [select](#select)
-- [insert,update and delete](#insertupdate-and-delete)
-- [sql](#sql)
-	- [Parameters](#parameters)
-	- [字符串替换](#字符串替换)
-- [Result Maps](#result-maps)
-	- [ResultMap](#resultmap)
-		- [id & result](#id-result)
-		- [支持的 JDBC 类型](#支持的-jdbc-类型)
-		- [构造方法](#构造方法)
-		- [关联](#关联)
-		- [关联的嵌套 select 查询](#关联的嵌套-select-查询)
-		- [关联的嵌套结果映射](#关联的嵌套结果映射)
+- [参考链接](#参考链接)
 
 <!-- /TOC -->
 # Mapper XML 文件
@@ -355,3 +342,6 @@ public class User {
    <arg column="username" javaType="String" name="username" />
 </constructor>
 ```
+# 参考链接
+
+[mybatis-3](http://www.mybatis.org/mybatis-3/zh/sqlmap-xml.html#Parameters)

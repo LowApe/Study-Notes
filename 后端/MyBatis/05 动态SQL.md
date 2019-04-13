@@ -1,5 +1,7 @@
+# 目录
 <!-- TOC depthFrom:1 depthTo:6 withLinks:1 updateOnSave:1 orderedList:0 -->
 
+- [目录](#目录)
 - [动态 SQL](#动态-sql)
 - [if](#if)
 - [choose,when,otherwise](#choosewhenotherwise)
@@ -7,9 +9,9 @@
 	- [1. where](#1-where)
 	- [2. trim](#2-trim)
 - [foreach](#foreach)
+- [参考链接](#参考链接)
 
 <!-- /TOC -->
-
 # 动态 SQL
 MyBatis 强大的特性之一通常就是它的动态 SQL 能力.如果你有使用 JDBC 或其他 相似框架的经验,你就明白条件地串联 SQL 字符串在一起是多么的痛苦,确保不能忘了空 格或在列表的最后省略逗号。动态 SQL 可以彻底处理这种痛苦。
 动态 SQL 元素和使用 JSTL 或其他相似的基于 XML 的文本处理器相似.MyBatis 采用功能强大的基于 OGNL 的表达式来消除其他元素.
@@ -148,3 +150,7 @@ where 元素知道如果包含条件，就添加 where。而且，如果以"AND"
 foreach 元素是非常强大的，它允许你指定一个集合，声明集合项和索引变量，它们可以用在元素体内。它也允许你指定开放和关闭的字符串，在迭代之间放置分隔符。
 
 > 注意:你可以传递一个 List 实例或者数组作为参数对象传给 MyBatis。当你这么做的时 候,MyBatis 会自动将它包装在一个 Map 中,用名称在作为键。List 实例将会以“list” 作为键,而数组实例将会以“array”作为键。
+
+# 参考链接
+
+[mybatis-3](http://www.mybatis.org/mybatis-3/zh/sqlmap-xml.html#Parameters)

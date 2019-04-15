@@ -9,9 +9,8 @@
 - [Study-Notes](#study-notes)
 	- [[前端](https://github.com/LowApe/Study-Notes/tree/master/%E5%89%8D%E7%AB%AF)](#前端httpsgithubcomlowapestudy-notestreemastere5898de7abaf)
 	- [[后端](https://github.com/LowApe/Study-Notes/tree/master/%E5%90%8E%E7%AB%AF)](#后端httpsgithubcomlowapestudy-notestreemastere5908ee7abaf)
-	- [命令行CLI](#命令行cli)
+	- [命令行](#命令行)
 	- [学习方法](#学习方法)
-	- [思维导图](#思维导图)
 	- [数据结构与算法](#数据结构与算法)
 	- [计算机网络](#计算机网络)
 	- [软件设计师](#软件设计师)
@@ -24,11 +23,9 @@
 
 
 ## [前端](https://github.com/LowApe/Study-Notes/tree/master/%E5%89%8D%E7%AB%AF)
-
 ## [后端](https://github.com/LowApe/Study-Notes/tree/master/%E5%90%8E%E7%AB%AF)
-## 命令行CLI
+## 命令行
 ## 学习方法
-## 思维导图
 ## 数据结构与算法
 ## 计算机网络
 ## 软件设计师

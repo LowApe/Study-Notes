@@ -160,7 +160,7 @@ public class SgtPeppers implements CompactDisc{
 - `@ComponentScan(basePackages={"one","two"})` 设置多个基础包,利用数组(String 类型不安全)
 - `@ComponentScan(basePackageClasses={one.class,two.class})` 其中是组建类,
 
-## 通过为 bean 添加注释实现自动装配
+## 通过为 bean 添加注解实现自动装配
 自动装配就是让 Spring 自动满足 bean 依赖的一种方式,在满足依赖的过程中,会在 Spring 应用上下文中寻找匹配某个 bean 需求的其他  bean. 为了声明要进行自动装配,我们可以借助 Spring 的 `Autowiring` 注解
 
 ```java
@@ -447,21 +447,21 @@ ref 修改成 value 就能把字面量值装配到 bean 中如果使用 c-命名
 	```
 > 表明一个包含值(value)的列表将会传递到构造器中,当然也可以使用引用(ref)
 
-	```xml
-	<bean id="beatlesDiscography"
-	      class="soundsystem.Discography">
-	  <constructor-arg value="The Beatles" />
-	  <constructor-arg>
-	    <list>
-	      <ref bean="sgtPeppers" />
-	      <ref bean="whiteAlbum" />
-	      <ref bean="hardDaysNight" />
-	      <ref bean="revolver" />
-	      ...
-	    </list>
-	  </constructor-arg>
-	</bean>
-	```
+```xml
+<bean id="beatlesDiscography"
+      class="soundsystem.Discography">
+  <constructor-arg value="The Beatles" />
+  <constructor-arg>
+    <list>
+      <ref bean="sgtPeppers" />
+      <ref bean="whiteAlbum" />
+      <ref bean="hardDaysNight" />
+      <ref bean="revolver" />
+      ...
+    </list>
+  </constructor-arg>
+</bean>
+```
 	> 当构造器参数类型是 `java.util.list`时,使用 `<List>`合情合理的.我们也可以使用 `<set>` 元素.最重要的不同在于当Spring创建要装配的集合时，所创建的是`java.util.Set`还是`java.util.List`。如果是Set的话，所有重复的值都会被忽略掉，存放顺序也不会得以保证。不过无论在哪种情况下，`<set>`或`<list>`都可以用来装配`List`、`Set`甚至数组
 ## 设置属性
 前面都是通过构造器注入的,没有使用属性 setter 方法.

@@ -45,7 +45,7 @@ Spring 如何全方位的简化 Java 开发?
 - 通过切面和模版减少样模版式代码
 
 ## 激发 POJO 的潜能???
-很多框架通过强迫应用继承它们的类或实现它们的接口从而导致应用与框架帮死.典型例子[EJB](https://zh.wikipedia.org/wiki/EJB)2时代的无状态回话bean.这种`侵入式`的编程方式在早期版本的 `Struts,WebWork,Tapestry`无数Java规范和框架中看到
+很多框架通过强迫应用继承它们的类或实现它们的接口从而导致应用与框架绑死.典型例子[EJB](https://zh.wikipedia.org/wiki/EJB)2时代的无状态回话bean.这种`侵入式`的编程方式在早期版本的 `Struts,WebWork,Tapestry`无数Java规范和框架中看到
 
 Spring 不会强迫你继承Spring规范的类,相反它的类通常没有任何痕迹表明你使用了 Spring.最坏的场景是一类或许会使用Spring 注解,但它依旧是 [POJO](https://baike.baidu.com/item/POJO).比如:
 

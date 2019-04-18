@@ -487,7 +487,7 @@ public class CDPlayer implements MediaPlayer {
 该选择构造器注入还是属性注入?
 > 强依赖使用构造器注入,对可选性的依赖使用属性注入.
 
-上面的代码,没有构造方法,但是在创建 bean 的时候不会有任何,但是 CDPlayerTest 会出现 NullPointerException 而导致测试失败,因为我们并没有注入 CDPlayer 的 compactDisc 属性.如何注入呢?
+上面的代码,没有构造方法,但是在创建 bean 的时候不会有任何问题,但是 CDPlayerTest 会出现 NullPointerException 而导致测试失败,因为我们并没有注入 CDPlayer 的 compactDisc 属性.如何注入呢?
 
 ```xml
 <bean id="cdPlayer"

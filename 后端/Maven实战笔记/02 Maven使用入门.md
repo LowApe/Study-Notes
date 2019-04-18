@@ -11,7 +11,7 @@
 
 <!-- /TOC -->
 # 编写POM
-就像Make的Makefile,Ant的build.xml一样,Maven项目的核心是`pox.xml`.POM(Project Object Model,项目对象模型)定义了项目的基本信息,用于描述项目如何构建,声明项目依赖,等等.现在编写一个HelloWorld
+就像Make的Makefile,Ant的build.xml一样,Maven项目的核心是`pom.xml`.POM(Project Object Model,项目对象模型)定义了项目的基本信息,用于描述项目如何构建,声明项目依赖,等等.现在编写一个HelloWorld
 
 - 创建文件夹
 - 新建 pom.xml
@@ -141,7 +141,7 @@ public class HelloWorld{
 1. 准备测试类及数据
 2. 执行要测试的行为
 3. 检查结果
-最后使用了 JUnit 框架的 Assert 类检查结果是否为我们齐王的 "Hello Maven".
+最后使用了 JUnit 框架的 Assert 类检查结果是否为我们期望的 "Hello Maven".
 
 > 在 JUnit3 中,约定所有需要执行测试的方法都以 test 开头,这里使用了 JUnit 4 ,但仍然遵循这一约定. 执行测试方法都应该以 @Test 进行标注
 

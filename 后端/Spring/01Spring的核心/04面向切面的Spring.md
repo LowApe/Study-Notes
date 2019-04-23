@@ -130,3 +130,75 @@ Aspect J 与之相反.虽然 Aspect J 现在支持基于注解的切面,但 Aspe
 # 通过切点来选择连接点
 
 > flag: 停止做这样无灵魂的笔记,突然意识到这样边看书边记笔记,并实现代码的效率太差了,整个人的注意力被无限分散,感觉到自己好无力.
+
+> flag:换一种方式，使用大概轮廓的描述,代替大篇幅的抄袭学习。
+
+- Aspec J 的表达式
+- 编写切点
+	> 切点表达式: execution(* package.ClassType.method(..))
+	- 限制匹配配合
+- 在切点中选择 bean
+
+# 使用注解创建切面
+
+## 定义切面
+pojo 类=>@Aspect=>通知(Aspect 表达式)=> JavaConfig(EnableAutoAspect...)
+## 创建环绕通知
+```java
+@Aspect
+public static void xxx(){
+	@PointCut("execution(* com.xxxx.xx.method(..))")
+	public void method(){}
+
+	@Around
+	public void watchPer(ProcceedingJoinPoint jp){
+		try{
+			System.out.println("1");
+			System.out.println("2");
+			jp.procced();
+			System.out.println("3");
+		}catch(Throwable e){
+			System.out.println("异常");
+		}
+	}
+}
+```
+
+## 处理通知中的参数
+
+接口如果是带参的
+## 通过注解引入新功能
+定义一个新切面，使用`@DdclareParents`=>定义需要暴露的接口，为接口声明bean
+# 在 XML 中声明切面
+
+```xml
+<aop:config>
+	<aop:aspect ref="audience">
+		<aop:before
+			pointcut="execution(** xxx.Class.method(..))"
+			method="method1"
+			/>
+	</aop:aspect>
+</aop:config>
+```
+pointcut 重复定义
+
+```xml
+<aop:config>
+	<aop:aspect ref="audience">
+		<aop:poincut
+			id="performance"
+			expression="execution(** xxxxx.Class.perform(..))"
+			/>
+		<aop:Before
+			ponitcut-ref="performance"
+			method="xxxx"
+			/>
+	</aop:aspect>
+</aop:config>
+```
+
+# 注入 Aspect J 切面
+
+
+> flag: AOP 还是很难理解，有点偏概念

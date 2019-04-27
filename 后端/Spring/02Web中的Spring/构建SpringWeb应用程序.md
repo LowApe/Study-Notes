@@ -193,6 +193,7 @@ public class HomeControllerTest {
 
 > 它完全没有站在 Spring MVC 控制器的视角进行测试.这个测试没有断言当接受到针对"/" 的 GET 请求时会调用 home() 方法。因为而它返回的值就是 "home".Spring 现在包含了一种` mock` Spring MVC  并针对控制器指向 Http 请求的机制。这样的话,在测试控制器时候，没有必要启动 Web 服务器和 Web游览器了
 
+> 我测试了一下控制器的返回值，是对应网页名称，是对应返回值为 String 的方法，方法名貌似只是区别与，不同请求处理调用的方法不同；如果返回值是基本数据类型，而且在控制器中的处理器的模型中不添加 key ，默认是返回类型的小写形式。处理器如果是引用数据类型的呢？
 ```java
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -295,3 +296,103 @@ jsp 结构
 ```
 
 # 接受请求的输入
+有些 Web 应用是只读的。人们只能通过游览器在站点查阅数据，但不是一成不变。众多的 Web 应用允许用户参与进去,将数据发送到服务器，也就是客户端发送带参数请求。
+
+Spring MVC 允许多种方式将客户端中的数据传送到控制器的处理器方法中,包括:
+- 查询参数(Query Parameter)
+- 表单参数(Form Parameter)
+- 路径变量(Path Variable)
+
+## 处理查询参数
+
+> 场景:如果我们查看一堆数据，客户端用户向查看历史的数据，并且按照这个顺序显式；有可能有很多页，用户想查看具体的某一页,等等这些，可能需要想服务端发送请求，那如何说明我想要得请求，就可以将这些"需求"参数发送给服务端识别。
+
+> 如果实现分页的功能,我们编写的处理器方法要接受如下的参数:
+- before 参数(表明结果中所有 id 在这个值之前)
+- count 参数(表明结果中要包含具体返回数量)
+
+
+```java
+@RequestMapping(method = RequestMethod.GET)
+public List<Spittle> spittles(
+        @RequestParam("max") long max,
+        @RequestParam("count") int count
+        ){
+    return spittleRepository.findSpittles(max,count);
+}
+```
+![](http://ww1.sinaimg.cn/large/006rAlqhly1g2h9b47l8nj30jr0av0sz.jpg)
+
+
+如何处理带参和不带参的处理呢？
+```java
+@RequestMapping(method = RequestMethod.GET)
+    public List<Spittle> spittles(
+            @RequestParam(value = "max",defaultValue ="50000") long max,
+            @RequestParam(value = "count",defaultValue = "5") int count
+            ){
+        return spittleRepository.findSpittles(max,count);
+    }
+}
+```
+![](http://ww1.sinaimg.cn/large/006rAlqhly1g2h9d0uq6pj30eb0ia0th.jpg)
+
+> 请求中的查询参数是往控制器中传递信息的常用手段。另外一种流行的方式在构建`面向资源`的控制器时，这种方式就是将`传递参数作为请求路径`的一部分。下面会讲到不同过查询参数，而是使用路径参数。
+
+## 通过路径参数接受输入
+如果应用程序需要根据给定的 ID 来展现一个 Spittle 记录。其中一种方案就是编写处理器方法,通过使用 `@RequestParam`注解,让它接受 ID 作为查询参数，下面展示`通过查询参数的方式`
+
+```java
+@RequestMapping(value = "/show",method = RequestMethod.GET)
+  public  String showSpittle(@RequestParam(value = "spittle_id") long spittleId,Model model){
+      model.addAttribute(spittleRepository.findOne(spittleId));
+      return "spittle";
+  }
+```
+> 上面就是通过查询参数，这个处理器方法可以处理这样的 `/spittles/show?spittle_id=12345` 请求。`在理想情况下,要识别的资源应该通过 URL 路径进行标示，而不是通过查询参数` 对`/spittles/12345` 发起 GET 请求要优于对 `/spittles/show?spittle_id=12345` 发起请求。
+
+Spring MVC 允许我们在 `@RequestMapping` 路径中添加占位符。占位符的名称要用大括号({})。路径中的其他部分要与所处理的请求 url 完全匹配,但是占位符部分可以是任意值
+
+```java
+@RequestMapping(value = "/{spittleId}",method = RequestMethod.GET)
+   public  String spittle(@PathVariable("spittleId") long spittleId, Model model){
+       model.addAttribute(spittleRepository.findOne(spittleId));
+       return "spittle";
+   }
+```
+> 上面代码实例中，如果路径变量的值与参数变量相同，则可以写成这样 `@PathVariable long spittleId`
+
+如果传递请求中少量的数据,那`查询参数`和`路径变量`是很合适的。但通常我们还需要传递很多的数据(表单提交的数据),那查询数据显得有些笨重和受限了。
+
+# 处理表单
+Web 应用的功能通常并不局限于向用户推送内容。大多数的应用允许用户填充表单并将数据提交回应用中，通过这种方式实现与用户的交互。像提供内容一样,Spring MVC 的控制器也为表单处理提供了良好的支持。
+
+> 在处理 POST 类型的表达时，在请求处理完成后，最好进行一下重定向，这样游览器的刷新就不会重复提交表单了。
+
+```java
+@RequestMapping(value="/register", method=POST)
+ public String processRegistration(Spitter spitter) {
+   spitterRepository.save(spitter);
+
+   return "redirect:/spitter/" +
+          spitter.getUsername();
+ }
+```
+> 当 InternalResourceViewResolver 看到视图格式中的"redirect:"前缀时，它就知道要将其解析为重定向的规则，而不是视图名称。
+
+> 还能识别"forward:" 请求将会前往(forward) 指定的 URL 路径,而不再是重定向。
+
+上面代码还有不完善的地方，当发生重定向的时候，这个重定向的页面请求还没有加进来
+
+```java
+@RequestMapping(value="/{username}", method=GET)
+public String showSpitterProfile(
+      @PathVariable String username, Model model) {
+  Spitter spitter = spitterRepository.findByUsername(username);
+  model.addAttribute(spitter);
+  return "profile";
+}
+```
+## 编写处理表单的控制器
+当处理注册表单的 POST 请求时,控制器需要接受表单数据据并将表单数据保持为 Spitter 对象。最后，为了防止`重复提交`，应该将游览器重定向到新创建用户的基本信息页面。
+## 校验表单

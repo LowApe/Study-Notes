@@ -227,7 +227,7 @@ Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
 [INFO] Finished at: 2019-04-14T14:25:17+08:00
 [INFO] ------------------------------------------------------------------------
 ```
-Maven 会在打包之前执行编译,测试等操作.这里看到jar:jar任务负责打包,将项目主代码打包成一个名为 `Hello-World-1.0-SNAPSHOT.jar`,位于traget/目录.它是根据 artifact-version. jar 规则进行命名的,如有需要,还可以使用 finalName 来定义该文件的名称,这里暂且不展开.
+Maven 会在打包之前执行编译,测试等操作.这里看到jar:jar任务负责打包,将项目主代码打包成一个名为 `Hello-World-1.0-SNAPSHOT.jar`,位于target/目录.它是根据 artifact-version. jar 规则进行命名的,如有需要,还可以使用 finalName 来定义该文件的名称,这里暂且不展开.
 
 如何才能让其他 Maven 项目直接引用这个 jar ? 执行 `mvn clean install`
 

@@ -45,7 +45,7 @@ Spring 如何全方位的简化 Java 开发?
 - 通过切面和模版减少样模版式代码
 
 ## 激发 POJO 的潜能???
-很多框架通过强迫应用继承它们的类或实现它们的接口从而导致应用与框架绑死.典型例子[EJB](https://zh.wikipedia.org/wiki/EJB)2时代的无状态回话bean.这种`侵入式`的编程方式在早期版本的 `Struts,WebWork,Tapestry`无数Java规范和框架中看到
+很多框架通过强迫应用继承它们的类或实现它们的接口从而导致应用与框架绑死.典型例子[EJB](https://zh.wikipedia.org/wiki/EJB)2时代的无状态会话bean.这种`侵入式`的编程方式在早期版本的 `Struts,WebWork,Tapestry`无数Java规范和框架中看到
 
 Spring 不会强迫你继承Spring规范的类,相反它的类通常没有任何痕迹表明你使用了 Spring.最坏的场景是一类或许会使用Spring 注解,但它依旧是 [POJO](https://baike.baidu.com/item/POJO).比如:
 
@@ -80,14 +80,14 @@ public class HelloWorldBean{
 }
 ```
 
-> 上面 HelloWorldBean 的构造方法中创建了 Person ,到这这盎格类耦合到一起,为这个 HelloWorldBean 编写单元测试非常地困难.再这样的一个测试中,你必须保证调用 runPersonMethod() 方法同时,say() 的方法也能够实现.但是没有一个简明的方式能够实现.
+> 上面 HelloWorldBean 的构造方法中创建了 Person ,到这类与类之间耦合到一起,为这个 HelloWorldBean 编写单元测试非常地困难.再这样的一个测试中,你必须保证调用 runPersonMethod() 方法同时,say() 的方法也能够实现.但是没有一个简明的方式能够实现.
 
 耦合具有两面性,
 - 一方面,紧密耦合的代码难以测试,难以复用,难以理解,且典型地表现出现"打地鼠"式的 bug 特性(修一个bug,出现一个或多个bug)
 - 另一方面,一个程度的耦合又是必须的.完全没有耦合的代码什么什么也做不了.
 
 总而言之,耦合是必须的,但应当被小心谨慎地管理.
-通过DI,对象的依赖关系将有系统中负责协调各对象的第三方组件在创建对象的时候设定.对象无需自行创建或管理他们的依赖关系,如图:
+通过DI,对象的依赖关系将有`系统中`负责协调各对象的第三方组件在创建对象的时候设定.对象无需自行创建或管理他们的依赖关系,如图:
 
 ![](http://ww1.sinaimg.cn/large/006rAlqhly1g237bppv7lj30an05xwee.jpg)
 
@@ -107,7 +107,7 @@ public class HelloWorldBean{
 
 不同于之前,Person 没有自行创建,而是在构造的时候作为构造器参数传入.这是依赖注入的方式之一,即构造器注入(constructor injection)
 
-> 传入的类型是 Person,也就是所有任务都必须实现实现一个`接口`(Person 抽象成接口),可以是实现了 Person 的任意衍生类,这里没有与这些衍生类发生耦合.这就是 DI 所带来的最大好处`松耦合`,如果一个对象中通过接口来表明依赖关系,那么这种依赖就能够在对象本身毫不知情的情况下,用不同的具体实现进行替换.
+> 传入的类型是 Person,也就是所有任务都必须实现实现一个`接口`(Person 抽象成接口),可以是实现了 Person 的任意衍生类,这里没有与这些衍生类发生耦合.这就是 DI 所带来的最大好处`松耦合`,**如果一个对象中通过接口来表明依赖关系,那么这种依赖就能够在对象本身毫不知情的情况下,用不同的具体实现进行替换.**
 
 创建应用组件之间协作行为叫装配(wiring),String 有多种装配 bean 的方式,采用 xml 是一种常见装配方式
 
@@ -177,9 +177,9 @@ ApplicationContext applicationContext = new ClassPathXmlApplicationContext("spri
 
 ## 应用切面
 
- DI 能够让相互协作的软件组件保存松散耦合,而面向切面编程(aspect-oriented programming,AOP) 允许你把遍布应用各处的功能分离出来形成可重用的组件.
+ DI 能够让相互协作的软件组件保存松散耦合,而面向切面编程(aspect-oriented programming,AOP) 允许你把遍布应用各处的功能分离出来形成**可重用的组件**.
 
-面向切面编程:一个系统由不同的组件构成,但是这些组件除了负责特定功能,还经常承担额外的职责(日志,事务,管理和安全),这些系统服务通常称为"横切关注点(跨域问题)",因为它们会跨越系统多个组件.
+**面向切面编程**:一个系统由不同的组件构成,但是这些组件除了负责特定功能,还经常承担额外的职责(日志,事务,管理和安全),这些系统服务通常称为"横切关注点(跨域问题)",因为它们会跨越系统多个组件.
 
 如果将这些关注点分散到多个组件中,代码将会带来双重复杂性.
 
@@ -350,14 +350,14 @@ Spring 自带多容器实现,可以归为两种不同的类型
 
 目前为止:Spring 框架关注于
 1. DI
-- aop
-- 消除样板式代码简化JavaEE开发
+2. aop
+3. 消除样板式代码简化JavaEE开发
 
 在 Spring 框架之外还存在一个构建在核心架构之上的庞大生态圈,它将 Spring 扩展到不同的领域,例如 Web 服务,REST,移动开发以及 NoSQL
 
 
 ## Spring 模块
-下载Spring4.0发布版本并查看其 lib 目录,分为 20 多个不同模版,每个模版有 3 个 jar 文件(二进制类库,源码的jar文件以及JavaDoc 的jar 文件). 目前[Spring5.0](https://spring.io/projects) 提供22中
+下载Spring4.0发布版本并查看其 lib 目录,分为 20 多个不同模版,每个模版有 3 个 jar 文件(二进制类库,源码的jar文件以及JavaDoc 的jar 文件). 目前[Spring5.0](https://spring.io/projects) 提供22种
 
 ![](http://ww1.sinaimg.cn/large/006rAlqhly1g23eulchpyj30kc0ds42w.jpg)
 
@@ -387,10 +387,10 @@ MVC 模式,虽然 Spring 能够与多种流行的 MVC 框架进行集成,但它�
 Spring Portfolio 为每个领域的 Java 开发都提供了 Spring 编程模型
 
 ### Spring Web Flow
-SpringWebFlow建立于Spring MVC框架之上，它为基于流程的`会话式Web`应用(可以想一下购物车或者向导功能)提供了支持。你还可以访问 [SpringWebFlow的主页](http://projects.spring.io/spring-webflow/)
+Spring Web Flow建立于Spring MVC框架之上，它为基于流程的`会话式Web`应用(可以想一下购物车或者向导功能)提供了支持。你还可以访问 [Spring Web Flow的主页](http://projects.spring.io/spring-webflow/)
 
 ### Spring Web Service
-虽然核心的Spring框架提供了将Spring bean以声明的方式发布为WebService的功能，但是这些服务是基于一个具有争议性的架构(拙劣的契约后置模型)之上而构建的。这些服务的契约由bean的接口来决定。SpringWebService提供了契约优先的 Web Sservice 模型,服务的实现都是为了满足服务的契约而编写的.
+虽然核心的Spring框架提供了将Spring bean以声明的方式发布为Web Service的功能，但是这些服务是基于一个具有争议性的架构(拙劣的契约后置模型)之上而构建的。这些服务的契约由bean的接口来决定。Spring Web Service 提供了契约优先的 Web Service 模型,服务的实现都是为了满足服务的契约而编写的.
 
 ### Spring Security
 安全对于许多应用都是一个非常关键的切面。利用Spring AOP，Spring Security为Spring应用提供了声明式的安全机制。
@@ -409,7 +409,7 @@ SpringWebFlow建立于Spring MVC框架之上，它为基于流程的`会话式We
 ### Spring Mobile
 ### Spring for Android
 ### Spring Boot
-Spring 极大地简化了众多的编程任务，减少甚至消除了很多样板式代码，如果没有Spring的话，在日常工作中你不得不编写这样的样板代码。Spring Boot是一个崭新的令人兴奋的项目，`它以Spring的视角，致力于简化Spring本身。`
+Spring 极大地简化了众多的编程任务，减少甚至消除了很多样板式代码，如果没有Spring的话，在日常工作中你不得不编写这样的样板代码。Spring Boot是一个崭新的令人兴奋的项目，**它以Spring的视角，致力于简化Spring本身。**
 
 Spring Boot 大量依赖于`自动配置`技术，它能够消除大部分(在很多场景中，甚至是全部Spring配置。它还提供了多个Starter项目，不管你使用Maven还是Gradle，这都能减少 Spring 工程构建文件的大小.
 

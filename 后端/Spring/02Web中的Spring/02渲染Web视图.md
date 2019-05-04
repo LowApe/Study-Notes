@@ -1,5 +1,23 @@
 # 目录
+<!-- TOC depthFrom:1 depthTo:6 withLinks:1 updateOnSave:1 orderedList:0 -->
 
+- [目录](#目录)
+- [理解视图解析](#理解视图解析)
+- [创建 JSP 视图](#创建-jsp-视图)
+	- [配置适用于 JSP 的视图解析器](#配置适用于-jsp-的视图解析器)
+		- [解析 JSTL 视图](#解析-jstl-视图)
+	- [使用 Spring 的 JSP 库](#使用-spring-的-jsp-库)
+		- [将表单绑定到模型上](#将表单绑定到模型上)
+		- [展现错误](#展现错误)
+		- [Spring 通用的标签库](#spring-通用的标签库)
+		- [展现国际化信息](#展现国际化信息)
+		- [创建 URL](#创建-url)
+		- [转义内容](#转义内容)
+- [使用Apache Tiles视图定义布局](#使用apache-tiles视图定义布局)
+	- [配置 Tiles 视图解析器](#配置-tiles-视图解析器)
+- [使用 Thymeleaf](#使用-thymeleaf)
+
+<!-- /TOC -->
 # 理解视图解析
 我们所编写的控制器方法都没有直接产生游览器中渲染所需的 HTML。 这些方法只是将一些数据填充到模型中,然后将模型传递给一个用来渲染的视图。这些方法会返回一个 String 类型的值，这个值是视图的逻辑名称，不会直接引用具体的视图实现。
 
@@ -473,3 +491,151 @@ register?max=10&min=20
 ```
 
 # 使用Apache Tiles视图定义布局
+> 场景: 如果我们有很多页面，但是想拥有相同的模板样式,如果页面很多扩展性和维护就比较难。
+
+更好的方式式使用布局引擎,如 Apache Tiles,定义适用于所有页面的通用页面布局。Spring MVC 以视图解析器的形式为 Apache Tiles 提供了支持,这个视图解析器能够将逻辑视图名解析为 Tile 定义
+
+## 配置 Tiles 视图解析器
+为了在 Spring 中使用 Tiles,需要配置几个 bean。
+
+- 需要一个 TilesConfigurer bean,它会负责定位和加载 Tile 定义并协调生成 Tiles。
+- 需要 TilesViewResolver bean 将逻辑视图名称解析为 Tile 定义。
+
+两个组件两种形式:
+- Apache Tiles 2 TilesConigurer/TilesViewResolver位于 **org.springframework.web.servlet.view.titles2**
+- Apache Tiles 3 TilesConigurer/TilesViewResolver位于 **org.springframework.servlet.view.tiles3**
+
+
+1. **导包**
+
+```xml
+<!-- https://mvnrepository.com/artifact/org.apache.tiles/tiles-jsp -->
+<dependency>
+    <groupId>org.apache.tiles</groupId>
+    <artifactId>tiles-jsp</artifactId>
+    <version>3.0.7</version>
+</dependency>
+<dependency>
+    <groupId>org.apache.tiles</groupId>
+    <artifactId>tiles-core</artifactId>
+    <version>3.0.7</version>
+</dependency>
+<dependency>
+    <groupId>org.apache.tiles</groupId>
+    <artifactId>tiles-api</artifactId>
+    <version>3.0.7</version>
+</dependency>
+
+```
+2. **定义tiles.xml 文件**
+
+```xml
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<!DOCTYPE tiles-definitions PUBLIC
+       "-//Apache Software Foundation//DTD Tiles Configuration 3.0//EN"
+       "http://tiles.apache.org/dtds/tiles-config_3_0.dtd">
+<tiles-definitions>
+
+  <definition name="base"
+              template="/WEB-INF/layout/page.jsp">
+    <put-attribute name="header"
+                   value="/WEB-INF/layout/header.jsp" />
+    <put-attribute name="footer"
+                   value="/WEB-INF/layout/footer.jsp" />
+  </definition>
+
+  <definition name="home" extends="base">
+    <put-attribute name="body"
+                   value="/WEB-INF/views/home.jsp" />
+  </definition>
+
+  <definition name="registerForm" extends="base">
+    <put-attribute name="body"
+                   value="/WEB-INF/views/registerForm.jsp" />
+  </definition>
+
+  <definition name="profile" extends="base">
+    <put-attribute name="body"
+                   value="/WEB-INF/views/profile.jsp" />
+  </definition>
+
+  <definition name="spittles" extends="base">
+    <put-attribute name="body"
+                   value="/WEB-INF/views/spittles.jsp" />
+  </definition>
+
+  <definition name="spittle" extends="base">
+    <put-attribute name="body"
+                   value="/WEB-INF/views/spittle.jsp" />
+  </definition>
+
+</tiles-definitions>
+
+```
+
+3. **模板page.jsp**
+
+```xml
+<%@ taglib uri="http://www.springframework.org/tags" prefix="s" %>
+<%@ taglib uri="http://tiles.apache.org/tags-tiles" prefix="t" %>
+<%@ page session="false" %>
+<html>
+  <head>
+    <title>Spittr</title>
+    <link rel="stylesheet"
+          type="text/css"
+          href="<s:url value="/resources/style.css" />" >
+  </head>
+  <body>
+    <div id="header">
+      <t:insertAttribute name="header" />
+    </div>
+    <div id="content">
+      <t:insertAttribute name="body" />
+    </div>
+    <div id="footer">
+      <t:insertAttribute name="footer" />
+    </div>
+  </body>
+</html>
+
+```
+
+4. **配置bean**
+    - java
+    ```java
+    @Bean
+    public TilesConfigurer tilesConfigurer() {
+      TilesConfigurer tiles = new TilesConfigurer();
+      tiles.setDefinitions(new String[] {
+          "/WEB-INF/layout/tiles.xml"
+      });
+      tiles.setCheckRefresh(true);
+      return tiles;
+    }
+
+    ```
+    - xml
+    ```xml
+    <bean id="tilesConfigurer" class=
+        "org.springframework.web.servlet.view.tiles3.TilesConfigurer">
+      <property name="definitions">
+        <list>
+          <value>/WEB-INF/layout/tiles.xml.xml</value>
+          <value>/WEB-INF/views/**/tiles.xml</value>
+        </list>
+      </property>
+    </bean>
+    <bean id="viewResolver" class=
+        "org.springframework.web.servlet.view.tiles3.TilesViewResolver" />
+    ```
+5. **配置视图解析器**
+
+```java
+@Bean
+    public ViewResolver viewResolver(){
+        return new TilesViewResolver();
+    }
+```
+
+# 使用 Thymeleaf

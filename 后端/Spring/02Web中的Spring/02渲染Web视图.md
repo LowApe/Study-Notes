@@ -71,7 +71,7 @@ JSP(JavaServer Pages) 作为 Java Web 应用程序的视图技术15年了。Spri
 有些视图解析器,如 ResourceBundleViewResolver 会直接将逻辑视图名映射为特定的 View 接口实现。而 InernalResourceViewResolver 所采取的方法并不那么直接。它遵循一种约定,会在视图名上添加**前缀**和**后缀**，进而确定一个 Web 应用中视图资源的物理路径。
 
 
-> 场景:一个逻辑视图的路径就是逻辑视图名 home .通用的实践是将 JSP 文件放到 Web 应用 的 WEB-INFO 目录下,防止对它的直接访问.如果我们将所有的 JSP 文件都放在 "/WEB-INF/views/"目录下,并且 home 页的 JSP 名为 home.jsp, 那么我们可以确定物理视图的路径就是逻辑视图名 home 再加上 "/WEB-INF/views/" 前缀和 ".jsp" 后缀
+> 场景:一个逻辑视图的路径就是逻辑视图名 home .通用的实践是将 JSP 文件放到 Web 应用 的 WEB-INF 目录下,防止对它的直接访问.如果我们将所有的 JSP 文件都放在 "/WEB-INF/views/"目录下,并且 home 页的 JSP 名为 home.jsp, 那么我们可以确定物理视图的路径就是逻辑视图名 home 再加上 "/WEB-INF/views/" 前缀和 ".jsp" 后缀
 
 ![](http://ww1.sinaimg.cn/large/006rAlqhly1g2jclmwrjdj305002wglj.jpg)
 
@@ -471,3 +471,5 @@ register?max=10&min=20
 ```
 &lt;h1&gt;Hello&lt;/h1&gt;
 ```
+
+# 使用Apache Tiles视图定义布局

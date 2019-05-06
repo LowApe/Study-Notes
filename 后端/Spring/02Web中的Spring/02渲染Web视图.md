@@ -16,6 +16,9 @@
 - [使用Apache Tiles视图定义布局](#使用apache-tiles视图定义布局)
 	- [配置 Tiles 视图解析器](#配置-tiles-视图解析器)
 - [使用 Thymeleaf](#使用-thymeleaf)
+	- [配置 Thymeleaf 视图解析器](#配置-thymeleaf-视图解析器)
+	- [定义 Thymeleaf 模板](#定义-thymeleaf-模板)
+		- [借助 Thymeleaf 实现表单绑定](#借助-thymeleaf-实现表单绑定)
 
 <!-- /TOC -->
 # 理解视图解析
@@ -255,7 +258,7 @@ span.error{
 </sf:form>
 ```
 
-path `"*"` 是通配符,会告诉 `<sf:errors>` 展现所有属性的错误。同样需要注意的是，我们将element属性设置成了div。默认情况下，错误都会渲染在一个HTML `<span>`标签中，如果只显示一个错误的话，这是不错的选择。但是，如果要渲染所有输入域的错误的话，很可能要展现不止一个错误，这时候使用`<span>`标签（行内元素）就不合适了。像`<div>`这样的块级元素会更为合适。因此，我们可以将element属性设置为div，这样的话，错误就会渲染在一个`<div>`标签中。
+path `"*"` 是通配符,会告诉 `<sf:errors>` 展现所有属性的错误。同样需要注意的是，我们将element属性设置成了div。默认情况下，错误都会渲染在一个HTML `<span>`标签中，如果只显示一个错误的话，这是不错的选择。但是，如果要渲染所有输入域的错误的话，很可能要展现不止一个错误，这时候使用`<span>`标签(行内元素)就不合适了。像`<div>`这样的块级元素会更为合适。因此，我们可以将element属性设置为div，这样的话，错误就会渲染在一个`<div>`标签中。
 
 ```css
 div.errors{
@@ -393,7 +396,7 @@ public MessageSource messageSource() {
 }
 ```
 
-这里的关键区别在于 basename 属性设置为在应用的外部查找（而不是像 ResourceBundleMessageSource 那样在类路径下查找）。 basename 属性可以设置为在类路径下（以"classpath:"作为前缀）、文件系统中（以 "file:" 作为前缀）或 Web应用的根路径下（没有前缀）查找属性。在这里，我将其配置为在服务器文件系统的"/etc/spittr"目录下的属性文件中查找信息，并且基础的文件名为 "messages"
+这里的关键区别在于 basename 属性设置为在应用的外部查找(而不是像 ResourceBundleMessageSource 那样在类路径下查找)。 basename 属性可以设置为在类路径下(以"classpath:"作为前缀)、文件系统中(以 "file:" 作为前缀)或 Web应用的根路径下(没有前缀)查找属性。在这里，我将其配置为在服务器文件系统的"/etc/spittr"目录下的属性文件中查找信息，并且基础的文件名为 "messages"
 
 > 最后创建 messages.properties 文件
 ```txt
@@ -639,3 +642,162 @@ register?max=10&min=20
 ```
 
 # 使用 Thymeleaf
+大多数的JSP 模板都是采用 HTML 的形式,但是又参杂上各种 JSP 标签库的标签,虽然又强大的动态渲染,使其变得混乱。例如
+
+```html
+<input type="text" value="<c:out value="${thing.name}"/>"/>
+```
+
+JSP 规范是与 Servlet 规范紧密耦合的.这意味着它只能用在基于 Servlet 的 Web 应用值中国， JSP 模板不能做为通用的模板,也不能用于非 Servlet 的 Web 应用
+
+
+Thymeleaf模板是原生的,不依赖于标签库。谈呢挂在接受原始 HTML 的地方进行编辑和渲染。因为它没有于 Servlet 规范耦合
+
+## 配置 Thymeleaf 视图解析器
+
+为了要在 Spring1 中使用 Thymeleaf ,我们需要配置三个启动 Thymeleaf 于 Spring 集成集成的 bean:
+- ThymeleafViewResolver：将逻辑视图名称解析为 Thymeleaf 模板视图;
+- SpringTemplateEngine：处理模板并渲染结果；
+- TemplateResolver： 加载 Thymeleaf 模板
+
+```java
+@Bean
+public ViewResolver viewResolver(
+		SpringTemplateEngine templateEngine) {
+	ThymeleafViewResolver viewResolver = new ThymeleafViewResolver();
+	viewResolver.setTemplateEngine(templateEngine);
+	return viewResolver;
+}
+@Bean
+public SpringTemplateEngine templateEngine(
+		ITemplateResolver templateResolver) {
+	SpringTemplateEngine templateEngine = new SpringTemplateEngine();
+	templateEngine.setTemplateResolver(templateResolver);
+	return templateEngine;
+}
+
+@Bean
+public ITemplateResolver templateResolver() {
+	SpringResourceTemplateResolver templateResolver =
+			new SpringResourceTemplateResolver ();
+	templateResolver.setPrefix("/WEB-INF/templates/");
+	templateResolver.setSuffix(".html");
+	templateResolver.setTemplateMode("HTML5");
+	return templateResolver;
+}
+```
+> flag: 这本书很老了,然后上面代码是我找最新的替换方式;下面是倒包情况
+
+```xml
+<!-- https://mvnrepository.com/artifact/org.thymeleaf/thymeleaf-spring4 -->
+	 <dependency>
+		 <groupId>org.thymeleaf</groupId>
+		 <artifactId>thymeleaf-spring4</artifactId>
+		 <version>3.0.9.RELEASE</version>
+	 </dependency>
+```
+
+- ThymeleafViewResolver 是 Spring MVC 中 ViewResolver 的一个实现类。它会接受一个逻辑视图名称,并将其解析为视图。
+
+- 需要注意的是 ThymeleafViewResolver Bean 中注入了一个对 SpringTemplate Engine bean 的引用。 SpringTemplateEngine 会在 Spring 中启用 Thymeleaf 引擎,用来解析模板,并基于这些模板渲染结果.
+
+- TemplateResolver 会最终定位和查找模板。与之前配置 InternalResourceViewResolver 类似,它使用了 prefix 和 suffix 。
+
+## 定义 Thymeleaf 模板
+Thymeleaf 在很大程度上就是 HTML 文件,与 JSP 不同,它没有什么特殊的标签或标签库。 Thymeleaf 之所以能够发挥作用,是因为通过自定义的命名空间,为标准的HTML 标签集合添加 Thymeleaf 属性
+
+```html
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <title>Spittr</title>
+    <link rel="stylesheet"
+          type="text/css"
+          th:href="@{/resources/style.css}"></link>
+  </head>
+  <body>
+    <h1>Welcome to Spittr</h1>
+
+    <a th:href="@{/spittles}">Spittles</a> |
+    <a th:href="@{/spitter/register}">Register</a>
+  </body>
+</html>
+
+```
+
+`th:href` 会渲染成标准的 href 属性,其中包含在渲染时动态创建得到的值。上例代码使用了 `@{}`表达式,用来计算相对 URL 的路径
+
+> flag：目前页面渲染不出来 超级链接,排查后,需要把`.jsp` 后缀改成 `.html` 还有 Thymeleaf 视图解析和 InternetViewResourceResolver 只能存在一个,否则会冲突
+
+### 借助 Thymeleaf 实现表单绑定
+表单绑定是 Spring MVC 的一项重要特性。它能够将表单提交的数据填充到命令对象中,并将其传递给控制器。Thymeleaf 模板片段,它会渲染 First Name 输入域:
+
+```html
+<label th:class="${#fields.hasErrors('firstName')}? 'error'">
+    First Name</label>:
+<input type="text" th:field="*{firstName}"
+       th:class="${#fields.hasErrors('firstName')}? 'error'" /><br/>
+```
+使用 `th:class` 属性会渲染为一个 class 属性,它的值是根据给定的表达式计算得到的。在上面的这两个 `th:class` 属性中,它会直接检查 `firstName` 域有没有检验错误。如果有的话,class 属性在渲染时的值为 error。如果这个域没有错误的话,将不会渲染 class 属性。
+
+`th:field` 属性,用来引用后端对象的 firstName 。将 value 属性设置为 firstName 的值,同时还会将 name 属性设置为 FirstName 同时还会将 name 属性设置为 firstName
+
+```html
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>RegistForm</title>
+<style>
+    div.errors{
+        color: red;
+    }
+
+    label.error{
+        color: red;
+    }
+    input.error{
+        background-color: #ffcccc;
+    }
+</style>
+</head>
+<body>
+<h1>Register</h1>
+<form method="POST" th:object="${spitter}">
+    <div class="errors" th:if="${#fields.hasErrors('*')}">
+        <ul>
+            <li th:each="err : ${#fields.errors('*')}"
+                th:text="${err}">Input is incorrect</li>
+        </ul>
+    </div>
+    <label th:class="${#fields.hasErrors('firstName')}? 'error'">
+        First Name</label>:
+    <input type="text" th:field="*{firstName}"
+           th:class="${#fields.hasErrors('firstName')}? 'error'" /><br/>
+
+    <label th:class="${#fields.hasErrors('lastName')}? 'error'">
+        Last Name</label>:
+    <input type="text" th:field="*{lastName}"
+           th:class="${#fields.hasErrors('lastName')}? 'error'" /><br/>
+
+    <label th:class="${#fields.hasErrors('userName')}? 'error'">
+        Username</label>:
+    <input type="text" th:field="*{userName}"
+           th:class="${#fields.hasErrors('userName')}? 'error'" /><br/>
+
+    <label th:class="${#fields.hasErrors('passWord')}? 'error'">
+        Password</label>:
+    <input type="password" th:field="*{passWord}"
+           th:class="${#fields.hasErrors('passWord')}? 'error'" /><br/>
+
+    <input type="submit" value="Register" />
+</form>
+
+</body>
+</html>
+```
+
+`*{}` 表达式,为所有的表单域绑定后端对象.这其实重复了我们在 First Name 域
+
+`th:each` 属性将会通知 Thyemleaf 为每项错误都渲染一个 `<li>`,在每次迭代中会将当前错误设置到一个名为 err 的变量中。
+
+- "${}"表达式(如${spitter})是**变量表达式(variableexpression)**。一般来讲，它们会是对象图导航语言(Object-GraphNavigationLanguage，OGNL)表达式(http://commons.apache.org/proper/commons-ognl/)。但在使用Spring的时候，它们是SpEL表达式。在${spitter}这个例子中，它会解析为key为spitter的model属性。
+- 而对于"*{}"表达式，它们是**选择表达式(selectionexpression)**。变量表达式是基于整个SpEL上下文计算的，而选择表达式是基于某一个选中对象计算的。在本例的表单中，选中对象就是`<form>`标签中`th:object`属性所设置的对象：模型中的 Spitter 对象。因此，"*{firstName}" 表达式就会计算为 Spitter 对象的 firstName 属性。

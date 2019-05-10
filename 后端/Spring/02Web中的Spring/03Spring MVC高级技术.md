@@ -131,7 +131,7 @@ protected Filter[] getServletFilters() {
 ```
 ContextLoaderListener 和 DispatcherServlet 各自都会加载一个 Spring 应用上下文。上下文参数 contextConfigLocation 指定了一个XML 文件的地址,这个文件定义了根应用上下文,它会被 ContextConfigLocationListener 加载。根上下文会从 "/WEB-INF/spring/root-context.xml"中加载 bean 定义
 
-DispatcherServlet 会根据Servlet的名字找到一个文件,并基于该文件加载应用上下文。如果你希望指定 DispacherServlet 配置文件的位置的话,那么可以在 Servlet 上指定一个 contextConfigLocation 初始化参数。例如,如下的配置中,DispatcherServlet 会从 "/WEB-INF/spring/appServlet/servlet-context.xml" 加载它的bena；
+DispatcherServlet 会根据Servlet的名字找到一个文件,并基于该文件加载应用上下文。如果你希望指定 DispacherServlet 配置文件的位置的话,那么可以在 Servlet 上指定一个 contextConfigLocation 初始化参数。例如,如下的配置中,DispatcherServlet 会从 "/WEB-INF/spring/appServlet/servlet-context.xml" 加载它的bean；
 
 ```xml
 <servlet>

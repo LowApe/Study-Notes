@@ -14,6 +14,13 @@
 		- [接受 MultipartFile](#接受-multipartfile)
 		- [将文件保存到 Amazon S3 中](#将文件保存到-amazon-s3-中)
 		- [以 Part 的形式接受上传的文件](#以-part-的形式接受上传的文件)
+- [处理异常](#处理异常)
+	- [将异常映射为 HTTP 状态码](#将异常映射为-http-状态码)
+	- [编写异常处理的方法](#编写异常处理的方法)
+- [为控制器添加通知](#为控制器添加通知)
+- [跨重定向请求传递数据](#跨重定向请求传递数据)
+	- [通过 URL 模板进行重定向](#通过-url-模板进行重定向)
+	- [使用 flash 属性](#使用-flash-属性)
 
 <!-- /TOC -->
 # Spring MVC配置的替代方案
@@ -366,11 +373,7 @@ public MultipartResolver multipartResolver() throws IOException {
 在这里,我们将最大的文件容量设置为2MB,最大的内存大小设置为 0 字节。这两个属性直接对应于 MultipartConfigElement 的第二个和第四个构造器参数,表明不能上传超过 2MB 的文件,并且不管文件的大小如何,所有的文件都会写到磁盘中。但是与 MultipartConfigElement 有所不同,我们无法设定 multipart 请求整体的最大容量。
 
 ## 处理 multipart 请求
-已经配置好了对 mutipart 请求的处理,那么接下来我们就可以编写控制器方法来接受上唇的文件,
-
-最常见的方式就是在某控制器方法参数上添加 `@RequestPart` 注解
-
-显允许用户在注册的时候上传一张照片,修改之前的表单：
+已经配置好了对 mutipart 请求的处理,那么接下来我们就可以编写控制器方法来接受上传的文件,最常见的方式就是在某控制器方法参数上添加 `@RequestPart` 注解显允许用户在注册的时候上传一张照片,修改之前的表单：
 
 ```html
 <form method="POST" th:object="${spitter}"
@@ -521,3 +524,157 @@ profilePicture.write("/data/spittr/" +
 ```
 
 值得一提的是，如果在编写控制器方法的时候，通过 Part 参数的形式接受文件上传，那么就没有必要配置 MultipartResolver了。只有使用MultipartFile的时候，我们才需要 MultipartResolver。
+
+# 处理异常
+Spring 提供了多种方式将异常转换为响应:
+- 特定的 Spring 异常将会自动映射为指定的 HTTP 状态码
+- 异常上可以添加 `@ResponseStatus` 注解,从而将其映射为某一个 Http 状态码
+- 在方法上可以添加 `@ExceptionHandler` 注解,使其用来处理异常。
+
+## 将异常映射为 HTTP 状态码
+在默认情况下,Spring 会将自身的一些异常自动转换为适合的状态码。
+
+|Spring 异常| HTTP 状态码|
+|:--:|:--:|
+|BindExcpetion|400 - Bad Request|
+|ConversionNotSupportedException|500 - Internal Server Error|
+|HttpMediaTypeNotAcceptableException|406 - Not Acceptable|
+|...|...|
+
+通过 `@ResponseStatus` 注解将异常映射为 HTTP 状态码。
+
+```java
+@RequestMapping(value="/{spittleId}", method=RequestMethod.GET)
+public String spittle(
+    @PathVariable("spittleId") long spittleId,
+    Model model) {
+  Spittle spittle = spittleRepository.findOne(spittleId);
+  if (spittle == null) {
+    throw new SpittleNotFoundException();
+  }
+  model.addAttribute(spittle);
+  return "spittle";
+}
+```
+
+如果出现任意没有映射的异常,响应都会带有 500 状态码,但是我们通过自定义异常精确响应状态码 404
+
+这里添加一个异常处理类
+```java
+package spittr.web;
+@ResponsStatus(value=HttpStatus.NOT_FOUND,
+reason="Spittle NOT_FOUND")
+public class SpittleNotFoundException extends RuntimeException {
+}
+```
+在引入 `@ResponseStatus` 注释之后,如果控制器方法抛出 SpittleNotFound-Exception 异常的话,响应将会具有 404 状态,这是因为而 Spittle Not Found
+
+## 编写异常处理的方法
+如果我们不仅包括状态码,还要包括所处理的错误,这就不能将 HTTP 视为错误,而是要按照处理请求的方式处理异常。
+
+```java
+@ExceptionHandler(DuplicateSpittleException.class)
+public String handleDuplicateSpittle() {
+  return "error/duplicate";
+}
+```
+
+handleDuplicateSpittle() 方法上添加了`@ExceptionHandller`,当发生此类的异常,返回一个 String 类型,这与处理请求的方法一致的,指定了要渲染的逻辑视图名,它能够告诉他们正在视图创建一条重复的条目
+
+# 为控制器添加通知
+如果在多个控制器类中都会抛出某个特定的异常,那么你可能会发现要在所有的控制器方法中重复相同的 `@ExceptionHandlder` 方法。为了避免重复,我们会创建一个基础的控制器类,所有控制器类或者这个类,从而继承通用 `@ExceptionHandler` 方法。
+
+Spring 3.2 为这类问题引入了一个新的解决方案:**控制器通知**。控制器通知(controller advice) 是任意带有 `@ControllerAdvice` 注解的类,这个类会包含一个或多个如下类型的方法:
+- `@ExceptionHandler 注解标注的方法:`
+- `@InitBinder 注解标注的方法:`
+- `@ModelAttribute 注解标注的方法:`
+
+在带有 `@ControllerAdvice` 注解的类中,以上所述的这些方法会运用到整个应用程序所有控制器中带有 `@RequestMapping` 注解的方法上
+
+```java
+package spitter.web;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+
+@ControllerAdvice
+public class AppWideExceptionHandler {
+
+  @ExceptionHandler(DuplicateSpittleException.class)
+  public String duplicateSpittleHandler() {
+    return "error/duplicate";
+  }
+
+}
+
+```
+
+> flag:这边书上并没有运行效果啥的,总感觉模模糊糊的
+
+
+# 跨重定向请求传递数据
+前面执行 POST 请求后,通常来讲一个最佳实践就是执行一下重定向.除了其他的一些因素外,这样做能够防止用户点击游览器的刷新按钮或后退箭头时,客户端重新执行危险的 POST 请求。
+
+> 问题:正在发起重定向功能的方法该如何发送数据给重定向的目标方法呢?
+
+答:一般来讲，当一个处理器方法完成之后，该方法所指定的模型数据将会复制到请求中，并作为请求中的属性，请求会转发(forward)到视图上进行渲染。因为控制器方法和视图所处理的是同一个请求，所以在转发的过程中，请求属性能够得以保存。
+
+![](http://ww1.sinaimg.cn/large/006rAlqhly1g2w1ise6i7j30b502l0su.jpg)
+
+对于重定向来说,模板并不能用来传递数据。
+- 使用 URL 模板以路径变量和 / 或查询参数的形式的形式传递数据
+- 通过 flash 属性发送属性
+
+## 通过 URL 模板进行重定向
+```java
+return "redirect:/spitter/{username}"
+```
+
+> 注意:当构建 URL 或 SQL 查询语句的适合,使用 String 连接是很危险的。
+
+改写请求转发：
+
+```java
+@RequestMapping(value="/register", method=POST)
+public String processRegistration(
+    Spitter spitter, Model model) {
+  spitterRepository.save(spitter);
+  model.addAttribute("username", spitter.getUsername());
+  return "redirect:/spitter/{username}";
+}
+```
+如果有两个查询参数
+
+```java
+@RequestMapping(value="/register", method=POST)
+public String processRegistration(
+    Spitter spitter, Model model) {
+  spitterRepository.save(spitter);
+  model.addAttribute("username", spitter.getUsername());
+  model.addAttribute("spitterId", spitter.getId());
+  return "redirect:/spitter/{username}";
+}
+```
+最后重定向路径将会是 `/spitter/bahuma?spitterId=41`
+但是使路径变量和查询参数只能处理简单数据。
+
+## 使用 flash 属性
+
+如果我们发送不是参数,而是要发送实际的 Spitter 对象。但是对象要比参数复杂.模型数据最终以请求参数的形式复制到请求中的，当重定向发送的时候,数据就会的丢失.因此,我们需要将 Spitter 对象放到一个位置,使其能够在重定向的过程中存活下来。
+
+- 将Spitter 放到会话中,得到后清理会话
+- Spring 提供了将数据发送为 flash 属性(flash attribute) 的功能.flash 属性会一直携带这些数据直到下一次请求,然后才会消失
+
+```java
+@RequestMapping(value="/register", method=POST)
+public String processRegistration(
+    Spitter spitter, RedirectAttributes model) {
+  spitterRepository.save(spitter);
+  model.addAttribute("username", spitter.getUsername());
+  model.addFlashAttribute("spitter", spitter);
+  return "redirect:/spitter/{username}";
+}
+```
+
+通过对模型对象添加呆 addAttribute() 方法添加 flash,原理是在重定向执行之前,所有的flash属性都会复制到会话.重定向后,存在会话中的 flash 属性会被取出,并从会话转移到模型之中
+
+![](http://ww1.sinaimg.cn/large/006rAlqhly1g2w2d4l9flj30aw04fwex.jpg)

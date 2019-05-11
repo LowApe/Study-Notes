@@ -40,7 +40,7 @@ npm run serve
 ```
 
 > flag：目前目录结构有点出入,可能书比较老了
-先从 min.js 文件入手:
+先从 main.js 文件入手:
 
 ```js
 import Vue from 'vue'
@@ -305,5 +305,11 @@ export default {
 
 ```shell
 npm i moment -S
+cnpm i moment -S
 ```
-> flag：moment 包找不到....
+
+引入 moment,并设定 moment 的区域为中国:
+
+```html
+
+```

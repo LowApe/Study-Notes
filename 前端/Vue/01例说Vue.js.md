@@ -1,5 +1,13 @@
 # 目录
+<!-- TOC depthFrom:1 depthTo:6 withLinks:1 updateOnSave:1 orderedList:0 -->
 
+- [目录](#目录)
+- [插值](#插值)
+- [数据绑定](#数据绑定)
+- [样式绑定](#样式绑定)
+- [过滤器](#过滤器)
+
+<!-- /TOC -->
 vue 基于 HTML 模板,响应式更新的机制,渐进式理念。
 
 
@@ -311,5 +319,38 @@ cnpm i moment -S
 引入 moment,并设定 moment 的区域为中国:
 
 ```html
+import moment from 'moment'
+import 'moment/locale/zh-cn'
+moment.locale('zh-cn')
 
+
+<time>{{todo.created | date}</time>
+
+
+<script>
+export default {
+  name: 'app',
+   data () {
+      return{
+        title:"待办清单",
+        todos:[
+          {value:"读书1",done:true,created: Date.now()},
+          {value:"读书2",done:true,created:Date.now()+30000},
+          {value:"读书3",done:false,created:Date.now()+30000000}
+        ]
+      }
+  },
+  filters:{
+    date(val){
+        return moment(val).calendar()
+    }
+  },
+  components: {
+
+  }
+}
+</script>
+</script>
 ```
+
+> flag: 引用失败,不能格式化显示时间

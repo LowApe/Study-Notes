@@ -279,7 +279,7 @@ import './assets/todos.less'
       <li v-for="(todo,index) in todos" :id="index" :class="{'checked':todo.done}">
           <label>{{index+1}}.{{todo.value}}</label>
           <label>{{todo.done}}</label>
-          <time>{{todo.created}}</time>
+          <time>{{todo.created | date}}</time>
       </li>
     </ul>
   </div>
@@ -319,15 +319,16 @@ cnpm i moment -S
 引入 moment,并设定 moment 的区域为中国:
 
 ```html
-import moment from 'moment'
-import 'moment/locale/zh-cn'
-moment.locale('zh-cn')
+
 
 
 <time>{{todo.created | date}</time>
 
 
 <script>
+import moment from 'moment'
+import 'moment/locale/zh-cn'
+moment.locale('zh-cn')
 export default {
   name: 'app',
    data () {
@@ -353,4 +354,7 @@ export default {
 </script>
 ```
 
-> flag: 引用失败,不能格式化显示时间
+> ~~flag: 引用失败,不能格式化显示时间~~
+失败原因: template 中应该 `{{}}` 而不是 `{{}`
+
+![](http://ww1.sinaimg.cn/mw690/006rAlqhly1g2zzlkc13bj313z0b4mxp.jpg)

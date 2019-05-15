@@ -378,7 +378,288 @@ module.exports={
 import Selector from 'bs_select'
 ```
 ## 配置多个入口程序
+多数情况下我们的程序入口不单单只有一个,举一个最简单的例子,前台提供给最终用户使用(http://www.domain.com/index),后台提供给登录用户使用(http://www.domain.com/admin),那么自然需要多个与 main.js 类似的程序入口。
 
+首先在 `build/webpack.base.conf.js` 配置文件中的 entry 配置属性上加上新的入口文件:
+
+```js
+module.exports = {
+    entry: {
+        app: './src/main.js',
+		admin: './src/admin-main.jss'
+    },
+}
+```
+这是用于告诉 webpack 哪几个是入口文件,这些文件需要被生成到启动页的 `<script>`内
+
+`vue-cli` 的 webpack 模板使用 `HtmlWebpackPlugin` 插件，生成HTML入口页面并自动将生成后的JS文件和CSS文件的引用地址写入到页内的`<script>`中。
+
+这里就需要在 `build/webpack.dev.conf.js`文件的 plugins 配置项内多配置一个 HtmlWebpackPlugin 插件，用于生成 admin.html 入口页
+
+```js
+plugins: [
+// 省略
+// 原有配置项m用于匹配注入 app.js 的输出脚本
+new HtmlWebpackPlugin({
+      filename: 'index.html',
+      template: 'index.html',
+	  chunks: ['app'], // 与原配值得不同的是要用 chunks 指定对应的 entry
+      inject: true
+    }),
+// 这是新增项,用于匹配注入 admin.js 的输出脚本
+	new HtmlWebpackPlugin({
+	      filename: 'admin.html',
+	      template: 'index.html',
+		  chunks: ['admin'], // 与原配值得不同的是要用 chunks 指定对应的 entry
+	      inject: true
+	    }),
+```
+还有就是得将同样的配置加入到生产环境专用的 webpack 配置文件 webpack.prod.conf.js 中,否则当我们运行 npm run build 是不会输出 admin.js 和 admin.html 这两个入口文件的
+
+> 最后,如果使用了 vue-router 就得对 connect-history-api-fallback 插件的配置进行修改,否则原有的默认配置只会将所有的请求转发给 index.html,这样就会导致 History API 没有办法正确地将请求指向 admin.html ,导致热加载失败。新入口需要有明确区分的路由规则,否则还是会产生热加载失败的情况,这样就不便于开发了。
+
+> flag: 不理解,而且代码文件版本不同,实际不是很好找
+
+# ~~基于 Karma+Phantom+Mocha+Sinon+Chai 的单元测试环境~~
+
+Vue 项目的单元测试用的最多的组件是功能测试,后面介绍如何写组件测试。先从开发流程的角度来看待测试的问题以及深入 vue-cli webpack 模板为我们建立的单元测试环境的功能与运作机理。
+
+首先, 在有具体的组件测试目标时的 Vue-TDD 的开发流程如下
+
+- 编写组件测试
+- 编写组件引导
+- 运行测试
+- 重构
+
+> 前端开发的单元测试环境会比后端开发的单元测试环境复杂,这是由于前端开发的工具碎片化比较严重所致的,所以要配置一个良好的单元环境需要有长期的实战经验以及熟悉各种各样的工具,vue-cli 的 webpack 模板给我们配置的单元测试环境其实也相当复杂,下图是这些工具是如何进行协作的。
+
+![](http://ww1.sinaimg.cn/large/006rAlqhly1g31rvuxheaj30l90dutau.jpg)
+
+## Karma
+
+Karam 是一个著名的测试加载器,它能完成许多测试环境加载任务
+Karam 作为自动化测试程序的入口,它可以执行以下这些任务:
+- 为测试程序注入指定依赖包
+- 可同时在一个或多个游览器宿主中执行测试,满足兼容性测试需要
+- 执行代码覆盖性测试
+- 输出测试报告
+- 执行自动化测试
+
+Karam 就是这样一个开发环境,开发者指定需要测试的脚本/测试文件,需要运行的游览器信息,Karma 会在后台自动监控文件的修改,并启动一个游览器与 Karam 的服务器连接,这样当源代码或者测试发生修改后,Karma 会自动运行测试
+
+开发者可以指定不同的游览器,甚至可以跨设备。由于 Karma 只是一个运行器,所有要配合一些测试框架如 Mocha、Jasmine 等作为单元测试的代码支持,甚至还可以自定义适配器来支持自己的测试框架。
+
+Karma 拥有独立的 CLI ,可以通过以下方式安装到全局环境:
+```shell
+npm i karma  -g
+```
+然后就可以在命令行直接使用 Karma 指令了。
+
+初始化 Karma 环境:
+
+```shell
+karma init
+```
+karma init 之路运行后就会出现一个向导型的终端交互界面来生成一个 karama.config.js 的全局配置文件:如果使用 vue-cli webpack 模板就不需要手动给,因为模板在创建工程时就生成了这个配置文件,在 `test/unnit/karma.conf.js`就能找到它
+
+> flag:我看test 目录下是 e2e 我想测试工具不同。
+
+```shell
+karma start
+```
+这个命令就是启动 Karma ,让它按照 karma.conf.js 的配置项执行自动化测试。 vue-cli webpack 模板 将这个指令在 package.json 内进行了包装定义,所有在工程目录下只要运行:
+
+```
+npm run unit
+```
+直接启动 Karma
+
+## PhantomJS
+
+PhantomJS 是一个无界面的、可脚本编程的 WebKit 游览器引擎.它原生支持多种 Web 标准:DOM 操作、CSS选择器、JSON、Canvas以及SVG
+
+一般来说,在我们的 Vue 单元测试代码中很少会直接以编码方式调用 PhantomJS的功能,更多是利用 PhantomJS 具有高速的运行速度这一特点,优化每一次单元测试的效能,节省等待游览器启动的漫长等待时间。
+
+> flag:继续不下去了,版本不同...
+
+# 基于 Nightwatch 的端到端测试环境
+
+测试自动化意味着使用软件工具来反复运行项目中的测试,并为回归测试提供反馈
+
+端到端测试简称为 E2E(End-TO-End)测试,它不同于单元测试侧重于检验函数的输出结果,端到端测试将**尽可能从用户的视角,对真实系统的访问行为进行仿真**。对于 Web 应用来说,这意味着需要打开游览器、加载页面、运行Javascript ,以及进行与 DOM 交互等操作。 **简而言之,单元测试的功能只能确保单个组件的质量,而 E2E 却正好面对组件与组件之间、用户与真实环境之间的一种集成性测试**
+
+E2E 测试的意义在于可以通过程序固化和仿真用户操作,对于开发人员而言,基于 E2E 测试能极大地提高 Web 的开发效能,节约开发时间。
+
+![](http://ww1.sinaimg.cn/large/006rAlqhly1g31tshx6xfj30ws0g8dmy.jpg)
+
+从运行测试开始,所有的一切都是自动的！当我们写出 E2E 测试时就需要对操作需求有深刻的理解,这一过程还有机会对用户操作进行优化,从而提高用户体验。
+
+## Nigthwatch
+
+vue-cli 的 webpack 模板也为我们准备了一个当下很流行的 E2E 测试框架---Nightwatch
+
+Nightwatch 是一套新近问世的基于 Node.js 的验收测试框架,使用 Slenium WebDriver API 以将 Web 应用测试自动化.它提供简单的语法,支持使用 JavaScript 和 CSS 选择器来编写运行在 Selenium 服务器上的端到端测试
+工作流程:
+
+![](http://ww1.sinaimg.cn/large/006rAlqhly1g31usrv3chj30l10r0gum.jpg)
+
+Nightwatch 采用 Fluent interface 模式来简化端到端测试的编写,语法非常简介易懂:
+```js
+this.demoTestGoogle = function(browser){
+	browser
+		.url('http://www/google.com')
+
+
+.waitForElementVisible('body',1000)
+	.setValue('input[type=text]','neightwatch')
+	.waitForElementVisible('buttom[name=btnG]',1000)
+	.click('button[name=btnG]')
+	.pause(1000)
+	.assert.containsText('#main'，'The Night Watch')
+	.end();
+}
+```
+我们可以从 nightwatch 网站找到当前提供特性的列表:
+- 简单但强大的语法.只需要使用 JavaScaript 和 CSS 选择器,开发者就能够非常迅速地撰写测试.开发者也不必初始化其他对象和类,只需要编写测试规范即可
+- 内建命令行测试运行器,允许开发者同时运行全部测试 --分组或单个运行
+- 自动管理 Selenium 服务器：如果 Selenium 运行在另一台机器上,那么也可以禁用此特性。
+- 支持持续集成:内建 JUnit XML 报表,因此开发者可以在构建过程中,将自己得测试与系统(例如 Hudson 或 Teamcity等)集成
+- 使用 CSS 选择器或 Xpath,定位并验证页面中的元素或是执行命令
+- 易于扩展,便于开发者根据需要,实现与自己应用相关的命令
+
+## 配置 Nitghtwatch
+
+要了解 Nightwatch 的配置和用法,与前文介绍 Mocha 一样,应该先从工程结构
+
+```
+|__test
+ 	|__e2e
+		|—— custom-assertions		 // 自定义断言
+		|	|__ elementCount.js
+		|—— page-objects			 // 页面对象文件夹
+		|—— nightwatch.conf.js 		//nightwatch 运行配置
+		|—— runner.js 				//运行器
+		|__ specs					// 测试文件
+				|__test.js
+```
+
+## 基本配置
+Nightwatch 的配置项都集中在 nightwatch.conf.js 中,其实这个配置也可以是一个 JSON 格式,只需要简单地对配置项写入一些常量即可。但使用模块的方式进行配置可以执行一些额外的配置代码
+
+Nightwatch 的配置分为以下三类:
+- 基本配置:
+- Selenium 配置:
+- 测试环境配置
+
+![](http://ww1.sinaimg.cn/large/006rAlqhly1g31vk8k7utj31280iw12w.jpg)
+
+## Selenium 配置
+
+下载 Selenium [http://selenium-release.storage.googleapis.com/index.html](http://selenium-release.storage.googleapis.com/index.html)
+
+在 Vue 项目中如果使用 vue-cli,那么 Nightwatch 将不需要进行任何附加配置,否则你需要在命令还内安装 Selenium 的包装类库:
+```
+npm i selenium-server -D
+```
+
+Nightwatch 能引导 Selenium 的启动,在nightwatch.conf.js 配置文件中只需要声明 Selenium 服务器的二进制执行文件的具体路径即可,这个可以从 selenium-server 包提供的 Selenium 包装对象的path属性中获取,而无须将本机的物理路径写死到配置文件内。
+
+var seleniumServer = require('selenium-server');
+
+module.exports={
+	"selenium": {
+		"start_process": true,
+		"server_path": seleniumServer.path,
+		"port": 4444,
+		"cli_args"：{
+			"webdriver.chrome.driver": require('chromedriver').path
+		}
+	},
+	// 省略
+}
+
+![](http://ww1.sinaimg.cn/mw690/006rAlqhly1g31wd9ney7j31430crgnw.jpg)
+
+cli_args 的配置
+- webdirver.firefox.profile：默认为每个会话创建一个独立的 FireFox 配置方案。如果你希望使用新的驱动配置可以在此进行声明。
+- webdriver.chrome.driver：Nightwatch 同样可以使用 Chrome游览器加载测试,当然你要先下载一个 ChromeDriver 的二进制运行库对此进行支持。此配置项用于指明 ChromeDriver 的安装位置。
+
+## 测试环境配置
+
+test_settings 内的项目将应用于所有的测试实例,在E2E 测试中我们可以通过Nightwatch 默认实例对象 browser 获取这些配置,`vue-cli` 为我们创建了 default、firefox和chrome 三个环境配置项,default 配置是应用与所有环境的基础配置选项,其他的配置项会自动覆盖default
+
+```js
+test_settings: {
+    default: {
+      selenium_port: 4444,
+      selenium_host: 'localhost',
+      silent: true,
+      globals: {
+        devServerURL: 'http://localhost:' + (process.env.PORT || config.dev.port)
+      }
+    },
+
+    chrome: {
+      desiredCapabilities: {
+        browserName: 'chrome',
+        javascriptEnabled: true,
+        acceptSslCerts: true
+      }
+    },
+
+    firefox: {
+      desiredCapabilities: {
+        browserName: 'firefox',
+        javascriptEnabled: true,
+        acceptSslCerts: true
+      }
+    }
+}
+```
+
+> flag:没有具体操作
+
+## 执行 E2E 测试
+
+```shell
+npm run e2e --[环境]
+```
+
+# 使用无头游览器 PhantomJS
+
+我们的开发环境在配置 Mocha 和 Karma 时就已经安装了 PhantomJS ，但如果你细读 Nightwatch(nightwatch.conf.js) 的默认配置会惊奇地发现根本没有采用PhantomJS，只是配置了Chrome和Firefox,因为慢！Chrome 的启动是很慢的,所以我们会选择 PhantomJS,但是没有默认配置 PhantomJS,需要我们手动配置
+
+```js
+test_settings: {
+    default: {
+      selenium_port: 4444,
+      selenium_host: 'localhost',
+      silent: true,
+      globals: {
+        devServerURL: 'http://localhost:' + (process.env.PORT || config.dev.port)
+      }
+    },
+
+    chrome: {
+      desiredCapabilities: {
+        browserName: 'chrome',
+        javascriptEnabled: true,
+        acceptSslCerts: true
+      }
+    },
+	phantom: {
+		desiredCapabilities: {
+			browserName:'phantomjs',
+			javascriptEnabled:true,
+			acceptSslCerts:true,
+			phantomjs.page.settings.userAgent: 'Mozilla/5.0(Macintosh;IntelMacOSX10_10_5)AppleWebKit/537.36(KHTML,likeGecko)Chrome/46.0.2490.80Safari/537.36',
+			phantomjs.binary.path:'node_modules/phantomjs-prebuilt/bin/phantomjs'
+		}
+	}
+}
+```
+
+## Nihtwatch 与 Cucumber
 
 
 

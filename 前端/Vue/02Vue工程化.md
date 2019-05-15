@@ -29,6 +29,18 @@
 		- [字体的引用](#字体的引用)
 	- [用别名取代路径引用](#用别名取代路径引用)
 	- [配置多个入口程序](#配置多个入口程序)
+- [~~基于 Karma+Phantom+Mocha+Sinon+Chai 的单元测试环境~~](#基于-karmaphantommochasinonchai-的单元测试环境)
+	- [Karma](#karma)
+	- [PhantomJS](#phantomjs)
+- [基于 Nightwatch 的端到端测试环境](#基于-nightwatch-的端到端测试环境)
+	- [Nigthwatch](#nigthwatch)
+	- [配置 Nitghtwatch](#配置-nitghtwatch)
+	- [基本配置](#基本配置)
+	- [Selenium 配置](#selenium-配置)
+	- [测试环境配置](#测试环境配置)
+	- [执行 E2E 测试](#执行-e2e-测试)
+	- [使用无头游览器 PhantomJS](#使用无头游览器-phantomjs)
+	- [Nihtwatch 与 Cucumber](#nihtwatch-与-cucumber)
 - [相关链接](#相关链接)
 
 <!-- /TOC -->
@@ -625,7 +637,7 @@ test_settings: {
 npm run e2e --[环境]
 ```
 
-# 使用无头游览器 PhantomJS
+## 使用无头游览器 PhantomJS
 
 我们的开发环境在配置 Mocha 和 Karma 时就已经安装了 PhantomJS ，但如果你细读 Nightwatch(nightwatch.conf.js) 的默认配置会惊奇地发现根本没有采用PhantomJS，只是配置了Chrome和Firefox,因为慢！Chrome 的启动是很慢的,所以我们会选择 PhantomJS,但是没有默认配置 PhantomJS,需要我们手动配置
 

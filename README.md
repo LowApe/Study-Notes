@@ -17,6 +17,7 @@
 		- [Java毕笔记](后端/Java毕笔记/)
 		- [Maven实战笔记](后端/Maven实战笔记/)
 		- [MyBatis](后端/MyBatis/)
+		- [Redis](后端/Redis/)
 		- [Spring](后端/Spring/)
 		- [源码阅读](后端/源码阅读/)
 		- [设计模式](后端/设计模式/)

@@ -36,7 +36,7 @@ Redis 拥有两种不同形式的持久化方法,它们都可以用小而紧凑�
 > redis-cli 这个客户端来介绍 Redis 命令
 
 ```
-/* 进入 redis-cli */
+<!-- 进入 redis-cli -->
 redis-cli
 
 set hello world   //将键 hello 的值设置为 world
@@ -47,6 +47,50 @@ nil         //键值删除得到 nil,Python 将这个 nil 转换成 None
 ```
 
 ## Redis 中的列表
+Redis 对链表(Linked-list)结构的支持使得它在键值存储的世界独树一帜。一个列表结构可以**有序存储多个字符串**,Redis 列表可执行的操作和很多编程语言里面的列表操作非常相似:LPUSH 命令和 RPUSH 命令分别用于将元素**推入列表的左端和右端**;LPOP 命令和 RPOP 命令分别用于从列表的**左端和右端弹出元素**;LINDEX 命令用于获取列表在给定位置上的元素;LRANGE 命令用于获取列表在给定范围上的所有元素。
+
+![](http://ww1.sinaimg.cn/mw690/006rAlqhly1g3abcvwfw6j30wv05x0vr.jpg)
+
+```
+<!-- RPUSH LRANGGE LINDEX LPOP 使用示例 -->
+rpush list-key item  
+rpush list-key item2
+rpush list-key item   // 前三个向列表插入元素
+lrange list-key 0 -1  // 使用 0 索引范围,-1 为范围的结束索引,可以取出列表所有的元素
+lindex list-key 1     // 使用 LINDEX 可以从元素取出单个元素
+lpop list-key         // 从列表弹出一个元素,被弹出的元素将不再存在于列表
+
+```
+Redis 列表还拥有从列表里面移除元素的命令,将元素插入列表中间的命令、将列表修剪至指定长度等等
+
 ## Redis 中的集合
+Redis 的集合和列表都可以存储多个字符串,它们之间的不同在于,列表可以存储多个**相同的字符串**,而集合则通过使用**散列表保证自己存储的每个字符串都是各不相同的(这些散列表只有键,但没有与键相关联的值)。本书表示集合的方法和表示列表的方法基本相同。
+
+因为 Redis 的集合使用**无序方式存储元素**,所以用户不能像使用列表那样,将元素推入集合的某一端,或者从集合的某一端弹出元素。而使用 SADD 命令将元素添加到集合,或者使用 SREM 命令从集合里面移除元素。还可以通过 SISMEMBER 命令快速地检查一个元素是否已经**存在于集合中**,或者使用 SMEMBERS 命令获取集合包含的所有元素(如果集合包含非常多元素非常多,那么 SMEMBERS 会很慢)
+
+![](http://ww1.sinaimg.cn/mw690/006rAlqhgy1g3acztwgw5j30wp061ad4.jpg)
+
+```
+<!-- SADD SMEMBERS Sismenber 和 SREM 的使用示例 -->
+sadd set-key item
+sadd set-key item2
+sadd set-key item3    
+sadd set-key item    // 尝试将一个元素添加到集合的时候,命令返回 1 表示这个元素被成功地添加到了集合里面
+smembers set-key    // 获取集合包含的所有元素将得到一个由元素组成的序列,Python 客户端会将这个序列转换成 Python 集合
+
+sismember set-key item4    //检查一个元素是否存在于集合中,Python 客户端会返回一个布尔值来表示检查结果
+
+srem set-key item2     //在使用命令移除集合中的元素时
+```
+
 ## Redis 中的散列
+
+Redis 的散列可以**存储多个键值对之间的映射**。和字符串一样,散列存储的值既可以是字符串又可以是数字值,并且用户同样可以对散列存储的数字值执行自增操作或者自减操作。散列在很多方面就像是一个微缩版的 Redis,不少字符串命令都有相应的散列版本。下面对散列执行插入元素、获取元素和移除元素等操作
+
+![](http://ww1.sinaimg.cn/mw690/006rAlqhly1g3adj36n3aj30wx062act.jpg)
+
+```
+
+```
+
 ## Redis 中的有序集合

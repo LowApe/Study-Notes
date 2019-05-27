@@ -85,12 +85,33 @@ srem set-key item2     //在使用命令移除集合中的元素时
 
 ## Redis 中的散列
 
-Redis 的散列可以**存储多个键值对之间的映射**。和字符串一样,散列存储的值既可以是字符串又可以是数字值,并且用户同样可以对散列存储的数字值执行自增操作或者自减操作。散列在很多方面就像是一个微缩版的 Redis,不少字符串命令都有相应的散列版本。下面对散列执行插入元素、获取元素和移除元素等操作
+Redis 的散列可以**存储多个键值对之间的映射**。和字符串一样,散列存储的值既可以是**字符串**又可以是**数字值**,并且用户同样可以对散列存储的数字值执行**自增操作或者自减操作**。散列在很多方面就像是一个微缩版的 Redis,不少字符串命令都有相应的散列版本。下面对散列执行插入元素、获取元素和移除元素等操作
 
 ![](http://ww1.sinaimg.cn/mw690/006rAlqhly1g3adj36n3aj30wx062act.jpg)
 
 ```
+<!-- 散列命令 -->
+hset hash-key sub-key1 value1 // 存储散列表 hash-key ,键值对为 sub-key1 value1
+hset hash-key sub-key2 value2
+hset hash-key sub-key1 value1 //无法插入因为已经存在
+hgetall hash-key   // 获取散列包含的所有键值对时,python 客户端会把整个散列表转换成一个 Python 字典
+
+hdel hash-key sub-key1      // 删除整个键值对
 
 ```
 
 ## Redis 中的有序集合
+有序序列和散列一样,都用于存储键值对;有序集合的键被称为成员(member),每个成员都是各不相同；而有序集合的值则被称为分值(score),**分值必须为浮点数**有序集合是 Redis 里面唯一一个既可以根据成员访问元素,又可以根据分值以及分值的排列顺序访问元素结构
+
+![](http://ww1.sinaimg.cn/large/006rAlqhly1g3g82w37uwj30g4031js5.jpg)
+
+```
+<!-- 有序集合命令 -->
+zadd zset-key 728 member1
+zadd zset-key 982 member0 //尝试向有序序列添加元素
+zrange zset-key  0 -1 withscores // 获取有序集合包含的所有元素,多个元素按照分值大小进行排序,并且 python 客户端会将元素的分值转换成浮点数
+zrangebyscore zset-key 0 800 withscores //用户根据分值范围获取一部分元素
+zrem zset-key member1 //移除有序集合
+```
+
+# 你好 Redis

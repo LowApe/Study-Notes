@@ -36,3 +36,60 @@
 
 > 动态绑定：指在运行期间判断所**引用对象的实际类型**，根据其实际类型调用相应的**方法** <br/>
 多态三个必要条件：继承、重写、**父类引用指向子类对象**
+
+## 装箱和拆箱
+
+存在于基本数据类型与包装类型
+- 装箱：将基本数据类型转为对应的包装类型
+    - 自动装箱：在编译时会调用Integer.valueOf(1)
+- 拆箱：将包装类型转化为对应的基本数据类型
+    - 自动拆箱：在编译时会调用i.intvalue()
+
+```java
+//自动装箱和拆箱
+Integer i = 5;
+int j = i;
+//手动装箱和拆箱
+Integer i = Integer.valueOf(5);
+int j = i.intValue();
+```
+
+Q：有了基本数据类型，为什么还需要包装类型？<br>
+A：Java是一个面向对象的语言，而基本的数据类型，不具备面向对象的特性
+
+## == 与 equals 的区别
+
+- ==：判断两个变量之间的**值**是否相等，变量分为
+    - 基本数据类型变量，直接比较**值**
+    - 引用类型，比较对应的引用内存的**首地址**
+- equals：用来比较两个对象的某个特性是否一样，实际上就是调用对象的 equals 方法。不同对象 equals 方法可以复写
+
+```java
+//Object equals()方法
+public boolean equals(Object obj) {
+    return (this == obj);
+}
+```
+
+## String
+
+Q：String 和 StringBuilder 的区别(final)?<br>
+A：
+- String 是内容不可变的字符串。String底层是不可变的**字符数组**(final 修饰的 char[])
+- StringBuilder StringBuffer(线程安全)是内容可变的字符串。底层是可变的字符数组
+
+> Java 中提供三个类String StringBuilder StringBuffer 来表示和操作字符串，字符串就是多个字符的集合
+
+> final 修饰的类不能被继承，修饰的变量不能被修改
+
+**最经典的拼接字符串**
+- String 进行拼接 String c="a"+"b"(初始化c，c只能赋值一次)
+- StringBuilder 或者 StringBuffer    
+    - StringBuilder sb = new StringBuilder();
+    - sb.append("a").append("b")
+
+> String 拼接需要创建好几个对象，StringBuilder 或 StringBuffer 很容易拼接字符串，效率高，可以根据大小增加容量
+
+> StringBuffer是线程安全的，但是效率较低，StringBuilder是线程不安全的，效率较高
+
+## Java的集合

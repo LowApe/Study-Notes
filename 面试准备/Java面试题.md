@@ -93,3 +93,61 @@ A：
 > StringBuffer是线程安全的，但是效率较低，StringBuilder是线程不安全的，效率较高
 
 ## Java的集合
+Java 集合
+- 存值
+    - List
+    - Set
+- 存 key-value
+    - Map
+
+### List 和 Set 的区别？
+- List 是有序的，可以重复的
+- Set 是无序的，不可以重复的。
+    - 根据equals 和 hashcode 判断
+    - 如果一个对象存储在 Set 中，必须重写 equals 和 hashcode 的方法
+
+### ArrayList 和 LinkedList 的区别？
+- ArrayList 底层使用数组
+- ListedList 底层使用链表
+
+> 也就是比较两种数据结构的差距<br>
+ArrayList 使用查询比较多，但是插入和删除比较少的情况。<br>LinkedList 使用查询比较少，而插入和删除比较多的情况
+
+|  | 数组     | 链表|
+| :------------- | :------------- |:------------- |
+| 读取       | O(1)       | O(n)|
+| 插入       | O(n)       | O(1)|
+| 删除       | O(n)       | O(1)|
+
+### HashMap 和 HashTable 的区别？
+- 两个都可以存储 key-value
+- HashMap 可以吧 null 作为key或者value，而HashTable 是不可以的
+- HashMap 是线程不安全的，效率较高，而HashTable 是线程安全的，效率较高
+
+### HashTable 和 ConcurentHashMap(线程安全又效率高) 的区别？
+
+ConcurrentHashMap：通过把整个 Map 分为 N 个 Segnent(段，类似于HashTable)，可以提供相同的线程安全，但是效率提升 N 倍，默认提升 16 倍
+
+## 实现一个拷贝文件的工具类使用字节流还是字符流？
+我们拷贝的文件不确定是只包含字符流，有可能有字节流(图片、声音、图像等),为了考虑到通用性，要使用字节流
+
+## 线程的几种实现方式？
+- 通过继承 Thread 类实现一个继承
+- 通过实现 Runnable 接口实现一个线程
+
+> 继承扩展性不强，Java总只支持单继承，如果一个类继承 Thread 类，就不能继承其他的类了。
+
+启动：<br>
+```java
+Thread thread = new Thread(继承了 Thread 的对象/实现了 Runnable 的对象);
+thread.start();
+// 启动线程使用 start 方法，而启动了以后执行的是 run 方法
+```
+区分线程：<br>
+在一个系统中有很多线程，每个线程都会打印日志，我们想区分是哪个线程.thread.setName("线程名");
+> ⚠️注意：这是一种规范，在创建线程完成后，都需要设置名称
+
+## 有没有使用过线程并发库？
+简单了解过<br>
+JDK5 中增加了 DougLea 的并发库，这一引进给Java线程的管理和使用提供了强大的便利性。<br>
+`java.util.current` 包中提供了对线程优化、管理的各项操作，使线程的使用变得得心应手。该包提供了线程的运行，线程池的创建，线程生命周期的控制。

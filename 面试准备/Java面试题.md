@@ -1,4 +1,4 @@
-# Java 面试题
+# Java 基础部分
 
 ## 简单讲一下 Java 的跨平台原理
 - 不同操作系统及其CPU所使用的指令集不同
@@ -151,3 +151,104 @@ thread.start();
 简单了解过<br>
 JDK5 中增加了 DougLea 的并发库，这一引进给Java线程的管理和使用提供了强大的便利性。<br>
 `java.util.current` 包中提供了对线程优化、管理的各项操作，使线程的使用变得得心应手。该包提供了线程的运行，线程池的创建，线程生命周期的控制。
+
+## Java 通过 `java.util.concurrent.Executors` 提供了四种静态方法创建四种线程池：
+- newCachedThreadPool 创建一个**可缓冲的**线程池，如果线程池长度超过处理需要，可灵活回收空闲线程，若无可回收，则新建线程
+
+- newFixedPool 创建一个长线程池，可控制线程最大并发数，超出的线程会在队列中等待
+
+- new ScheduledThreadPool 创建一个定长线程池，支持定时及周期性任务执行
+
+- newSingleThreadExecutor 创建一个单线程化的线程池，它只会用唯一的工作线程来执行任务，保证所以任务按照指定顺序(FIFO,LIFO,优先级)执行
+
+## 线程池的作用
+1. 限定线程的个数，不会导致由于线程过多导致系统运行缓慢、崩溃
+2. 线程池不需要每次都去创建或销毁，节约了资源
+3. 线程池不需要每次都去创建，响应时间更快
+
+## 什么是设计模式？常用的设计模式有哪些？
+设计模式就是经过**无数前人的实践总结出得**，设计过程中可以**反复使用的**、可以解决特定问题的**设计方法**
+
+- 单例模式(饿汉式、懒汉式)
+    1. 构造方法私有化
+    2. 创建私有静态对象实例
+    3. 提供公有静态方法获取开放接口
+- 工厂模式:Spring IOC 就是使用了工厂模式
+- 代理模式:Spring AOP 使用动态代理
+- 装饰者模式:Java IO
+
+# Java Web
+
+## http 中 get 和 post 请求的区别?
+- Get 和 Post 请求都是 http 的请求方式，用户通过不同的 http 的请求方式完成对资源(url)操作。
+- GET、POST、PUT、DELETE 对应着对这个资源的查、改、增、删4个操作。
+- Get用于获取/查询资源，而Post用于更新资源
+- Get 请求提交的资源会在**地址栏显示**出来，而 post请求不会在地址栏显示，二是在Http包的包体
+- Get 请求由于游览器对**地址长度的限制**而导致传输的数据有限制，而Post请求没有长度限制
+- 安全性，Post的**安全性**要比Get的安全性高
+
+## 说一下你对 servlet 的理解？servlet是什么？
+
+Servlet 是用Java编写的服务器端程序，而这些 Servlet 都要实现 Servlet 这个接口，主要功能在于交互式地**游览和修改**数据，生成动态 Web 内容。HttpServlet 重写 doGet 和 doPost 方法或者重写 service 方法完成对 get 和 post 请求的响应
+
+## 简单好一下 servlet 的生命周期
+- 加载和实例化 （构造方法 init）
+- 处理请求以及服务结束 （service、destory方法）
+
+> 请求到达 service 方法，service 方法自动派遣运行与请求对应的 doXXX方法(doGet、doPost)，当服务器决定将实例化销毁的时候(服务器关闭)调用其 destory 方法
+
+加载Servlet的class<br>
+->实例化Servlet<br>
+->调用Servlet的init()完成初始化<br>
+->响应请求(service方法)->Servlet容器关闭调用 destory 方法
+
+## Servlet 中 forward() 与 redirect()的区别?
+- forward 是**容器(服务端)中控制**的转向，在客户端游览器地址中不会显示出转向的地址，并重新发送**原来的请求**，在服务端的效率比较高效，因为不用重新发请求
+- redirect 是完全的跳转，游览器会显示跳转的地址，并**重新发送新的请求**
+- 有些情况下，需要跳转到其他服务器上的资源，则必须使用 **sendRedirect()方法**
+
+1. forward 是服务器端的转向而 redirect 是客户端的跳转
+2. forward 游览器地址不会发生改变，而 redirect 会发生变化
+3. forward 是一次请求中完成，而redirect 是重新
+
+## JSP 内置对象？作用分别是什么？分别有什么方法？
+9大内置对象：
+- request 用户端请求
+- response 网页传回用户端的回应
+- pageContext 网页属性管理
+- session 与请求有关的会话
+- application servlet正在执行的内容
+- out 用来传送回应的输出
+- config
+- page JSP页面本身
+- exception 针对错误网页，未捕捉的例外
+
+四大作用域:
+- request
+- pageContext
+- session
+- application
+
+> 通过 jstl 从四大作用域中取值
+
+## session 和 cookie 的区别？你在项目中都有那些地方使用了？
+- session 和 cookie 都是会话跟踪技术。
+- Cookie 通过在**客户端**记录信息确定用户身份
+- Session 通过在**服务器端**记录信息确定用户身份
+- 但是 Seesion 的实现依赖于 Cookie，sessionId(session 的唯一标识存放在客户端)
+
+1. cookie 数据存放在客户的游览器，session 数据放在服务器上
+2. cookie 不是很安全，容易被Cookie 欺骗，考虑到安全应当使用 session
+3. session 会在一定时间内保存在服务器上，当访问过多，会比较**占用服务器资源**，考虑服务器性能，使用 Cookie
+4. 单个 cookie 保存的数据不能超过 4K，很多游览器都限制一个站点最多保存 20 个cookie
+5.
+- 将登陆信息等重要信息保存为 Session
+- 其他信息如果需要保留，可以放在Cookie(购物车)
+- cookie 是可以在客户端**禁用**的，这时候我们要使用 **cookie+数据库** 的方式实现，当从cookie 取不到，就从数据库
+
+## MVC 的各个部分都有那些技术来实现？
+M:javaBean<br>
+V:html jsp <br>
+C:controller servlet <br>
+
+经典的MVC ：JSP+Servlet+JavaBean

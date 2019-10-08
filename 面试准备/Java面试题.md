@@ -252,3 +252,108 @@ V:html jsp <br>
 C:controller servlet <br>
 
 经典的MVC ：JSP+Servlet+JavaBean
+
+
+# 数据库
+
+| 关系型数据库     | 非关系型数据库     |
+| :------------- | :------------- |
+| MySQL<br>SQLServer<br>Oracle <br>...      |Redis<br>mogodb<br>hadoop<br>...      |
+
+## 关系型数据库的三范式
+范式就是规范，就是关系型数据库设计表时，要遵循的三个范式
+
+| 范式     | 描述     |
+| :------------- | :------------- |
+| 第一范式       |   数据库表的每一列都是不可分割的基本数据项，同一列中不能有多个值，即实体中的某个属性不能有多个值或者不能有重复的属性(`列的不可分割性`)    |
+| 第二范式       |   数据库表中每个实例或行必须可以被唯一地区分的唯一标识(`主键`)      |
+| 第三范式       | 要求一个数据库表中不包含已在其他表中已包含的非主键字信息(`外建`)|
+
+
+> 要想满足第二范式必须满足第一范式，要满足第三范式必须先满足第二范式
+
+反三范式，有时候为了效率，可以设置重复的或者可以推导出的字段。如：订单(总价)和订单项(单价)，如果订单项很多，再去计算总价效率是不高的。
+
+## 事务的四大特征ACID
+事务是并发控制的单位，是用户定义的一个操作序列。这些操作要么都做，要么都不做，是一个不可分割的工作单位
+
+| 特征 | 描述    |
+| :------------- | :------------- |
+|    原子性    |   表示事务内操作不可分割，要么都成功，要么都失败     |
+|    一致性    |    事务操作后，数据不会破坏  |
+|    持久性    |    事务中的所有数据操作必须被持久化到数据库中   |
+|    隔离性    |    不同的隔离级别对应不同的干扰程度    |
+
+## mysql 数据库的默认的最大连接数
+一个数据库，特定服务器上的数据库只能支持一定数量**同时连接**，这时候需要设置最大连接数(最多同时服务多少连接），在数据库安装时都会有一个默认的最大连接数。
+
+```mysql
+show variables like 'max_connections';
++-----------------+-------+
+| Variable_name   | Value |
++-----------------+-------+
+| max_connections | 151   |
++-----------------+-------+
+
+# 设置最大连接数
+set global max_connections=xxx
+```
+
+## mysql和oracle的分页语句
+因为不可能完全显示数据，所以需要分页显示
+
+| MySQL     | Oracle     |
+| :------------- | :------------- |
+| Mysql 是使用关键字 limit 来进行分页的 limit offset,size 表示从此索引开始，到多少大小       | Oracle 分页要使用三层嵌套查询，记不清楚  |
+| String sql = "select * from students order by id limit "+ pageSize*(pageNumber-1)+","+pageSize； | String sql = "select * from"+(select *,rownum rid from(select * from students order by positive desc)where rid<="+pageSize*pagenumber+")as t" +"where t>"+pageSize* *(pageNumber-1); |
+
+
+
+## 数据库的触发器的使用场景
+
+需要有触法条件，当条件满足以后做什么操作。比如校园网、facebook你发一个日志，自动通知好友，其实就是在**增加日志时做一个触发**，用触发效率就很高。
+
+
+
+```mysql
+create table board1(id int primary key auto_increment,name varchar[50],articleCount int);
+
+create table article1(id int primary key auto_increment,title varchar[50],bid int references board1(id));
+
+delimiter | #把分割符，改成|
+create tigger insertArticle_Trigger after insert on aricle1 for each row begin 
+-> update board1 set articleCount=articleCount+1 where id=NEW.bid;
+-> end;
+-> |
+
+delimiter;
+
+insert into article1 value(null,'test',0);
+
+insert into article1 value(null,'test',1);
+```
+
+> 设置了触发器，当插入语句，触发某字段+1
+
+## 数据库的存储过程的使用场景
+
+数据库存储过程具有的优点：
+
+1. 存储过程只在创建时进行编译，以后每次执行存储过程都不需要重新编译，而一般SQL语句每执行一次就编译一次，因此使用存储过程可以大大提高数据库执行速度。
+2. 复杂的业务逻辑需要更多条 SQL 语句。这些语句从客户机发送到服务器，当客户机和服务器之间的操作过多，将会产生大量网络传输，如果将这些操作放到存储过程中，网络传输就会大大减少，降低了网络负载。
+3. 存储过程创建一次便可以重复使用，从而减少数据库开发人员的工作量
+4. 安全性高，存储过程可以**屏蔽底层数据库对象**的直接访问，使用Execute 权限调用存储过程，无需拥有访问底层数据库对象的显式权限 
+
+定义存储过程
+
+```mysql
+create procedure insert_Student(_name varchar(50),_age int,out_id int)
+begin
+	insert into student value(null,_name,_age);
+	select max(stuId) into _id from student;
+end;
+
+call insert_Student('wfs',23,@id);
+select @id;
+```
+

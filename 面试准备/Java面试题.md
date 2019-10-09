@@ -150,16 +150,16 @@ thread.start();
 ## 有没有使用过线程并发库？
 简单了解过<br>
 JDK5 中增加了 DougLea 的并发库，这一引进给Java线程的管理和使用提供了强大的便利性。<br>
-`java.util.current` 包中提供了对线程优化、管理的各项操作，使线程的使用变得得心应手。该包提供了线程的运行，线程池的创建，线程生命周期的控制。
+`java.util.concurrent` 包中提供了对线程优化、管理的各项操作，使线程的使用变得得心应手。该包提供了线程的运行，线程池的创建，线程生命周期的控制。
 
 ## Java 通过 `java.util.concurrent.Executors` 提供了四种静态方法创建四种线程池：
 - newCachedThreadPool 创建一个**可缓冲的**线程池，如果线程池长度超过处理需要，可灵活回收空闲线程，若无可回收，则新建线程
 
-- newFixedPool 创建一个长线程池，可控制线程最大并发数，超出的线程会在队列中等待
+- newFixedPool 创建一个长线程池，可**控制线程最大并发数**，超出的线程会在队列中等待
 
-- new ScheduledThreadPool 创建一个定长线程池，支持定时及周期性任务执行
+- new ScheduledThreadPool 创建一个定长线程池，支持**定时及周期性**任务执行
 
-- newSingleThreadExecutor 创建一个单线程化的线程池，它只会用唯一的工作线程来执行任务，保证所以任务按照指定顺序(FIFO,LIFO,优先级)执行
+- newSingleThreadExecutor 创建一个**单线程化**的线程池，它只会用唯一的工作线程来执行任务，保证所以任务按照指定顺序(FIFO,LIFO,优先级)执行
 
 ## 线程池的作用
 1. 限定线程的个数，不会导致由于线程过多导致系统运行缓慢、崩溃
@@ -191,7 +191,7 @@ JDK5 中增加了 DougLea 的并发库，这一引进给Java线程的管理和�
 
 Servlet 是用Java编写的服务器端程序，而这些 Servlet 都要实现 Servlet 这个接口，主要功能在于交互式地**游览和修改**数据，生成动态 Web 内容。HttpServlet 重写 doGet 和 doPost 方法或者重写 service 方法完成对 get 和 post 请求的响应
 
-## 简单好一下 servlet 的生命周期
+## 简单说一下 servlet 的生命周期
 - 加载和实例化 （构造方法 init）
 - 处理请求以及服务结束 （service、destory方法）
 
@@ -209,7 +209,7 @@ Servlet 是用Java编写的服务器端程序，而这些 Servlet 都要实现 S
 
 1. forward 是服务器端的转向而 redirect 是客户端的跳转
 2. forward 游览器地址不会发生改变，而 redirect 会发生变化
-3. forward 是一次请求中完成，而redirect 是重新
+3. forward 是一次请求中完成，而redirect 是重新请求
 
 ## JSP 内置对象？作用分别是什么？分别有什么方法？
 9大内置对象：
@@ -244,7 +244,7 @@ Servlet 是用Java编写的服务器端程序，而这些 Servlet 都要实现 S
 5.
 - 将登陆信息等重要信息保存为 Session
 - 其他信息如果需要保留，可以放在Cookie(购物车)
-- cookie 是可以在客户端**禁用**的，这时候我们要使用 **cookie+数据库** 的方式实现，当从cookie 取不到，就从数据库
+- cookie 是可以在客户端**禁用**的，这时候我们要使用 **cookie+数据库** 的方式存储，当从cookie 取不到，就从数据库
 
 ## MVC 的各个部分都有那些技术来实现？
 M:javaBean<br>

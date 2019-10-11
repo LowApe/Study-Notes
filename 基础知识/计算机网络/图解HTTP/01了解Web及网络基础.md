@@ -51,7 +51,7 @@ TCP/IP 层次化的好处。比如，如果互联网只由一个协议族某个�
 
 ### TCP/IP通信传输流
 
-![image.png](http://ww1.sinaimg.cn/large/006rAlqhly1g7qksb1y0lj30z60r0jvw.jpg)
+<img src="http://ww1.sinaimg.cn/large/006rAlqhly1g7qksb1y0lj30z60r0jvw.jpg" alt="image.png" style="zoom:50%;" />
 
 - 首先作为发送端的客户端在应用层(HTTP协议)发出一个想看某个Web页面的HTTP请求
 
@@ -61,7 +61,7 @@ TCP/IP 层次化的好处。比如，如果互联网只由一个协议族某个�
 
 接收端的服务器在链路层接受到数据，按序往上层发送，一直到应用层。当传输到应用层，才能算真正接收到由客户端发送过来的HTTP请求
 
-![image.png](http://ww1.sinaimg.cn/large/006rAlqhly1g7qlq00c9pj30xa0qw7e3.jpg)
+<img src="http://ww1.sinaimg.cn/large/006rAlqhly1g7qlq00c9pj30xa0qw7e3.jpg" alt="image.png" style="zoom:50%;" />
 
 > 这种把数据信息包装起来的做法称为封装
 
@@ -82,7 +82,7 @@ IP协议的作用是把各种**数据包传送给对方**。而要**保证确实
 
 IP间的通信依赖于MAC地址。在网络上，通信的双方在同一局域网（LAN）内的情况很少，通常是经过多台计算机和网络设备中转才能连接到对方。而在进行中转时，会利用**下一站中转设备的MAC地址**来搜索下一个中转目标。这时会采用**ARP(Address Resolution Protocol)协议**。ARP 是一种用以解析地址的协议，根据通信方的IP地址就可以**反查对应的MAC地址**
 
-![image.png](http://ww1.sinaimg.cn/large/006rAlqhly1g7ualrfehzj30ro0ngqhh.jpg)
+<img src="http://ww1.sinaimg.cn/large/006rAlqhly1g7ualrfehzj30ro0ngqhh.jpg" alt="image.png" style="zoom:50%;" />
 
 ### 确保可靠性的TCP协议
 

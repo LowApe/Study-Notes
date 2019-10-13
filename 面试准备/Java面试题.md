@@ -357,3 +357,146 @@ call insert_Student('wfs',23,@id);
 select @id;
 ```
 
+## JDBC调用存储过程
+
+- 加载驱动
+- 获取连接
+- 设置参数
+- 执行
+- 释放连接
+
+## 常用SQL语句
+
+## JDBC的理解
+
+Java Database Connection 数据库连接，数据库管理系统(mysql、Oracle)是很多，每个数据库管理系统的底层操作不一样的。
+
+- 对于普通开发人员不知道 mysql 或 oracle 等数据库厂商的私有语言
+- 就算知道，没用使用所有的数据库，需要定制很多代码
+
+所以现在提供一个**接口(JDBC驱动)**，让数据库厂商自己实现接口，对于开发者而言，只需要导入对应厂商开发的实现，然后以接口方法进行调用。
+
+## 写一个简单的JDBC的程序
+
+```java
+//STEP 1. Import required packages
+import java.sql.*;
+
+public class FirstExample {
+    // JDBC driver name and database URL
+    static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
+    static final String DB_URL = "jdbc:mysql://localhost/emp";
+
+    //  Database credentials
+    static final String USER = "root";
+    static final String PASS = "123456";
+
+    public static void main(String[] args) {
+        Connection conn = null;
+        Statement stmt = null;
+        try{
+            //STEP 2: Register JDBC driver
+            Class.forName(JDBC_DRIVER);
+
+            //STEP 3: Open a connection
+            System.out.println("Connecting to database...");
+            conn = DriverManager.getConnection(DB_URL,USER,PASS);
+
+            //STEP 4: Execute a query
+            System.out.println("Creating statement...");
+            stmt = conn.createStatement();
+            String sql;
+            sql = "SELECT id, first, last, age FROM Employees";
+            ResultSet rs = stmt.executeQuery(sql);
+
+            //STEP 5: Extract data from result set
+            while(rs.next()){
+                //Retrieve by column name
+                int id  = rs.getInt("id");
+                int age = rs.getInt("age");
+                String first = rs.getString("first");
+                String last = rs.getString("last");
+
+                //Display values
+                System.out.print("ID: " + id);
+                System.out.print(", Age: " + age);
+                System.out.print(", First: " + first);
+                System.out.println(", Last: " + last);
+            }
+            //STEP 6: Clean-up environment
+            rs.close();
+            stmt.close();
+            conn.close();
+        }catch(SQLException se){
+            //Handle errors for JDBC
+            se.printStackTrace();
+        }catch(Exception e){
+            //Handle errors for Class.forName
+            e.printStackTrace();
+        }finally{
+            //finally block used to close resources
+            try{
+                if(stmt!=null)
+                    stmt.close();
+            }catch(SQLException se2){
+            }// nothing we can do
+            try{
+                if(conn!=null)
+                    conn.close();
+            }catch(SQLException se){
+                se.printStackTrace();
+            }//end finally try
+        }//end try
+        System.out.println("There are so thing wrong!");
+    }//end main
+}//end FirstExample
+
+```
+
+- oracle 驱动`oracle.jdbc.driver.OracleDriver`
+- 创建连接`DriverManager.getConnection(Driver,user,pass)`
+- 设置参数`statement.setXXX(sql,value)`
+- 执行`.executeXXX()`
+- 释放连接 `.close()`
+
+## JDBC中的PreparedStatement 相比 Statement的好处
+
+- PreparedStatement 是预编译的，比Statement快
+- 代码的可读性和可维护性
+- 安全性(PreparedStatement 可以防止SQL注入攻击，而Statement却不能)
+
+## 数据库连接池的作用
+
+1. 限定数据库连接的个数，不会导致由于数据库连接过多导致数据库运行缓慢、崩溃
+2. 数据库连接池不需要每次都去创建或销毁，节约了资源
+3. 数据库连接池池不需要每次都去创建，响应时间更快
+
+# 前端部分
+
+## 简单说一下html、css、javascript 在网页开发定位
+
+- html 定义网页结构
+- css 层叠样式表 美化页面
+- javascript 动态交互(ajax)
+
+## 简单介绍Ajax
+
+|      | AJAX [[/ˈeˌdʒæks/](cmd://Speak/_us_/AJAX)]                   |
+| ---- | ------------------------------------------------------------ |
+| 定义 | 异步的js和 xml                                               |
+| 作用 | 通过AJAX与服务器进行数据交换，AJAX可以网页实现局部更新，这意味着不需要刷新页面，对页面某部分进行更新 |
+| 实现 | 使用 XmlHttpRequest 对象，使用这个对象可以异步向服务器发送请求，获取响应，完成局部更新。 |
+| 场景 | 登陆失败时不跳转页面<br />注册时提示用户是否存在<br />二级联动等待场景 |
+
+## JS与JQuery的关系
+
+- JQuery 是一个js框架，封装了**js的属性和方法**，并且增强了js的功能，让用户使用起来更加便利
+- js是要处理很多兼容性的问题，由JQuery分装了底层,就不用处理兼容性问题
+- 原生的js的dom、事件绑定和Ajax等操作非常繁琐，JQuery分装以后操作非常方便
+
+```js
+document.getElementById('idName') 
+
+$('#idName')
+```
+

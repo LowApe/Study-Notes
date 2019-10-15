@@ -56,7 +56,7 @@ HTTP协议使用URI定位互联网上的资源。正是因为URI的特定功能�
 
 trace：
 
-![image-20191011175457269](/Users/mac/Library/Application Support/typora-user-images/image-20191011175457269.png)
+![image.png](http://ww1.sinaimg.cn/large/006rAlqhly1g7ynfvocltj30ps09owmq.jpg)
 
 connect
 

@@ -500,3 +500,163 @@ document.getElementById('idName')
 $('#idName')
 ```
 
+## JQuery 的常用选择器？
+
+- Id选择器 通过 Id 获取一个元素
+- Class 选择器 通过的类获取元素
+- 标签选择器 通过标签获取元素
+- 通用选择器 * 获取所有元素
+- 组合选择器
+    - 儿子选择器 > 获取下面的子元素
+    - 后代选择器 空格 获取下面后代，包括儿子、孙子等后代
+- 属性选择器 Tag[attrName=“test”]
+
+## JQuery 的页面加载完毕事件？
+
+很多时候，获取元素，必须等到该元素加载完成后才能获取，我们可以把 js 代码放到该元素的后面，但是这样就会造成 js 在我们的 body 中存在不好管理，一般**获取元素做操作**等所有页面加载完毕后所有的元素
+
+```js
+// 第一种 ready(fn) 表示的是页面结构被加载完毕后执行传入函数 fn
+$(document).ready(function(){
+  
+}); 
+
+// 第二种  当页面加载完毕后执行里面的函数
+$(function[]{
+  
+  });
+```
+
+window.onload 的区别
+
+1. jQuery 中的页面加载完毕事件，表示的是页面结构被加载完毕
+2. Window.onload 表示的是页面被记载完毕。必须等到页面中的图片、声音、图像等远程资源被加载完毕后才调用，而 jQuery 只需要页面结构被加载完毕。
+
+## JQuery 的 AJax 和原生 JS 实现 Ajax 有什么关系 ?
+
+>  JQuery 中的 Ajax 也是通过原生的 js 封装的。封装完成后让我们使用起来更加便利，不用考虑底层实现或兼容性等处理
+
+如果采用原生 js 实现Ajax 是非常麻烦的，并且每次都是一样的。如果不使用 JQuery 我们也要封装对象的方法和属性
+
+## 简单说一下 Html5?
+
+增加了一些画图、视频、web 存储等高级功能，但是 html5 有一个不好的地方，html5 强调语义。例如 header footer 等语义标签
+
+## 简单说一下 CSS3？
+
+对原来 css 功能增强，增强了动画
+
+- 阴影
+- 渐变
+- 转换、移动、缩放、旋转等
+- 动画
+- 可以使用媒体查询来实现响应式
+
+Css3 最大缺点是根据不同的游览器处理兼容性。
+
+##  Bootsrap 是什么？
+
+> bootstrap 是一个移动设备优先的 **UI 框架**，不需要写 css 和 js 因为这些已经封装，我们使用bootstrap 就能实现比较漂亮的交互性的页面，提高编写效率
+
+- 表单
+- 布局-栅格系统
+
+# 框架部分
+
+## 什么是框架?
+
+> 解决一个**开放性问题**，而设计的具有一定的约束性的支撑结构，在此结构上可以根据具体问题扩展、安插更多组成部分，从而**更迅速和方便地构建**完整的**解决**问题的**方案**
+
+## 简单介绍 MVC 模式
+
+Model View Controller,最简单的，最经典就是 jsp + Servlet + JavaBean
+
+- 控制器接受游览器请求
+- 控制器调用 JavaBean 处理业务
+- 完成业务通过 jsp 显示
+
+## MVC框架
+
+为了解决传统 MVC 模式(jsp+Servlet+JavaBean)而出现的框架
+
+传统 MVC 模式问题
+
+- 所有的 Servlet 和 Servlet 映射都要配置在 web.xml，如果项目太大，web.xml 就太庞大，并且不能实现模块化
+- Servlet 的主要功能就是接受参数、调用逻辑、跳转页面，比如其他文件上床、字符编码等功能也要写在 Servlet 中，不能让 Servlet 功能单一
+- 接受参数比较麻烦。不能通过 Model 接受参数，只能单一接受完成后转换封装 Model
+- 跳转方式比较单一(forword、redirect)
+
+常见的 MVC 框架
+
+- Structs
+- Structs2
+- Spring MVC
+
+## Strcts2 的执行流程？
+
+![image.png](http://ww1.sinaimg.cn/large/006rAlqhly1g82dusg0l8j30z412yh5u.jpg)
+
+1. 游览器发送请求，经过一些列的**过滤器(Filter)**,到达核心过滤器FilterDispatcher(StrcutsPrepareAndExecuteFilter) 
+
+2. 询问 **ActionMapper** 来决定这个请求是否调用某个 Action，如果需要，就会把请求的处理交给 **ActionProxy**
+
+3. ActionProxy 通过 **Configuration Manager** 询问框架的**配置文件(struts.xml)** ，找到需要调用的 Action 类
+
+4. ActionProxy 创建一个 **ActionInvocation 实例**，Action 执行完毕，找到对应的**结果集**,在调用 Action 的过程前后，涉及到相关**拦截器**
+5. 通过结果集的 Name 知道对应的结果集来对游览器进行**响应**
+
+## Struts2 中的拦截器，你都用它干什么？
+
+Struts2 的功能都是通过拦截器执行的。通过动态配置方式，可以在执行 **Action 的方法前后**，通过系统拦截器实现，执行相关逻辑，**加入相关逻辑**完成业务。使用场景：
+
+1. 用户登陆判断，在执行 Action 的前面判断是否已经登陆，如果没有登录就跳转登录页面
+2. 用户权限判断
+3. 操作日志
+
+## SpringMVC的执行流程？
+
+![image.png](http://ww1.sinaimg.cn/large/006rAlqhly1g82e6q9nq5j30xk0jo7nf.jpg)
+
+
+
+1. 用户向服务器发送请求，请求被 **DispatcherServlet 捕获**
+2. DispatcherServlet 对请求 URL 进行解析，得到请求资源标识符 URI ，调用 **HandlerMapping** 获得该 Handler 配置的所有请求的相关
+3. DispatcherServlet 根据获得的**Handler** ，选择一个合适的 HandlerAdapter，提取 Request 中的模型数据，**填充 Handler 入参**，开始执行 Handler(Controller),Handler 执行完成后，向 DispatcherServlet **返回一个 ModelAndView 对象**
+4. 接收到 ModelAndView ，选择一个合适的 **ViewResolver**
+5. 通过 ViewResolver 与 ModelAndView 结合，**来渲染视图**，DispatcherServlet 将渲染结果返回给客户端
+
+核心控制器捕获请求、查找 Handler、执行 Handler 、返回 ModelAndVIew ，选择ViewResolver、结合渲染、返回
+
+
+
+## SpringMVC 和 Struts2 的不同
+
+1. 核心控制器不同
+    - Servlet
+    - Filter
+2. 控制器
+    - 基于方法设计
+    - 基于对象
+3. 管理方式
+4. 参数传递
+    - 方法的参数
+    - ValueStack
+5. 学习难度
+6. interceptre 的机制
+    - AOP方式
+    - 拦截器
+7. AJAX 请求
+    - 直接返回数据，自动帮我们转换为 JSON 数据
+    - 通过插件
+
+## Spring 中的两大核心
+
+Spring 是什么？
+
+​	Spring 是 J2EE 应用程序框架，是轻量级的 IoC和 AOP 的**容器框架**，主要针对 javaBean 的生命周期进行管理的轻量级容器
+
+|      | IOC(Inversion of Control)或DI(Dependency Injection)          | AOP(Aspect Object Programm)                                  |
+| ---- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| 定义 | IOC 控制反转，<br />核心原理：就是配置文件+反射(或工厂)+容器 | AOP面向切面编程<br />核心原理：使用动态代理的方式在执行前后或出现异常后执行相关逻辑 |
+| 例子 | 原来：Service 需要调用DAO，Service 就创建 DAO，控制权在 Service<br />现在：Spring 发现你 Service 依赖于 dao(需要dao)，就给你注入(控制权在IOC容器)<br /> | 事务处理<br />权限判断<br />日志<br />...                    |
+

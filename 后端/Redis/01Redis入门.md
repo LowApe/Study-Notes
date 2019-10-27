@@ -145,7 +145,7 @@ zrem zset-key member1 //移除有序集合
 
 ![image.png](http://ww1.sinaimg.cn/mw690/006rAlqhly1g8bqveb1gmj30qu0h0jz7.jpg)
 
-```sh
+```python
 //准备好常量
 ONE_WEEK_IN_SECORES = 7* 86400
 VOTE_SCORE= 432
@@ -171,8 +171,93 @@ def article_vote(){
 
 发布一篇文章首先创建新的**文章 ID** ，这些工作可以通过对一个计数器(counter)执行 INCR 命令来完成。接着程序需要使用 SADD 将文章**发布者的 ID **添加到记录文章已投票用户集合，并使用 EXPIRE 命令为这个集合设置一个**过期时间** ，让 Redis 在文章发布期满一周之后自动删除这个集合，之后，程序会使用 HMSET 命令来存储文章相关信息，并执行两个 ZADD 命令，将文章的**初始评分(initial)**和**发布时间**分别添加两个相应的**有序集合**里面
 
-![image.png](http://ww1.sinaimg.cn/large/006rAlqhly1g8bxwg4shpj30sq0dggtf.jpg)
+```python
+def post_article(conn,user,title,link):
+	//生成一个新的文章 ID
+	article_id = str(conn.incr('article:'))
+    
+    voted = 'voted:' + article_Id;
+	//文章用户添加到已投票集合 key AID value user
+	conn.sadd(voted,user);
+	conn.expire(voted,ONE_WEEK_IN_SECONDS)
+        
+    now = time.time()
+    article = 'article:' + article_id
+    //	将文章信息存放到散列
+    conn.hmset(article,{
+        'titile':title,
+        'link':link,
+        'poster':user,
+        'time':now,
+        'votes':1,
+    })
+    
+    //将文章添加到根据发布时间排序的有序集合和根据评分排序的有序集合里面
+    conn.zadd('score',article,now+VOTE_SCORE)
+    conn.zadd('time',article,now)
+   	return article_id;
+```
 
+下面考虑就是如何取出**评分最高**的文章以及如何取出**最新发布**的文章。为了实现这两个功能，使用 ZRERANGE 命令取出多个文章 ID，然后在对每个文章 ID 执行一次 HGETALL 命令取出文章的详细信息。因为有序集合会根据成员的分值从小到大地排列元素，所以使用 ZRERANGE 命令，从分值从大到小的排序顺序取出文章 ID 才是正确的做法
 
+```python
+ARTICLE_PER_PAGE = 25
+
+def get_articles(conn,page,order = 'score'):
+    start = (page-1) * ARTICLE_PER_PAGE
+    end = start + ARTICLE_PER_PAGE-1
+    //获取多个文章 ID
+    ids = conn.zrerange(order,start,end)
+    articles = []
+    for id in ids:
+        article_data = conn.hgetall(id)
+        article_data['id'] = id
+        articles.append(article_data)
+return articles
+```
+
+虽然限制可以展示最新发布的文章和评分最高的文章了，但它还不具备目前很多投票网站都支持的**群组功能**：这个功能可以让用户只看见与特定话题有关的文章、与“Java”有关的文章或者“学习编程“文章等等。
 
 ## 对文章进行分组
+
+群组功能由两个部分组成,一个部分负责记录文章属于哪个群组，另一部分负责取出里面的文章。为了记录各个群组保存了哪些文章。需要为每个群组创建一个集合,并将同属一个群组的文章 ID 都记录到集合里面
+
+```python
+def add_remove_groups(conn,article_id,to_add=[],to_remove=[]):
+    article = 'article' + article_id
+    for group in to_add:
+        conn.sadd('group:'+group,article)
+    for group in to_remove:
+        conn.sadd('group:'+group,article)
+```
+
+为了根据评分对群组文章进行**排序和分页**，网站需要将同一个群组里面的所有文章都按照评分有序地存储到一个有序集合里面。Redis 的 ZINTERSTORE 命令可以接受多个集合和多个有序集作为输入，找出所有同事存在于集合和有序集合的成员，并以几种不同的方式**合并**这些成员的分值。
+
+下图包含了少量文章的群组集合和一个包含大量文章及评分的有序集合执行 ZINTRESTORE 命令的过程，注意观察哪些同时出现在集合和有序集合里面的文章时怎么被添加到结果有序集合
+
+![image.png](http://ww1.sinaimg.cn/large/006rAlqhly1g8ciy1va6xj30te0c0qb8.jpg)
+
+通过对存储群组文章的集合和存储文章评分的有序集合执行 ZINTERSORE 命令时，程序可以得到按照文章评分排序的群组文章；如果群组文章非常多，那么执行 ZINTERSTORE 命令就会比较花时间，为了尽量减少 Redis 的工作量，程序会将这个命令的**计算结果缓存 60 秒**。另外，我们还重用了已有的 get_articles() 函数来**分页并获取群组文章**
+
+```python
+def get_group_articles(conn,group,page,order='score:'):
+    //为每个群组的每种排序顺都创建一个键
+    key = order + group	
+    //检查是否有已缓存的排序结果，没有就排序
+    if not conn.exists(key):
+        conn.zinterstore(key,
+                        ['group:'+group,order],
+                        aggregate='max',)
+        conn.expire(key,60)
+   //根据之前定义的 get_articles()函数进行分页并获取文章数据
+   return get_articles(conn,page,key)
+```
+
+> 我们构建的文章投票网站允许一篇文章同时属于多个群组(比如一篇文章可以同事属于“编程”和"算法"两个群组),所以对于一篇同时属于多个群组的文章来说，**更新文章的评分**意味着程序需要对文章所属的全部群组执行**自增操作**。这种情况，如果一篇文章同时属于很多群组，那么更新文章评分这一操作可能会变得相当耗时,因此，我们在 get_group_articles() 函数里面对 ZINTERSTORE 命令的**执行结果进行缓存处理**，以此来尽量减少 ZINTERSTORE 命令的执行次数。开发者在灵活性或限制条件之间的取舍将改变程序存储和更新数据的方式
+
+
+
+# 小结
+
+- Redis 与其他数据库相同之处和不同之处
+- Redis 是一个可以用来解决问题的工具，它既拥有其他数据库不具备的数据结构，又拥有**内存存储**(Redis 速度非常快)、**远程**(使得Redis 可以与多个客户端和服务器进行连接)、**持久化**(使得服务器可以在重启之后仍然保持重启之前的数据)等多个特性

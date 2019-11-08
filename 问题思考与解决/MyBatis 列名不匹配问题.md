@@ -7,7 +7,7 @@
 select 方法出现错误:
 
 ```xml
-sql id="allcolumn">
+	<sql id="allcolumn">
         a_name as "name",password
     </sql>
     <select id="queryAccount" parameterType="string" resultType="account">

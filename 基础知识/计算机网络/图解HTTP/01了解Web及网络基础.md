@@ -116,3 +116,5 @@ DNS（Domain NAme System）服务和HTTP协议一样位于**应用层**的协议
 | 解释 | Uniform：规定统一的格式可方便处理各种不同类型的资源，而不用根据上文环境(类似文件路径)来识别资源指定的访问方式**(http:或ftp:、mailto、telnet、file)**<br />Resource:除了文档文件、图像或服务能够区别于其他类型的，全都可作为资源<br />Identifier：表示可标识的对象。也称为标识符 | 相对URL，是指从游览器中基本URI处指定URL，如/image/log.gif<br />绝对URL，使用协议方案名+登陆信息(可选)+服务器地址+服务器端口号+带层次的文件路径+查询字符串+片段标识符 |
 | 实例 | ftp://ftp.is.co.za/rfc/rfc1808.txt<br /> http://www.ietf.org/rfc/rfc2396.txt<br />ldap://[2001:db8::7]/c=GB?objectClass?one<br /> mailto:John.Doe@example.com <br />news:comp.infosystems.www.servers.unix<br /> tel:+1-816-555-1212 <br />telnet://192.0.2.16:80/ urn:oasis:names:specification:docbook:dtd:xml:4.1.2<br/><br/> | http://user:pass@www.example.jp:80/dir/index.html?uid=1#ch1  |
 
+参看:[URL和URI的区别](https://blog.csdn.net/koflance/article/details/79635240)
+

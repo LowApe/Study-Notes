@@ -45,6 +45,19 @@
 | modules |                   | 包含所有 ES 模块                                          |
 | plugins |                   | 包含所有已安装插件                                        |
 
+> ⚠️注意：mac下brew安装的目录路径
+>
+> ```
+> elasticsearch:  /usr/local/Cellar/elasticsearch/x.x.0
+> (待定)Data:    /usr/local/var/elasticsearch/elasticsearch_xuchen/
+> Logs:    /usr/local/var/log/elasticsearch/elasticsearch_xuchen.log
+> Plugins: /usr/local/Cellar/elasticsearch/x.x.0/libexec/plugins/
+> Config:  /usr/local/Cellar/elasticsearch/x.x.0/libexec/config
+> plugin script: /usr/local/opt/elasticsearch/libexec/bin/elasticsearch-plugin
+> ```
+>
+> 
+
 ## JVM配置
 
 - 修改 JVM - config/jvm.options
@@ -56,8 +69,10 @@
 
 ## 安装与查看插件
 
+Mac 下的安装方式
+
 ```shell
-elasticsearch-7.0.1 bin/elasticsearch-plugin install analysisi-icu
+elasticsearch-7.0.1 bin/elasticsearch-plugin install analysis-icu
 ...
 elasticsearch-7.0.1 bin/elasticsearch-plugin list
 analysis-icu
@@ -75,8 +90,11 @@ analysis-icu
 
 ## 如何在开发机上运行多个 Elasticsearch 实例
 
-- bin/elasticsearch -E node.name=node1 -E cluster.name=geektime -E path.data=node1_data
-- bin/elasticsearch -E node.name=geektime -E path.data=node2_data
-- Bin/elasticsearch -E node.name=node3 -E cluster.name=geektime -E path.data=node3_data -d
+```shell
+bin/elasticsearch -E node.name=geektime2 -E path.data=node2_data -d
+bin/elasticsearch -E node.name=geektime1 -E path.data=node1_data -d
+bin/elasticsearch -E node.name=geektime3 -E path.data=node3_data -d
+```
+
 - 删除进程 `ps grep | elasticsearch / kill pid`
 

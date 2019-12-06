@@ -100,3 +100,85 @@ Linux 也有自己的软件管家，CentOS是` yum`，Ubuntu 下面是 `apt-get`
 
 
 
+Linux 下载的软件都会有一个统一的服务端，来保存这些软件
+
+- CentOS 配置文件 `/etc/yum.repos.d/CentOs-Base.repo`
+- Ubuntu来讲，配置文件在 `/etc/apt/sources.list`
+
+
+
+> ​	如果不同国家，可以修改不同国家的数据源，相对速度快一些
+>
+> ⚠️注意：不管是先下载再安装，还是通过软件管家进行安装，都是下载一些文件，然后将这些文件放在某个路径下，然后在相应的配置文件中配置一下
+
+
+
+Linux 默认有 tar 程序，如果是解压缩 zip 包，就需要另行安装
+
+```shell
+apt-get install zip unzip
+```
+
+在 Linux 通过 tar 解压缩之后，也需要配置环境变量，可以通过 export 命令来配置
+
+```shell
+export JAVA_HOME = /root/xxxx
+export PATH = $JAVA_HOME/bin:$PATH
+```
+
+> ⚠️注意：export 命令仅在当前命令行的会话中管用，一旦退出重新登录进来，就不管用，需要编辑`/root获取/home/cliu8` 目录下的`.bashrc`
+
+编辑文本使用 vim ，需要掌握 vim 基本的操作
+
+
+
+## 运行程序
+
+Linux 不是根据后缀名来执行的。它的执行条件是这样的：只要文件有 `x` 执行权限，都能到文件所在的目录下，通过 `./filename` 运行这个程序。当然，如果放在 PATH 里设置的路径下面，就不用 `./` 了，直接输入文件名就可以运行了，Linux 会帮你找
+
+**Linux 运行程序的第二种方式，后台运行**，使用 `nohup`命令，这个命令意思是 no hang up 不挂起。表示当前交换命令行退出的时候，程序还在。
+
+
+
+```shell
+# 1 表示文件描述1表示标准输出，2表示文件描述符2标准错误输出，
+# "2>&1" 表示标准输出和错误输出合并输出到 out.file 里
+nohup command >out.file 2>&1 &
+```
+
+如何结束进程
+
+```shell
+# ps -ef 列出所有正在运行的程序
+# grep 查找关键字
+# awk 工具可以对文本进行处理,‘{print &2}’ 表示第二列的内容，运行的程序ID
+# xargs 传递给 kill -9 关闭运行的程序
+ps -ef | grep 关键字 | awk '{print &2}'|xargs kill -9
+
+```
+
+
+
+**程序运行的第三种方式，以服务的方式运行**，例如常用的数据库 MySQL，就是使用这种方式
+
+```shell
+apt-get install mysql-server #安装mysql
+systemctl start mysql  #启动 mysql
+systemctl enable mysql #设置开机启动
+```
+
+之所以成为服务并且能够开机启动，是因为 `/lib/systemd/system`目录下会创建一个 XXX.service 的配置文件，里面定义了如何启动、如何关闭
+
+> ⚠️注意：CentOS 里，因为担心 mysql 授权问题，改为使用 MariaDB，通过
+> 命令 `yum install mariadb-server mariadb`进行安装
+> 命令`systemctl start mariadb`启动
+> 命令`systemctl enable mariadb` 设置开机启动
+> 在`/usr/lib/systemd/system`目录下
+
+## 关机重启
+
+```shell
+shudown -h now # 现在就关机
+reboot # 重启
+```
+

@@ -134,4 +134,3 @@ MapReduce 有三大设计目标
 **本书结构图**
 
 ![image.png](http://ww1.sinaimg.cn/large/006rAlqhly1ga4ee9pvjsj30ro0zyhak.jpg)
-

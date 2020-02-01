@@ -56,5 +56,57 @@ MySQL 官方体系结构
 - 插件式存储引擎
 - 物理文件
 
-## 3. MySQL存储引擎
+## 3.MySQL存储引擎
+
+MySQL 插件式体系结构，在应对不同的存储结构
+
+- MySQL自带存储引擎
+- 用户可自定义存储引擎
+
+| 存储引擎          | 支持功能                                                     | 特点                                                         | 设计目标                                             |
+| ----------------- | ------------------------------------------------------------ | ------------------------------------------------------------ | ---------------------------------------------------- |
+| InnoDB 存储引擎   | 事务                                                         | 行锁设计、支持外键                                           | 在线事务处理OLTP的应用                               |
+| MyISAM存储引擎    | 支持全文检索                                                 | 缓冲池只缓存索引文件，而**不缓冲数据文件**                   | OLAP数据库应用                                       |
+| NDB集群引擎       | 集群                                                         | 数据全部放在**内存**                                         | 集群存储引擎                                         |
+| Memory存储引擎    | 中间结果集大于 Memory 存储引擎容量，会转为 MyISAM 引擎表存在磁盘中 | 数据存放在内存，只支持表锁，默认使用哈希索引                 | 存储查询的中间结果集                                 |
+| Archive存储引擎   | 仅支持 INSERT 和 SELECT 操作                                 | 行锁，是用zlib 算法进行压缩存储                              | 存储归档数据；如日志信息，主要提供高速插入和压缩功能 |
+| Federated存储引擎 | 指向一台远程MySQL的默认存储引擎，仅支持MySQl 数据表          |                                                              | 类似于连接服务器和网关                               |
+| Maria存储引擎     | 支持缓存数据和索引文件                                       | 行锁设计、支事务和非事务安全的选项，以及 BLOB 的字符类型的处理性能 | 替代 MyISAM                                          |
+| ...               | ...                                                          | ...                                                          | ...                                                  |
+
+**查看mysql 支持的存储引擎**
+
+```mysql
+mysql> show engines;
++--------------------+---------+----------------------------------------------------------------+--------------+------+------------+
+| Engine             | Support | Comment                                                        | Transactions | XA   | Savepoints |
++--------------------+---------+----------------------------------------------------------------+--------------+------+------------+
+| ARCHIVE            | YES     | Archive storage engine                                         | NO           | NO   | NO         |
+| BLACKHOLE          | YES     | /dev/null storage engine (anything you write to it disappears) | NO           | NO   | NO         |
+| MRG_MYISAM         | YES     | Collection of identical MyISAM tables                          | NO           | NO   | NO         |
+| FEDERATED          | NO      | Federated MySQL storage engine                                 | NULL         | NULL | NULL       |
+| MyISAM             | YES     | MyISAM storage engine                                          | NO           | NO   | NO         |
+| PERFORMANCE_SCHEMA | YES     | Performance Schema                                             | NO           | NO   | NO         |
+| InnoDB             | DEFAULT | Supports transactions, row-level locking, and foreign keys     | YES          | YES  | YES        |
+| MEMORY             | YES     | Hash based, stored in memory, useful for temporary tables      | NO           | NO   | NO         |
+| CSV                | YES     | CSV storage engine                                             | NO           | NO   | NO         |
++--------------------+---------+----------------------------------------------------------------+--------------+------+------------+
+9 rows in set (0.00 sec)
+```
+
+**修改存储引擎**
+
+```mysql
+mysql> alter table ramp Engine=InnoDB;
+Query OK, 0 rows affected (0.05 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+```
+
+## 4.连接 MySQL
+
+| 连接方式           | 命令                                                         |
+| ------------------ | ------------------------------------------------------------ |
+| TCP/IP             | `mysql -h ip -u root -p`                                     |
+| 命名管道和共享内存 | 两个通信的进程在**同一个服务器上使用**<br />在 MySQL 配置文件添加`-enable-named-pipe`选项开启命名管道<br />在 MySQL 配置文件添加 `--shared-memory`开启共享内存，连接时使用`-protocol=memory` |
+| UNIX 域套接字      | 暂无法进入                                                   |
 

@@ -10,7 +10,7 @@
 	仅为github.com设置socks5代理(推荐这种方式, 公司内网就不用设代理了, 多此一举):
 	`git config --global http.https://github.com.proxy socks5://127.0.0.1:1086`
 	其中1086是socks5的监听端口, 这个可以配置的, 每个人不同, 在macOS上一般为1086.
-	设置完成后, ~/.gitconfig文件中会增加以下条目:
+	设置完成后, `~/.gitconfig`文件中会增加以下条目:
 
 	```
 	[http "https://github.com"]

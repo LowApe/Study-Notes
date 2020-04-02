@@ -66,9 +66,9 @@ mysql> show variables like 'innodb_purge_threads';
 | 内存                                | 描述                                                         |
 | ----------------------------------- | ------------------------------------------------------------ |
 | 缓冲池                              | 基于**磁盘存储**、按照**页的方式**进行管理。<br />通过内存速度来弥补磁盘速度较慢对数据库的影响<br />页修改需要刷新回磁盘需要通过**Checkpoint**的机制刷新回磁盘<br />通过`innodb_buffer_pool_size`来设置缓冲池大小的配置<br />允许有多个缓冲池实例，增加数据库的并发能力<br />mysql 的 information_schema 数据库下的 `innodb_buffer_pool_stats`表显示缓冲的状态 |
-| **LRU 列表、FREE 列表、Flush 列表** | 数据库缓冲池是通过 LRU(最近最少使用算法) 来进行**管理**的<br />缓冲池**页的大小**默认 16KB，在 InooDB 存储引擎对传统的 LRU 列表中加入了 midpoint 位置作为插入点，通过 `innodb_old_blocks_pct`查询，这 midpoint 之前为 new 列表<br />还通过`innodb_old_blocks_time`参数管理，用于读取到 mid 位置后需要**等待多久才会被加入到 LRU 列表的热端** |
-| 重做日志缓冲                        |                                                              |
-| 额外的内存池                        |                                                              |
+| **LRU 列表、FREE 列表、Flush 列表** | 数据库缓冲池是通过 LRU(最近最少使用算法) 来进行**管理**的<br />缓冲池**页的大小**默认 16KB，在 InooDB 存储引擎对传统的 LRU 列表中加入了 midpoint 位置作为插入点，通过 `innodb_old_blocks_pct`查询，这 midpoint 之前为 new 列表<br />还通过`innodb_old_blocks_time`参数管理，用于读取到 mid 位置后需要**等待多久才会被加入到 LRU 列表的热端**<br />Flush 列表中的页即位**脏页**，也就是缓冲池修改的页与磁盘不一致 |
+| 重做日志缓冲                        | 每一秒钟会将重做日志缓冲刷新到日志文件，通过`innodb_log_buffer_size`控制，默认 8MB。下列三种情况会将内容刷新**外部磁盘**日志文件中<br />1. Master Thread 每一秒将缓冲日志刷新到文件中<br />2. 每个事务提交时会将重做日志缓冲刷新<br />3. 重做缓冲池剩余空间小于 1/2 时 |
+| 额外的内存池                        | 暂不明白                                                     |
 
 用到的命令
 
@@ -106,6 +106,15 @@ mysql> show variables like 'innodb_old_blocks_time';
 | innodb_old_blocks_time | 1000  |
 +------------------------+-------+
 1 row in set (0.00 sec)
+# 重做日志缓冲参数 
+mysql> show variables like 'innodb_log_buffer_size';
++------------------------+----------+
+| Variable_name          | Value    |
++------------------------+----------+
+| innodb_log_buffer_size | 16777216 |
++------------------------+----------+
+1 row in set (0.00 sec)
+
 ```
 
 > LRU 中的 midpoint 是因为有些操作查询的并不是活跃的数据，如果插入到收不，就可能把需要的热点数据从列表中移除，InnoDB 还需要访问磁盘
@@ -114,3 +123,5 @@ mysql> show variables like 'innodb_old_blocks_time';
 
 - 当页从 LRU 列表的 old 部分加入 new 部分时，称此时发生的操作 `page made young`
 - 因为`innodb_old_blocks_time`而没有转移的称为 `page not made young`
+
+## 4.Checkpoint 技术

@@ -28,6 +28,8 @@ $ nohup sh bin/mqnamesrv & # 启动 namesrv ,文件 nohup.out 查看日志
 $ nohup sh bin/mqbroker -n localhost:9876 & # 启动 broker
 ```
 
+自动创建 topic
+
 ## 3.消息测试
 
 ```shell

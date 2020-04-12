@@ -112,3 +112,137 @@ builder.append("abce");
 
 
 
+# 3.6 输入和输出
+
+## 读取输入
+
+```java
+Scanner in = new Scanner(System.in);
+String name = in.nextLine();// 获取输入行
+String firstWord = in.next(); // 获取第一个单词 空格为分隔符
+int intNumb = in.nextInt();
+Double doubleString = in.nextDouble();
+
+/* Java SE 6 特别引入 Console 类实现这个目的密码*/
+Console con = System.console();
+String userName = con.readLine("User name");
+char[] password = con.readPassword("Password");
+```
+
+## 格式化输出
+
+> 类似 C 格式化输出
+
+## 文件输入和输出
+
+```java
+import java.nio.file.Paths;
+Scanner in = new Scanner(Paths.get("myFile.txt"),"UTF-8"); // 读取文件
+PrintWriter out = new PrintWriter("myFile.txt","UTF-8"); // 写入文件
+
+String dir = System.getProperty("user.dir"); // 获取用户目录
+```
+
+> 如果使用命令行启动程序，可以通过 Shell 命令关联 `System.in`、`System.out`
+
+```shell
+java ClassName < file.txt > out.txt
+```
+
+# 3.9 大数值
+
+如果整型和浮点型精度无法满足使用，可以使用 `java.math` 包中的两个很用的类`BigInteger`和`BigDeicmal`
+
+
+
+```java
+// 使用 valueOf 将普通数值转换为大数值
+BigInteger bigInteger = BigInteger.valueOf(100);
+
+```
+
+> 注意无法使用 `+` 或者 `*` 来操作大数据，可以通过方法`add`和`multiply`
+
+```java
+BigInteger c = a.add(b);
+BigInteger d = b.multiply(c);
+```
+
+# 3.10 数组
+
+```java
+/*数组两种声明*/
+int[] a;
+int a[];
+```
+
+## for each 循环
+
+```java
+for (variable : collection) statement
+   
+Arrays.toString(array);    // 不想循环打印数组中的数值
+```
+
+## 数组初始化以及匿名数组
+
+```java
+new int[]{1,21,2};
+```
+
+## 数组拷贝
+
+通常通过两个变量之间的数组“拷贝”只不过是将引用指向相同的存储位置。如果需要创建一个新的数组，则需要
+
+```java
+int[] a = Arrays.copyOf(b,b.length);
+```
+
+## 命令行参数
+
+```shell
+java ClassName x1 x2 x3
+```
+
+所对应 Java 程序中
+
+```java
+class ClassName{
+    public static void main(String args[]){
+        System.out.println(Arrays.toString(args));
+    }
+}
+
+[x1,x2,x3]
+```
+
+## 数组排序
+
+```java
+Arrays.sort(a)
+```
+
+
+
+## 多维数组
+
+多维数组数组适合**表格**或者更多的复杂排列形式
+
+```java
+/*初始化*/
+int[][] a;
+a = new int[][];
+int[][] b={
+    {1,2,3},{2,3,4},{4,5,6}
+}
+
+/* 快速打印一个二维数组 */
+Arrays.deepToString(a);
+```
+
+## 不规则数组
+
+```java
+int[][] odds = new int[5][];
+```
+

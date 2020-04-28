@@ -121,7 +121,7 @@ ArrayList 使用查询比较多，但是插入和删除比较少的情况。<br>
 
 ### HashMap 和 HashTable 的区别？
 - 两个都可以存储 key-value
-- HashMap 可以吧 null 作为key或者value，而HashTable 是不可以的
+- HashMap 可以把 null 作为key或者value，而HashTable 是不可以的
 - HashMap 是线程不安全的，效率较高，而HashTable 是线程安全的，效率较高
 
 ### HashTable 和 ConcurentHashMap(线程安全又效率高) 的区别？

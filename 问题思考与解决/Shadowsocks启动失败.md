@@ -52,4 +52,4 @@ Uninstalling shadowsocks-2.8.2:
 Proceed (y/n)? n
 ```
 
-所以解决方式是把 `/etc/systemed/system/shadowsocks.service` 修改为 `/usr/local/bin/ssserver`
+所以解决方式是把 `/etc/systemed/system/shadowsocks.service` 中的配置修改为 `/usr/local/bin/ssserver`

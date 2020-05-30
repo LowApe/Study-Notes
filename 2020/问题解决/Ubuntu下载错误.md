@@ -16,7 +16,7 @@ E: Unable to acquire the dpkg frontend lock (/var/lib/dpkg/lock-frontend), is an
 
 ## 解决：
 
-1. 结束掉apt 相关进程`ps -A | grep apt`  kill
+1. 结束掉apt 相关进程`ps -A | grep apt`  `kill -9 进程号`
 2. 删除`/var/lib/dpkg/lock-frontend`和 `/var/lib/dpkg/lock`锁定文件
 
 继续执行下载命令出现

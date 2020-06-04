@@ -34,7 +34,7 @@ InnoDB 特点
 
 | 后台线程              | 描述                                                         |
 | --------------------- | ------------------------------------------------------------ |
-| 1.Master Thread       | 主要负责将缓冲池中的数据**异步刷新到磁盘**，保证数据一致性，包括脏页的刷新、合并插入缓存、undo 页的回收等 |
+| 1.Master Thread       | 主要负责将**缓冲池中的数据**异步刷新到磁盘**，保证数据一致性，包括脏页的刷新、合并插入缓存、undo 页的回收等 |
 | 2.IO Thread           | 使用 AIO （异步 IO），这样可以极大提高数据库的性能。<br />read thread 和 write thread 分别增大到了 4 个，使用 `innodb_read_io_threads`和`innodb_write_io_threads`参数进行设置 |
 | 3.Purge Thread        | purge 操作独立到单独的线程中进行,从而提高 CPU 的使用率以及存储引擎的性能。<br />通过在 MySQL 配置中添加 `innodb_pruge_threads=1` |
 | 4.Page Cleaner Thread | 将之前版本中脏页的刷新操作都放入到单独的线程中来完成。       |
@@ -42,6 +42,8 @@ InnoDB 特点
 该过程用到的命令
 
 ```mysql
+# 显示 innodb_version 版本
+mysql> show variables like 'innodb_version'
 # 显示 io 的数量
 mysql> show variables like 'innodb_%io_threads';
 +-------------------------+-------+
@@ -51,6 +53,8 @@ mysql> show variables like 'innodb_%io_threads';
 | innodb_write_io_threads | 4     |
 +-------------------------+-------+
 2 rows in set (0.00 sec)
+# 观察 InnoDB 中的 IO Thread
+mysql> show engine innodb status\G;
 # 显示 purge 线程的数量
 mysql> show variables like 'innodb_purge_threads';
 +----------------------+-------+
@@ -66,11 +70,11 @@ mysql> show variables like 'innodb_purge_threads';
 | 内存                                | 描述                                                         |
 | ----------------------------------- | ------------------------------------------------------------ |
 | 缓冲池                              | 基于**磁盘存储**、按照**页的方式**进行管理。<br />通过内存速度来弥补磁盘速度较慢对数据库的影响<br />页修改需要刷新回磁盘需要通过**Checkpoint**的机制刷新回磁盘<br />通过`innodb_buffer_pool_size`来设置缓冲池大小的配置<br />允许有多个缓冲池实例，增加数据库的并发能力<br />mysql 的 information_schema 数据库下的 `innodb_buffer_pool_stats`表显示缓冲的状态 |
-| **LRU 列表、FREE 列表、Flush 列表** | 数据库缓冲池是通过 LRU(最近最少使用算法) 来进行**管理**的<br />缓冲池**页的大小**默认 16KB，在 InooDB 存储引擎对传统的 LRU 列表中加入了 midpoint 位置作为插入点，通过 `innodb_old_blocks_pct`查询，这 midpoint 之前为 new 列表<br />还通过`innodb_old_blocks_time`参数管理，用于读取到 mid 位置后需要**等待多久才会被加入到 LRU 列表的热端**<br />Flush 列表中的页即位**脏页**，也就是缓冲池修改的页与磁盘不一致 |
+| **LRU 列表、FREE 列表、Flush 列表** | 数据库缓冲池是通过 LRU(最近最少使用算法) 来进行**管理**的<br />缓冲池**页的大小**默认 16KB，在 InooDB 存储引擎对传统的 LRU 列表中加入了 midpoint 位置作为插入点，通过 `innodb_old_blocks_pct`查询，这 midpoint 之前为 new 列表，之后为 old 列表<br />还通过`innodb_old_blocks_time`参数管理，用于读取到 mid 位置后需要**等待多久才会被加入到 LRU 列表的热端**。防止热点数据被普通数据刷出<br />如果热点数据不止 63%，那么执行 SQL 语句前减少热点页减少被刷出概率<br />Flush 列表中的页即位**脏页**，也就是缓冲池修改的页与磁盘不一致 |
 | 重做日志缓冲                        | 每一秒钟会将重做日志缓冲刷新到日志文件，通过`innodb_log_buffer_size`控制，默认 8MB。下列三种情况会将内容刷新**外部磁盘**日志文件中<br />1. Master Thread 每一秒将缓冲日志刷新到文件中<br />2. 每个事务提交时会将重做日志缓冲刷新<br />3. 重做缓冲池剩余空间小于 1/2 时 |
 | 额外的内存池                        | 暂不明白                                                     |
 
-用到的命令
+用到的命令：
 
 ```mysql
 # 查询缓冲池大小
@@ -90,7 +94,12 @@ mysql> show variables like 'innodb_buffer_pool_instances';
 | innodb_buffer_pool_instances | 1     |
 +------------------------------+-------+
 1 row in set (0.01 sec)
-# 显示 LRU 列表插入的百分比 5/8
+# 通过 information_schema 自带数据库的具体表查看缓冲池状态
+mysql> use information_schema
+mysql> select POOL_ID,POOL_SIZE,FREE_BUFFERS,DATABASE_PAGES
+-> from INNODB_BUFFER_POOL_stats;
+
+# 显示 LRU old 列表，可以
 mysql> show variables like 'innodb_old_blocks_pct';
 +-----------------------+-------+
 | Variable_name         | Value |

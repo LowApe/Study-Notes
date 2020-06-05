@@ -27,6 +27,8 @@ InnoDB 特点
 
 ![image.png](http://ww1.sinaimg.cn/large/006rAlqhly1gblq76ln4gj30zo0lgdik.jpg)
 
+> 通过上图描述数据库操作的基本流程：数据库是基于磁盘进程操作的，因为 CPU 速度与磁盘的速度存在差异，为了弥补磁盘的速度，在结构上添加了缓冲池，缓冲池主要是内存构成，通过内存的速度来提高数据库的性能。磁盘上的操作主要通过页的方式，从磁盘上读取页将其放入缓冲池，如果读相同的页则直接从缓冲池返回。对于数据库中页的修改，也是首先在缓冲池进行修改，再以一种 Checkpoint 的机制刷新回磁盘。
+
 ### 后台线程：
 
 > - 负责刷新内存池中的数据，保证内存缓存是最新的数据。
@@ -99,7 +101,7 @@ mysql> use information_schema
 mysql> select POOL_ID,POOL_SIZE,FREE_BUFFERS,DATABASE_PAGES
 -> from INNODB_BUFFER_POOL_stats;
 
-# 显示 LRU old 列表，可以
+# 显示 LRU old 列表，表示新读取的页插入到 LRU 列表尾端的 37%的位置
 mysql> show variables like 'innodb_old_blocks_pct';
 +-----------------------+-------+
 | Variable_name         | Value |
@@ -107,7 +109,7 @@ mysql> show variables like 'innodb_old_blocks_pct';
 | innodb_old_blocks_pct | 37    |
 +-----------------------+-------+
 1 row in set (0.00 sec)
-# LRU 等待多节插入热端？
+# 读取到 LRU 的 mid 位置后多久才会加入到热端
 mysql> show variables like 'innodb_old_blocks_time';
 +------------------------+-------+
 | Variable_name          | Value |

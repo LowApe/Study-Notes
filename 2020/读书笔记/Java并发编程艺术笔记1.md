@@ -103,7 +103,7 @@ jstack PID > xxx
 # 打印相关信息 
 # grep:过滤文件内容
 # 
-grep java.lang.Thread.State dump | awk '{print $2$3$4$5}' | sort | uniq -c
+grep java.lang.Thread.State /root/dump | awk '{print $2$3$4$5}' | sort | uniq -c
 10 RUNNABLE
       4 TIMED_WAITING(onobjectmonitor)
       6 TIMED_WAITING(parking)

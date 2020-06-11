@@ -127,7 +127,7 @@ public class UnsafeCountingFactorizer implements Servlet{
 
 ### 内置锁
 
-Java提供内置的**锁机制来支持原子性*：**同步代码块(Synchronized Block)：
+Java提供内置的**锁机制来支持原子性：**同步代码块(Synchronized Block)：
 
 1. 锁的对象引用
 2. 锁保护的代码块
@@ -143,3 +143,35 @@ synchronized (lock){
 线程在进入同步代码块之前会自动获得锁，在退出同步代码块时自动释放锁，无论是正常控制路径退出，还是代码块抛出异常退出，都自动释放锁。这种方式获得锁的唯一途径就是进入锁保护的同步代码块或方法。
 
 因为每次只有一个线程执行内置锁保护的代码块，因此，有这个锁保护的同步代码块会以原子方式执行。**并发环境中的原子性与事务应用程序的原子性有着相同的含义**。针对上面的 Servlet 代码，向 service 方法添加`synchronized` 关键字可以确保线程安全。
+
+### 重入
+
+当某个线程请求一个由其他线程持有锁时，该线程会阻塞。然而，内置锁是可重入的，如果某线程获得一个已经持有的锁，那么请求就会成功(为什么还要获得一次？)，**重入**意味着获取锁的操作的粒度是**线程**，而不是**调用**。
+
+> 重入的实现是每个锁关联一个**计数器**和一个**所有者线程**。当计数器为 0 时，这个锁就被认为是没有被任何线程持有。如果一个线程请求未被持有的锁时，计数器 +1，所有者几下这个线程，如果**同一个线程**再次请求这个锁，计数值将递增，而当线程退出同步代码块时，计数器会递减，为 0 则这个锁被释放
+
+重入避免了子类同步方法调用父类同步方法时，如果不重入会造成父类死锁(因为第一个线程从子类同步方法调用父类时，父类的锁已经给次线程了)
+
+```java
+public class Widget{
+    public synchronized void doSomething(){
+        ... // 对象锁是 Wigget
+    }
+}
+public class LoggingWidget extends Widget(){
+    public synchronized void doSomething(){
+        // 对象锁是 LoggingWidget
+		System.out.println(toString() + ":calling doSomeing");
+        super.doSomething();
+    }
+}
+```
+
+每个 doSomething 方法在执行前都会获得 Widget 的锁（为什么？子类不是只有调用了才获取吗？）
+
+自我理解：因为内置锁是可重入的，子类的同步方法拥有自己以及父类的锁，当再一次调用 `doSomething`还是持有父类的锁，所以不会发生死锁。
+
+
+
+
+

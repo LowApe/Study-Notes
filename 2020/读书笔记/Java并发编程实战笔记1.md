@@ -173,13 +173,13 @@ public class LoggingWidget extends Widget(){
 
 ## 用锁来保护状态
 
-> 感觉还是再说避免复合操作从而产生竞态条件，通过添加同步锁来保持复合操作是原子的。**书上却说复合操作封装到一个同步代码块中是不够的？这一章节也没说清楚。**,下面总结主要的概念吧
+> 感觉还是再说避免复合操作从而产生竞态条件，通过添加同步锁来保持复合操作是原子的。**书上却说复合操作封装到一个同步代码块中是不够的？**~~这一章节也没说清楚。,下面总结主要的概念吧~~
 
 - 对于可能被多个线程同时访问的可变状态变量，在访问它时都需要持有同一个锁，在这种状况下，我们称状态变量是由这个锁保护的。
 - 每个共享的和可变的变量都应该只由一个锁来保护，从而使维护人员知道是哪一个锁。
 - 对于每个包含多个变量的不可变性条件，其中涉及的所有变量都需要由同一个锁来保护
 
-
+> 通过下一章的学习，可以理解可变状态变量在同一锁的操作，在其他线程继续获得同一锁时，对上一个加锁的同步代码操作的结果是可见的，也就是保证了并发过程中对可变和共享的变量数据的一致性。
 
 ## 活跃性与性能
 
@@ -200,8 +200,8 @@ public class CacheFactorizer implements Servlet{
     @GuradBY("this") private long cacheHits; // 缓存命中计数器
     
     public synchronized long getHits() { return hits;}
-    public synchronized double getChcheHitRatio(){
-        return (double) chacheHits / (double) hits;
+    public synchronized double getCacheHitRatio(){
+        return (double) cacheHits / (double) hits;
     }
     
     public void service(ServletRequest req,ServletResponse resp){
@@ -238,3 +238,4 @@ public class CacheFactorizer implements Servlet{
 
 - 当执行时间较长的计算或者可能无法快速完成的操作时(例如，网络 I/O 或控制台 I/O)，一定不要持有锁
 
+> 看了笔记2或者第三章的加锁与可见性，再回头看这块代码，一般执行第二个同步代码块进行第一次的获取结果，并写入 lastNumber 和 lastFacotrs ，在第一个同步代码块上同一个this 锁时对上一个同步代码块结果和操作可见，并且命中上一次正确记录到缓存的计数器 + 1，读取 lastFactors (上一次同步锁中写操作的数据)。整体下来同步代码块中的 lastNumber 和 lastFactors 共享或者说可变的变量通过同一个 this 锁对象保证他们再多线程的情况下也能保证数据的一致性。

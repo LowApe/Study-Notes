@@ -171,7 +171,70 @@ public class LoggingWidget extends Widget(){
 
 自我理解：因为内置锁是可重入的，子类的同步方法拥有自己以及父类的锁，当再一次调用 `doSomething`还是持有父类的锁，所以不会发生死锁。
 
+## 用锁来保护状态
+
+> 感觉还是再说避免复合操作从而产生竞态条件，通过添加同步锁来保持复合操作是原子的。**书上却说复合操作封装到一个同步代码块中是不够的？这一章节也没说清楚。**,下面总结主要的概念吧
+
+- 对于可能被多个线程同时访问的可变状态变量，在访问它时都需要持有同一个锁，在这种状况下，我们称状态变量是由这个锁保护的。
+- 每个共享的和可变的变量都应该只由一个锁来保护，从而使维护人员知道是哪一个锁。
+- 对于每个包含多个变量的不可变性条件，其中涉及的所有变量都需要由同一个锁来保护
 
 
 
+## 活跃性与性能
+
+所有方法使用同步可以保证线程安全系，但也带来了很大的性能问题。所以使用方法同步慎重。
+
+像之前 Serlvet 的 service 方法进行同步，虽然保证了线程安全性，但付出的代价却很高,Serlvet 框架的初衷，即 Serlvet 需要同时处理多个请求，此时同步service 方法，如果处理很长的执行时间，其他请求就会一直等待。这种 Web 应用称为**不良并发(Poor Concurrency)** 应用程序。
+
+> 通过缩小同步代码块的作用范围，我们很容易做到确保 Servlet 的并发性，同时又维护线程安全性。
+
+**应该尽量将不影响共享状态且执行时间较长的操作从同步代码块中分离出去。**我的理解就是使用同步代码块缩小同步范围。
+
+```java
+@ThreadSafe
+public class CacheFactorizer implements Servlet{
+    @GuradBy("this") private BigInteger lastNumber; // 缓存的数值
+    @GuradBy("this") private BigInteger[] lastFactors; // 因数之积
+    @GuradBy("this") private long hits; // 计数器
+    @GuradBY("this") private long cacheHits; // 缓存命中计数器
+    
+    public synchronized long getHits() { return hits;}
+    public synchronized double getChcheHitRatio(){
+        return (double) chacheHits / (double) hits;
+    }
+    
+    public void service(ServletRequest req,ServletResponse resp){
+        BigInteger i = extractFromRequest(req); // 获取需要因数分解的参数
+        BigInteger[] factors = null;// 因数分解数组初始化
+        /**
+        * 保护判断是否只需要返回缓存结果的“先检查后执行”
+        **/
+       	synchronized(this){ 
+            ++hits; // 计数器
+            if(i.equals(lastNumber)){ //上一次没有缓存不执行
+               // 可以理解如果是重复的就缓存技术 +1 ，然后同步之前的结果
+                ++cacheHits;// 缓存计数+1
+                factors = lastFactors.clone(); // 保证数组同步
+            }
+        }
+        
+        /**
+        * 确保对缓存的数值和因式分解结果进行同步更新
+        **/
+        if(factors == null){ 
+            factors = factor(i); // 返回因式分解结果
+            synchronized(this){ // 同步缓存记录 1.操作参数 2. 结果
+                lastNumber = i;
+                lastFactors = factors.clone();
+            }
+        }
+        encodeIntoResponse(resp,factors); //返回请求数据
+    }
+}
+```
+
+看完代码理解半天，感觉对业务，要实现啥不清楚，单纯看作者讲真的费劲....
+
+- 当执行时间较长的计算或者可能无法快速完成的操作时(例如，网络 I/O 或控制台 I/O)，一定不要持有锁
 

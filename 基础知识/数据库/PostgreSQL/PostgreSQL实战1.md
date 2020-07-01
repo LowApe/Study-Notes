@@ -8,8 +8,6 @@ Mac 下使用 Homebrew 下载
 
 ```shell
 brew install postgresql
-# 启动服务器
-brew services start postgresql
 ```
 
 > 其他方式可以查看[官网下载](https://www.postgresql.org/download/)
@@ -79,6 +77,13 @@ brew services start postgresql
 
 - 一台数据库服务器可以管理多个数据库实例，PostgreSQL 通过数据目录的位置和这个数据集合实例的端口号引用它。
 
+```shell
+# 创建数据库目录
+mkdir -p /pgdata/12/{data,backups,scripts,archive_wals}
+```
+
+
+
 ## 创建操作系统用户
 
 在**创建数据库实例**之前第一件事先创建一个独立的操作系统用户，也可以称为本地用户。
@@ -92,6 +97,8 @@ chown -R 用户组：用户 /pagedata/12
 chmod 0700 /pgdata/12/data
 ```
 
+> initdb 会回收除 PostgreSQL 用户之外所有用户访问权限。但是我们有明确的数据库存储目录，所以使用上述命令保护。因为我是 mac 系统经过测试，发现下载完后初始化默认使用管理员身份当作用户名，我也没有进行用户切换，文件夹授权也是给了当前登陆用户
+
 ## 创建数据目录
 
 ```shell
@@ -102,6 +109,8 @@ mkdir -p PostgreSQL/pgdata/12/{data,backups,scripts,archive_wals}
 ```
 
 ## 初始化数据目录
+
+`initdb --help` 查看相关参数命令
 
 ```shell
 initdb -D pgdata/12/data -W
@@ -138,9 +147,121 @@ Success. You can now start the database server using:
     pg_ctl -D pgdata/12/data -l logfile start
 ```
 
+> 除了使用initdb 来初始化数据目录，还可以使用 `pg_ctl`工具进行数据库目录的初始化`pg_ctl init -D /pgdata/10/data -o "-W"`。使用 yum 安装会自动创建`/var/lib/pgssql/12`目录和两个子目录
 
+
+
+# 启动和停止数据库服务器
+
+根据上面初始化最后的提示启动服务器
+
+```shell
+# 启动项目
+pg_ctl -D pgdata/12/data -l logfile start
+# 查看状态
+pg_ctl -D pgdata/12/data status
+# 检测数据库服务器是否已经允许接受连接
+pg_isready -p 1921
+# 停止数据库 支持三种停止 smart fast immediate
+pg_ctl -D pgdata/12/data -ms stop
+```
+
+其他启动和停止数据库的方式，例如使用 `postmaster`或者 `postgres` 程序启动数据库
+
+```shell
+# 添加 & 让后台运行
+postgres -D pgdata/12/data &
+```
+
+## 配置开机启动
+
+> mac 设置待定，linux 貌似有一系列固定的命令，因为shell 那本书还没看完，这块待定
+
+# 数据库配置基础
+
+- 全局配置：在一个数据库实例中，有些配置会影响到整个实例。全局配置文件
+	- `postgresql.conf` 负责文件位置、资源限制、集群复制等
+	- `pg_hba.conf`扶着客户端连接和认证
+- 非全局配置：有些配置只对一个数据库实例中的单个 Database 生效或者某个数据库用户生效
+
+> 两个文件都在初始化数据目录中
+
+## pg_hba.conf
+
+它是所在数据库实例的 “防火墙”：作用是设置允许那些主机可以通过什么**连接方式和认证方式**通过哪个数据库用户连接哪个数据库。
+
+![image.png](http://ww1.sinaimg.cn/mw690/006rAlqhgy1ggbr3c2u1sj31280cwmzd.jpg)
+
+| 名称               | 详情                                                         |
+| ------------------ | ------------------------------------------------------------ |
+| Type连接方式       | local匹配使用` Unix` 域套接字的连接。<br />host匹配使用`TCP/IP`建立的连接，同时匹配 `SSL` 和非`SSL`连接,不允许使用`TCP/IP`远程连接，启用远程连接需要修改`postgresql.conf`的`listen_addresses`参数。<br />`hostssl`必须是使用 SSL 的`TCP/IP`连接。匹配`hostssl`有三个前提条件:<br />1.客户端和服务端都安装 `OpenSSL`<br />2.编译`PostgreSQL`的时侯指定`configure参数 --with-openssl 打开SSL支持`<br />3.在 `postgresql.conf中配置ssl=on` |
+| DataBase目标数据库 | DATABASE 列标识该行设置对哪个数据库生效                      |
+| USER目标用户       | 该行设置对哪个数据库用户生效                                 |
+| ADDRESS访问来源    | 标识该行设置对哪个 IP 地址或 IP地址段生效                    |
+| METHOD认证方式     | METHOD 列标识客户端的认证方法，常见的认证方法有`trust、reject、md5和password`等<br />1.reject 认证方式场景：允许某一网段的大多数主机访问数据库，但**拒绝这一网段的少数特定主机**<br />2.md5 和 password 认证方式的区别md5双重加密，password 指明文密码，所以不要在**非信任网络**使用 password 认证方式 |
+
+## postgresql.conf
+
+> PostgreSQL.conf 配置文件，由多个 configparameter = value 形式的行组成,"#"开头的行为注释 value 支持的数据类型有布尔、整数、浮点数、字符串、枚举，value的值还支持各种单位,例如 MB、GB 和 ms、min等 当配置项末尾标记了`#(change requires restart)`的配置项是需要重启数据库实例才可以生效的，其他没有标记的配置项只需要 reload 即可生效
+
+| 名称               | 解释                                                         |
+| ------------------ | ------------------------------------------------------------ |
+| 全局配置的修改方法 | `mydb=# ALTER SYSTEM SET listen_addresses = '*'`，这个在数据库命令修改配置自动编辑`postgresql.auto.conf`文件，在数据库启动时会加载该文件，并用它的配置覆盖 `postgresql.conf`中已有的配置。**这个文件不要手动修改它** |
+| 非全局配置修改     | `ALTER DATABASE name SET configparameter {TO | =}{value| DEFAULT}` <br />`ALTER DATABASE name RESET configuration`<br /> |
+| 查看配置           | 查询 `pg_settings 系统表 select * from pg_settings`          |
+| 使配置生效         | `pg_ctl -D /pgdata/12/data reload`                           |
+
+## 允许远程访问数据库
+
+- 修改监听地址(conf文件listen_addresses=* 允许所有，然后重启，然后还需要配置`pg_hba.conf`允许通过什么连接方式和认证方式通过哪个数据库用户连接)
+
+```properties
+# - Connection Settings -
+
+#listen_addresses = 'localhost'		# what IP address(es) to listen on;
+					# comma-separated list of addresses;
+					# defaults to 'localhost'; use '*' for all
+					# (change requires restart)
+```
+
+```shell
+# 向 pg_hba.conf 文件中添加一行
+echo "host mydb pguser 0.0.0.0/0 md5" >> 
+/pgdata/12/data/pg_hba.conf
+# 修改后 reload 生效
+pg_ctl -D /pgdata/12/data/ reload
+```
+
+
+
+# 错误解决
+
+## 初始化错误
+
+```shell
+initdb:directory "/pgdata/12/data" exist but is not empty
+```
+
+需要删除对应文件夹文件以及隐藏文件
+
+
+
+## 启动错误
+
+```shell
+# 启动
+pg_ctl -D pgdata/12/data -l logfile start
+waiting for server to start.... stopped waiting
+pg_ctl: could not start server
+Examine the log output.
+```
+
+查看了 logfile 文件，说是绑定地址失败，我又使用Postgres.app 去启动，出现端口号报错，然后我就去查看进程和端口号 `ps -ef | grep postgres`和 `losf -i:5432`，发现已经开启服务和占用了端口号。
+
+> 然后我会想其 mac 使用 `brew install postgresql`下载安装，并且启动，默认帮我初始化数据库目录到 `/usr/loacl/var/postgres`，因为是按照教程上来，所以结束服务`brew services postgresql`,使用上面启动命令启动，就成功了。 
 
 # 相关链接
 
 - [Download](https://www.postgresql.org/download/)
 - [官网](www.postgresql.org)
+- [mac上brew安装pg数据库默认没有创建postgres用户?](https://blog.csdn.net/kmust20093211/article/details/47104175?utm_source=blogxgwz2)

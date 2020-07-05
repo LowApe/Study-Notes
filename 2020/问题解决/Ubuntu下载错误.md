@@ -29,3 +29,5 @@ E: dpkg was interrupted, you must manually run 'dpkg --configure -a' to correct 
 
 根据提示执行,解决。
 
+> 貌似是因为虚拟机的缘故。。。就是我每次重新开启虚拟机，使用下载就会出现这种情况
+

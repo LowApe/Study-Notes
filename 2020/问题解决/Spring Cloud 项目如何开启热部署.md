@@ -69,6 +69,38 @@ JRebel 会在平时运行状态栏上出现两个标识，其次文件右键也�
 - [JRebel Document](https://manuals.jrebel.com/jrebel/)
 - [XRebel](https://manuals.jrebel.com/xrebel/)
 
+2020.7.7 查看 JRebel 文档学习如下：
+
+- 窗口工具打开 Jrebel 项目选择
+
+![image.png](http://ww1.sinaimg.cn/mw690/006rAlqhgy1ggiqbslbo9j31lg10e0y4.jpg)
+
+> 勾选后会成成 `rebel.xml` 的配置文件，如果是普通项目，文件会放到项目的根目录，如果是 Maven 项目会放到`src/main/resources`
+
+- `Settings`中 有三种方式使用 `JRebel`第一种最简单就是我们常规的 `run` `degbug`的JRebal 专属小图标
+
+![image.png](http://ww1.sinaimg.cn/mw690/006rAlqhgy1ggiqf2eqtaj31p213o47a.jpg)
+
+> 剩下两种 CLI 和远程展示跳过放到后面在学习
+
+接下来就是运行后看 JRebal 到底支持热部署到什么程度？
+
+| 名称               | 详情                                                         | 是否支持 |
+| ------------------ | ------------------------------------------------------------ | -------- |
+| 修改实体 Bean      | 修改 Bean，编译后                                            | 支持     |
+| Swagger API 的修改 | 修改 swagger API 类，编译后                                  | 支持     |
+| Feign 修改         | 修改注解上面的注册服务，但是没有生效，**内容未测**           | 不支持   |
+| propertis配置文件  | 配置文件是在项目启动加载，启动过程无法自动读取，JRebal 检测的是Java 的 class 文件 | 不支持   |
+| ...                |                                                              |          |
+
+> 目前修改的文件还需要 `shift+Command+F9`重新编译单个文件，JRebel 才能生效，至于自动的，放在后面继续查看文档。
+
+![image.png](http://ww1.sinaimg.cn/mw690/006rAlqhgy1ggislbcp4aj31i40kcaek.jpg)
+
+> 应该就是上面开启自动编译，太困了，先睡了
+
+
+
 # 相关连接
 
 - [SpringBoot SpringCloud 热部署 热加载 热调试](https://www.cnblogs.com/crazymakercircle/p/12077373.html)

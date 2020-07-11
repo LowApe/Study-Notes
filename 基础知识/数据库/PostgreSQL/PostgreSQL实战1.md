@@ -181,7 +181,7 @@ postgres -D pgdata/12/data &
 
 - 全局配置：在一个数据库实例中，有些配置会影响到整个实例。全局配置文件
 	- `postgresql.conf` 负责文件位置、资源限制、集群复制等
-	- `pg_hba.conf`扶着客户端连接和认证
+	- `pg_hba.conf`客户端连接和认证
 - 非全局配置：有些配置只对一个数据库实例中的单个 Database 生效或者某个数据库用户生效
 
 > 两个文件都在初始化数据目录中
@@ -207,13 +207,13 @@ postgres -D pgdata/12/data &
 | 名称               | 解释                                                         |
 | ------------------ | ------------------------------------------------------------ |
 | 全局配置的修改方法 | `mydb=# ALTER SYSTEM SET listen_addresses = '*'`，这个在数据库命令修改配置自动编辑`postgresql.auto.conf`文件，在数据库启动时会加载该文件，并用它的配置覆盖 `postgresql.conf`中已有的配置。**这个文件不要手动修改它** |
-| 非全局配置修改     | `ALTER DATABASE name SET configparameter {TO | =}{value| DEFAULT}` <br />`ALTER DATABASE name RESET configuration`<br /> |
+| 非全局配置修改     | 设置和重置 DataBase级别<br />`ALTER DATABASE name SET configparameter {TO | =}{value| DEFAULT}` <br />`ALTER DATABASE name RESET configuration`<br /> |
 | 查看配置           | 查询 `pg_settings 系统表 select * from pg_settings`          |
 | 使配置生效         | `pg_ctl -D /pgdata/12/data reload`                           |
 
 ## 允许远程访问数据库
 
-- 修改监听地址(conf文件listen_addresses=* 允许所有，然后重启，然后还需要配置`pg_hba.conf`允许通过什么连接方式和认证方式通过哪个数据库用户连接)
+- **修改监听地址**(conf文件listen_addresses=* 允许所有，然后重启，然后还需要配置`pg_hba.conf`允许通过什么连接方式和认证方式通过哪个数据库用户连接)
 
 ```properties
 # - Connection Settings -
@@ -223,6 +223,8 @@ postgres -D pgdata/12/data &
 					# defaults to 'localhost'; use '*' for all
 					# (change requires restart)
 ```
+
+假设我们允许所有主机通过 TCP/IP 建立的连接，同时匹配 SSL 和 非 SSL 连接，通过 md5 口令认证，使用`pguser`用户
 
 ```shell
 # 向 pg_hba.conf 文件中添加一行

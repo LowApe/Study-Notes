@@ -21,6 +21,36 @@ Type "help" for help.
 postgres=>
 ```
 
+## psql 的参数
+
+| 参数 | 解释                                          | 命令                                                         |
+| ---- | --------------------------------------------- | ------------------------------------------------------------ |
+| -A   | 非对齐模式                                    | `psql -A -c "select * from test_1 where id=1" mydb testuser;` |
+| -t   | 只显示记录数据                                | `psql -t -c "select * from test_1 where id=1" mydb testuser;` |
+| -q   | psql执行SQL命令会返回多种消息；不显示输出信息 | `psql -q mydb testuser -f xxx.sql`                           |
+
+## psql 执行sql 脚本
+
+创建一个 sql 后缀的脚本，并写sql 语句。
+
+
+
+```shell
+# 语句为：
+drop test_2 if exists test_2;
+create test_2(id int4);
+insert into test_2 values(1);
+insert into test_2 values(2);
+# 执行 sql 脚本
+$ psql mydb testuser  -f test.sql
+DROP TABLE
+CREATE TABLE
+INSERT 0 1
+INSERT 0 1
+```
+
+> Sql 的 `-single-trasaction`或`-1`选项支持在一个事务中执行脚本。要么都成功要么失败回滚
+
 ## 创建用户及数据库
 
 ```shell
@@ -100,7 +130,7 @@ Indexes:
 
 ```shell
 # 插入 50万数据
-mydb=# insert into test_1(id,name) select n,n || '_frances' from generate_series(1,500000) n;
+mydb=#  
 INSERT 0 500000
 # 查看表空间大小
 mydb-# \dt+ test_1
@@ -146,9 +176,264 @@ create_time | 2020-07-11 21:53:56.009174
 ### 获取元命令对应的SQL代码
 
 ```shell
-\db
+# 带 sql代码的元命令
+psql -E mydb
+psql (12.3)
+Type "help" for help.
+
+mydb=# \db
+********* QUERY **********
+SELECT spcname AS "Name",
+  pg_catalog.pg_get_userbyid(spcowner) AS "Owner",
+  pg_catalog.pg_tablespace_location(oid) AS "Location"
+FROM pg_catalog.pg_tablespace
+ORDER BY 1;
+**************************
+
+                                               List of tablespaces
+    Name    |  Owner   |                                        Location
+------------+----------+-----------------------------------------------------------------------------------------
+ pg_default | mac      |
+ pg_global  | mac      |
+ tbs_mydb   | testuser | /Users/mac/Documents/AllMyDocuments/Working/02/PostgreSQL/database/pg12/pg_tbs/tbs_mydb
+(3 rows)
+```
+
+### 查看有哪些元命令
+
+```shell
+# \? 查询手册
+\?
+General
+  \copyright             show PostgreSQL usage and distribution terms
+  \crosstabview [COLUMNS] execute query and display results in crosstab
+  \errverbose            show most recent error message at maximum verbosity
+  \g [FILE] or ;         execute query (and send results to file or |pipe)
+  \gdesc                 describe result of query, without executing it
+  \gexec                 execute query, then execute each value in its result
+  \gset [PREFIX]         execute query and store results in psql variables
+  \gx [FILE]             as \g, but forces expanded output mode
+  \q                     quit psql
+  \watch [SEC]           execute query every SEC seconds
+
+Help
+  \? [commands]          show help on backslash commands
+  \? options             show help on psql command-line options
+  \? variables           show help on special variables
+  \h [NAME]              help on syntax of SQL commands, * for all commands
+
+Query Buffer
+  \e [FILE] [LINE]       edit the query buffer (or file) with external editor
+  \ef [FUNCNAME [LINE]]  edit function definition with external editor
+  \ev [VIEWNAME [LINE]]  edit view definition with external editor
+  \p                     show the contents of the query buffer
+  \r                     reset (clear) the query buffer
+  \s [FILE]              display history or save it to file
+  \w FILE                write query buffer to file
+
+```
+
+### HELP 命令
+
+`\h`后面接 SQL 命令关键字能将 SQL 命令的语法列出
+
+```shell
+
+mydb=# \h create tablespace
+Command:     CREATE TABLESPACE
+Description: define a new tablespace
+Syntax:
+CREATE TABLESPACE tablespace_name
+    [ OWNER { new_owner | CURRENT_USER | SESSION_USER } ]
+    LOCATION 'directory'
+    [ WITH ( tablespace_option = value [, ... ] ) ]
+
+URL: https://www.postgresql.org/docs/12/sql-createtablespace.html
+```
+
+`\h`命令后面不接任何 SQL 命令则列出所有 SQL 命令，为查看 SQL 命令语法提供参考
+
+```shell
+mydb=# \h
+Available help:
+  ABORT                            CREATE USER
+  ALTER AGGREGATE                  CREATE USER MAPPING
+  ALTER COLLATION                  CREATE VIEW
+  ALTER CONVERSION                 DEALLOCATE
+  ALTER DATABASE                   DECLARE
+  ALTER DEFAULT PRIVILEGES         DELETE
+  ALTER DOMAIN                     DISCARD
+  ALTER EVENT TRIGGER              DO
+  ALTER EXTENSION                  DROP ACCESS METHOD
+  ALTER FOREIGN DATA WRAPPER       DROP AGGREGATE
+  ALTER FOREIGN TABLE              DROP CAST
+  ALTER FUNCTION                   DROP COLLATION
+  ALTER GROUP                      DROP CONVERSION
+  ALTER INDEX                      DROP DATABASE
+  ALTER LANGUAGE                   DROP DOMAIN
+  ALTER LARGE OBJECT               DROP EVENT TRIGGER
+  ALTER MATERIALIZED VIEW          DROP EXTENSION
+  ALTER OPERATOR                   DROP FOREIGN DATA WRAPPER
+  ALTER OPERATOR CLASS             DROP FOREIGN TABLE
+  ALTER OPERATOR FAMILY            DROP FUNCTION
+  ALTER POLICY                     DROP GROUP
+  ALTER PROCEDURE                  DROP INDEX
+  ALTER PUBLICATION                DROP LANGUAGE
+  ALTER ROLE                       DROP MATERIALIZED VIEW
+  ALTER ROUTINE                    DROP OPERATOR
+  ALTER RULE                       DROP OPERATOR CLASS
+:
+```
+
+## Sql 导入、导出表数据
+
+- `COPY` SQL 命令
+- `\copy`是元命令
+- `COPY`**命令必须具有 SUPERUSER 超级权限**(将数据通过 stdin、stdout 方式导入导出情况除外)，而`\copy`元命令**不需要** `SUPERUSER` 权限
+- `COPY`命令读取或写入数据库服务端主机上的文件，而`\copy`元命令是从`psql`客户端主机读取或写入文件
+- **从性能方面，大数据量导出到文件或大文件数据导入数据库，COPY 比 \copy 性能高**
+
+### 使用 COPY 命令导入导出数据
+
+**导入：**
+
+```shell
+# 创建一个copy 导入的表
+postgres=# create table test_copy(id int4,name text);
+CREATE TABLE
+postgres=# \q
+# 切换 superuser 用户进行导入
+$ psql mydb mac
+psql (12.3)
+Type "help" for help.
+mydb=# copy test_copy from '/Users/mac/Documents/AllMyDocuments/Working/02/PostgreSQL/test_copy_in.txt';
+COPY 3
+```
+
+**可能出现的问题：**
+
+下一步需要切换到superuser 否则会出现下面错误信息：
+
+```shell
+mydb=> copy test_copy from '/Users/mac/Documents/AllMyDocuments/Working/02/PostgreSQL/test_copy_in.txt';
+ERROR:  must be superuser or a member of the pg_read_server_files role to COPY from a file
+HINT:  Anyone can COPY to stdout or from stdin. psql's \copy command also works for anyone.
+```
+
+创建导入文本，需要用`tab`分割，不能是空格：
+
+```shell
+mydb=# copy test_copy from 'xxx/test_copy_in.txt';
+ERROR:  invalid input syntax for type integer: "1 a"
+CONTEXT:  COPY test_copy, line 1, column id: "1 a"
+```
+
+**导出：**
+
+导出将表数据输出到标准输出，而且不需要超级用户权限；
+
+```shell
+mydb=>copy test_copy to stdout;
+1	a
+2	b
+3	c
+# 导出 csv 格式
+copy test_copy to 'xxx/test_copy.csv' with csv header;
+COPY 3
+```
+
+上述 `with csv header` 是知道出格式为 csv 格式并且显示字段名称
+
+```shell
+ # 导出部分
+ mydb=>copy (select * from test_copy where id =1) to 'xxx/1.txt';
+ COPY 1
+```
+
+## 使用\copy 元命令导入导出数据
+
+```shell
+ # 导出
+ mydb=>\copy test_copy to 'xxxx/test_copy_2.txt';
+ # 导入
+ mydb=>\copy test_copy from 'xxxx/1.txt';
+ COPY 1
 ```
 
 
 
+## psql 如何传递变量到 SQL
+
+### \set 元命令传递变量
+
+```shell
+mydb=> \set v_id 2
+mydb=> select * from test_copy where id=:v_id;
+ id | name
+----+------
+  2 | b
+(1 row)
+
+# 取消设置变量
+mydb=>\set v_id
+```
+
+### Sql 的 -v 参数传递变量
+
+```shell
+# 创建 v_sql.sql
+cat v_sql.sql
+select * from test_copy where id=:v_id;
+# -v 传递
+$ psql -v v_id=1 mydb testuser -f v_sql.sql
+ id | name
+----+------
+  1 | a
+  1 | a
+(2 rows)
+```
+
+## 使用psql定制日常维护脚本
+
+> 通过主要介绍通过 psql 元命令定制日常维护脚本，预先将常用的数据库维护配置好，数据库排障时直接使用，从而提高效率
+
+## 查询活动会话
+
+```shell
+# 查看SQL活动会话的 SQL
+select pid,usename,datnanme,query,client_addr from 
+pg_stat_activity where pid <> pg_backend_pid() and 
+state='active' oreder by query;
+```
+
+
+
+# 相关问题
+
+
+
+## PostgreSQL创建数据库时报错：ERROR: source database "template1" is being accessed by other users
+
+> 场景：想删除表空间和表和数据库时，出现的一个错误。
+
+```shell
+ps -ef | grep postgre
+```
+
+查看进程，并结束相关进程。
+
+## psql: error: could not connect to server: FATAL:  role "testuser" is not permitted to log in
+
+```shell
+postgres=# alter role testuser with login;
+ALTER ROLE
+```
+
+![image.png](http://ww1.sinaimg.cn/mw690/006rAlqhgy1ggo1trnwylj324y0dg41d.jpg)
+
 # 相关连接
+
+- [postgresql 表空间创建、删除](https://blog.csdn.net/weixin_34160277/article/details/93354538)
+- [PostgreSQL创建数据库时报错](https://blog.csdn.net/jueshengtianya/article/details/17420287/)
+- [role "testuser" is not permitted to log in](https://dba.stackexchange.com/questions/57723/superuser-is-not-permitted-to-login)
+

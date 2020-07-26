@@ -213,7 +213,7 @@ postgres -D pgdata/12/data &
 
 ## 允许远程访问数据库
 
-- **修改监听地址**(conf文件listen_addresses=* 允许所有，然后重启，然后还需要配置`pg_hba.conf`允许通过什么连接方式和认证方式通过哪个数据库用户连接)
+- **修改监听地址**(conf文件`listen_addresses='*'` 允许所有，然后重启，然后还需要配置`pg_hba.conf`允许通过什么连接方式和认证方式通过哪个数据库用户连接)
 
 ```properties
 # - Connection Settings -
@@ -231,7 +231,7 @@ postgres -D pgdata/12/data &
 echo "host mydb pguser 0.0.0.0/0 md5" >> 
 /pgdata/12/data/pg_hba.conf
 # 修改后 reload 生效
-pg_ctl -D /pgdata/12/data/ reload
+pg_ctl -D /pgdata/12/data/ restart
 ```
 
 

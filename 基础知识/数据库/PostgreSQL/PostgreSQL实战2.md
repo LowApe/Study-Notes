@@ -12,7 +12,7 @@
 
 ```shell
 # 格式
-pgsql [options...] [dbname[username]]
+psql [options...] [dbname[username]]
 # 第一个是 连接数据库 第二个表示用户名
 psql postgres postgres
 psql (12.3)
@@ -20,6 +20,15 @@ Type "help" for help.
 
 postgres=>
 ```
+
+远程连接
+
+```sql
+# 远程连接
+psql -h 目标ip -p 端口号 数据库 所属用户
+```
+
+
 
 ## psql 的参数
 
@@ -78,10 +87,7 @@ GRANT
 - encoding 数据库字符集
 - tablespace 表示数据库的**默认表空间**，新建的数据库对象会在该路径产生文件
 
-```shell
-# 远程连接
-psql -h 目标ip -p 端口号 数据库 所属用户
-```
+
 
 ## psql 元命令介绍
 
@@ -397,14 +403,60 @@ $ psql -v v_id=1 mydb testuser -f v_sql.sql
 
 > 通过主要介绍通过 psql 元命令定制日常维护脚本，预先将常用的数据库维护配置好，数据库排障时直接使用，从而提高效率
 
-## 查询活动会话
+### 1.定制维护脚本：查询活动会话
+
+> psql 没有带 -X 选项，psql 尝试读取和执行用户`~/.psqlrc` 启动文件中的命令，结合这个命令可以方便得**预先定制维护脚本**
 
 ```shell
 # 查看SQL活动会话的 SQL
-select pid,usename,datnanme,query,client_addr from 
+select pid,usename,datname,query,client_addr from 
 pg_stat_activity where pid <> pg_backend_pid() and 
-state='active' oreder by query;
+state='active' order by query;
+ pid | usename | datname | query | client_addr
+-----+---------+---------+-------+-------------
+(0 rows)
 ```
+
+- `pg_stat_activity`试图显示 `PostgreSQL`进程信息，每一个进程在视图中存在一条记录
+- Pid  进程号
+- usename 数据库名称
+- query 显示进程最近执行的 SQL
+- client_addr 是进程的客户端 IP
+
+创建或找到 `~/.psqlrc` 文件，编辑内容如下
+
+```sql
+-- 查询活动会话
+\set active_session 'select pid,usename,datname,query,client_addr from pg_stat_activity where pid <> pg_backend_pid() and state=\'active\' order by query;'
+```
+
+之后重新连接数据库，执行 `active_session`命令，**冒号后接变量名即可
+
+```sql
+mydb=# :active_session
+ pid | usename | datname | query | client_addr
+-----+---------+---------+-------+-------------
+(0 rows)
+
+```
+
+> 通过以上设置，数据库排障时不需要临时手工编写查询活动会话的SQL，只需输入:active_session 即可，方便了日常维护操作。
+>
+> 这里我尝试通过远程连接，然后查询语句，不知道怎回事还是查出来是null。。。不清楚是不是不能识别本地的连接会话
+
+### 1.定制维护脚本：查询等待事件
+
+编写`\set`元命令追加到`~/.psqlrc`文件
+
+```sql
+\set wait_event 'select
+pid,usename,datname,query,client_addr,wait_event_type,wait_event
+from pg_stat_activity where pid <> pg_backend_pid() and wait_event is not null order by wait_event_type;'
+```
+
+
+
+## psql 亮点功能
 
 
 
@@ -436,4 +488,5 @@ ALTER ROLE
 - [postgresql 表空间创建、删除](https://blog.csdn.net/weixin_34160277/article/details/93354538)
 - [PostgreSQL创建数据库时报错](https://blog.csdn.net/jueshengtianya/article/details/17420287/)
 - [role "testuser" is not permitted to log in](https://dba.stackexchange.com/questions/57723/superuser-is-not-permitted-to-login)
+- [PostgreSql 视图](https://www.postgresql.org/docs/10/static/monitoring-stats.html#pg-stat-activity-view)
 

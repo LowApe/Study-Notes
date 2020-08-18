@@ -25,10 +25,9 @@ postgres=>
 
 ```sql
 # 远程连接
-psql -h 目标ip -p 端口号 数据库 所属用户
+psql -h 目标ip -p 端口号 数据库 所属用户 /n回车
+密码
 ```
-
-
 
 ## psql 的参数
 
@@ -41,8 +40,6 @@ psql -h 目标ip -p 端口号 数据库 所属用户
 ## psql 执行sql 脚本
 
 创建一个 sql 后缀的脚本，并写sql 语句。
-
-
 
 ```shell
 # 语句为：
@@ -67,7 +64,7 @@ INSERT 0 1
 postgres=# create role testuser with encrypted password 'testuser';
 CREATE ROLE
 # 创建表空间目录
-root$mkdir -p database/pg12/pg_tbs_/tbs_mydb
+root$mkdir -p database/pg12/pg_tbs/tbs_mydb
 # 创建表空间
 postgres=# create tablespace tbs_mydb owner testuser location '/Users/mac/Documents/AllMyDocuments/Working/02/PostgreSQL/database/pg12/pg_tbs/tbs_mydb';
 CREATE TABLESPACE
@@ -320,6 +317,8 @@ COPY 3
 
 下一步需要切换到superuser 否则会出现下面错误信息：
 
+copy table **from** path
+
 ```shell
 mydb=> copy test_copy from '/Users/mac/Documents/AllMyDocuments/Working/02/PostgreSQL/test_copy_in.txt';
 ERROR:  must be superuser or a member of the pg_read_server_files role to COPY from a file
@@ -337,6 +336,8 @@ CONTEXT:  COPY test_copy, line 1, column id: "1 a"
 **导出：**
 
 导出将表数据输出到标准输出，而且不需要超级用户权限；
+
+copy table to path
 
 ```shell
 mydb=>copy test_copy to stdout;
@@ -384,7 +385,7 @@ mydb=> select * from test_copy where id=:v_id;
 mydb=>\set v_id
 ```
 
-### Sql 的 -v 参数传递变量
+### Sql 的 -v 参数传递变量到 sql 脚本中
 
 ```shell
 # 创建 v_sql.sql
@@ -430,7 +431,7 @@ state='active' order by query;
 \set active_session 'select pid,usename,datname,query,client_addr from pg_stat_activity where pid <> pg_backend_pid() and state=\'active\' order by query;'
 ```
 
-之后重新连接数据库，执行 `active_session`命令，**冒号后接变量名即可
+之后重新连接数据库，执行 `active_session`命令，**冒号**后接变量名即可
 
 ```sql
 mydb=# :active_session
@@ -440,7 +441,7 @@ mydb=# :active_session
 
 ```
 
-> 通过以上设置，数据库排障时不需要临时手工编写查询活动会话的SQL，只需输入:active_session 即可，方便了日常维护操作。
+> 通过以上设置，数据库排障时**不需要临时手工编写查询活动会话的SQL，只需输入:active_session 即可，方便了日常维护操作**。
 >
 > 这里我尝试通过远程连接，然后查询语句，不知道怎回事还是查出来是null。。。不清楚是不是不能识别本地的连接会话
 
@@ -458,7 +459,76 @@ from pg_stat_activity where pid <> pg_backend_pid() and wait_event is not null o
 
 ## psql 亮点功能
 
+#### 1. \timing 显示 SQL 执行时间
 
+```sql
+mydb=# \timing -- 开启显示 SQL 执行时间
+Timing is on.
+mydb=# \d     -- 查看数据库表
+           List of relations
+ Schema |   Name    | Type  |  Owner
+--------+-----------+-------+----------
+ public | test_1    | table | testuser
+ public | test_2    | table | testuser
+ public | test_copy | table | testuser
+(3 rows)
+
+mydb=# select count(*) from test_1;
+ count
+-------
+ 20000
+(1 row)
+
+Time: 9.387 ms
+mydb=# 
+```
+
+> 该功能在调试 SQL 性能时非常有用
+
+#### 2. \watch 反复执行当前SQL
+
+`\watch` 元命令会反复执行当前**查询缓冲区**的 SQL 命令
+
+```sql
+\watch [seconds] -- 间隔时间执行 
+
+mydb=# select now();
+             now
+------------------------------
+ 2020-08-18 22:07:13.45142+08
+(1 row)
+
+Time: 1.877 ms
+mydb=# \watch 1
+二  8/18 22:07:19 2020 (every 1s)
+
+              now
+-------------------------------
+ 2020-08-18 22:07:19.363585+08
+(1 row)
+
+Time: 0.372 ms
+二  8/18 22:07:20 2020 (every 1s)
+
+              now
+-------------------------------
+ 2020-08-18 22:07:20.364554+08
+(1 row)
+
+-- control c 停止
+```
+
+#### 3. Tab键自动补全
+
+不仅在查询SQL 支持，在 DDL 也支持 Tab 键自动补全
+
+```sql
+mydb=# select * from test_
+test_1     test_2     test_copy
+mydb=# select * from test_1 ;
+```
+
+> 还有几个功能因为觉的不常用就不介绍了
 
 # 相关问题
 

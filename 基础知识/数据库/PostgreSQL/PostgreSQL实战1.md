@@ -236,7 +236,7 @@ pg_ctl -D /pgdata/12/data/ restart
 
 
 
-# 错误解决
+# 相关问题
 
 ## 初始化错误
 
@@ -260,7 +260,7 @@ Examine the log output.
 
 查看了 logfile 文件，说是绑定地址失败，我又使用Postgres.app 去启动，出现端口号报错，然后我就去查看进程和端口号 `ps -ef | grep postgres`和 `losf -i:5432`，发现已经开启服务和占用了端口号。
 
-> 然后我会想其 mac 使用 `brew install postgresql`下载安装，并且启动，默认帮我初始化数据库目录到 `/usr/loacl/var/postgres`，因为是按照教程上来，所以结束服务`brew services postgresql`,使用上面启动命令启动，就成功了。 
+> 然后我回想起 mac 使用 `brew install postgresql`下载安装，并且启动，默认帮我初始化数据库目录到 `/usr/loacl/var/postgres`，因为是按照教程上来，所以结束服务`brew services postgresql`,使用上面启动命令启动，就成功了。 
 
 # 相关链接
 

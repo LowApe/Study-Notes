@@ -69,6 +69,119 @@ select * from test_serial;
 
 ## 2. 数字类型操作符和数学函数
 
+PostgreSQL 支持数字类型操作符和丰富的数学函数
+
+```sql
+mydb=# select 1+2,2*3,4/2,8%3; -- 加减乘除取余
+ ?column? | ?column? | ?column? | ?column?
+----------+----------+----------+----------
+        3 |        6 |        2 |        2
+(1 row)
+
+-- 数学函数 取余
+mydb=# select mod(8,3)
+mydb-# ;
+ mod
+-----
+   2
+(1 row)
+-- 四舍五入
+mydb=# select round(10.2),round(10.6);
+ round | round
+-------+-------
+    10 |    11
+(1 row)
+-- 向上取整 ceil() 向下取整 floor()
+mydb=# select ceil(10.2),ceil(-10.2);
+ ceil | ceil
+------+------
+   11 |  -10
+(1 row)
+```
+
+
+
+# 字符类型
+
+## 1. 字符类型列表
+
+![image.png](http://ww1.sinaimg.cn/large/006rAlqhgy1ghwhwh464bj30vg07oq6b.jpg)
+
+- character varying(n) 变长字符类型，超过 n 报错(？那还叫变长。。。)
+
+- character(n) 定长字符类型，**不够长度时会用空白填充，浪费空间**
+- text 任意长度的字符串
+
+```sql
+mydb=# create table test_cahr(col1 varchar(4),col2 character(4));
+CREATE TABLE
+mydb=# insert into test_cahr(col1,col2) values('a','a');
+INSERT 0 1
+-- 范围内字符串长度都为 1
+mydb=# select char_length(col1),char_length(col2) from test_cahr;
+ char_length | char_length
+-------------+-------------
+           1 |           1
+(1 row)
+
+-- 查看两字段实际占用的物理空间大小
+mydb=# select octet_length(col1),octet_length(col2) from test_cahr;
+ octet_length | octet_length
+--------------+--------------
+            1 |            4
+(1 row)
+```
+
+> character varying 不声明长度，将存储**任意长度的字符串**
+>
+> 而 character(n) 不声明长度则等效于长度为 1
+
+## 2. 字符类型函数
+
+```sql
+-- 长度
+mydb=# select char_length('asdasd')
+mydb-# ;
+ char_length
+-------------
+           6
+(1 row)
+
+-- 占用字节数
+mydb=# select octet_length('abcd');
+ octet_length
+--------------
+            4
+(1 row)
+
+-- 指定字符在字符串的位置
+mydb=# select position('a' in 'nasds');
+ position
+----------
+        2
+(1 row)
+
+-- 提取字符串中的子串
+mydb=# select substring('farar',3,4);
+ substring
+-----------
+ rar
+(1 row)
+
+-- 拆分字符串
+mydb=# select split_part('sdad,ada,dasda,',',',2);
+ split_part
+------------
+ ada
+(1 row)
+```
+
+
+
+# 时间/日期类型
+
+
+
 
 
 # 相关问题

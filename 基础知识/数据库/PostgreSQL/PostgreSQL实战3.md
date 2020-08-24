@@ -182,6 +182,224 @@ mydb=# select split_part('sdad,ada,dasda,',',',2);
 
 
 
+## 时间/日期类型列表
+
+![image.png](http://ww1.sinaimg.cn/large/006rAlqhgy1gi281aaxxbj30wo0b6n52.jpg)
+
+
+
+```sql
+-- 系统当前时间
+mydb=# select now();
+              now
+-------------------------------
+ 2020-08-24 21:29:37.240428+08
+(1 row)
+
+-- 类型转换
+mydb=# select now()::time without time zone;
+       now
+-----------------
+ 21:34:36.597064
+(1 row)
+
+-- 时间精度
+mydb=# select now(),now()::timestamp(0);
+              now              |         now
+-------------------------------+---------------------
+ 2020-08-24 21:36:28.950915+08 | 2020-08-24 21:36:29
+(1 row)
+```
+
+> 默认时间类型精度为 6
+
+## 时间/日期类型操作符
+
+```sql
+-- 日期相减
+
+mydb=# select date '2019-12-12' - interval'1 hour';
+      ?column?
+---------------------
+ 2019-12-11 23:00:00
+(1 row)
+```
+
+```sql
+-- 日期相乘
+mydb=# select 100* interval '1 second';
+ ?column?
+----------
+ 00:01:40
+(1 row)
+
+-- 日期相除
+
+mydb=# select interval '1 hour'/ double precision '3';
+ ?column?
+----------
+ 00:20:00
+(1 row)
+```
+
+## 时间/日期类型常用函数
+
+```sql
+-- 显示当前时间
+mydb=# select current_date,current_time;
+ current_date |    current_time
+--------------+--------------------
+ 2020-08-24   | 21:39:52.145902+08
+(1 row)
+
+-- 抽取函数 EXTRACT 函数 格式：EXTRACT(field FROM source)
+-- field: century year month day hour minute second ...
+-- source: timestamp time interval
+mydb=# select extract(year from now());
+ date_part
+-----------
+      2020
+(1 row)
+
+mydb=# select extract(month from now()),extract(day from now());
+ date_part | date_part
+-----------+-----------
+         8 |        24
+(1 row)
+
+-- 当天属于当年的第几天
+
+mydb=# select extract(doy from now());
+ date_part
+-----------
+       237
+(1 row)
+```
+
+
+
+# 布尔类型
+
+> 之前数字、字符、日期是关系型数据库的常规数据类型，此外 PostgreSQL 还支持很多非常规数据类型，比如布尔类型、网络地址类型、数组类型、范围类型、json/jsonb 类型等
+
+![image.png](http://ww1.sinaimg.cn/large/006rAlqhgy1gi28qhjgg5j30vw064tac.jpg)
+
+
+
+| true状态有效值 | false状态有效值 |
+| -------------- | --------------- |
+| TRUE           | FASLE           |
+| true           | false           |
+| t              | f               |
+| y              | n               |
+| yes            | no              |
+| on             | off             |
+| 1              | 0               |
+
+测试
+
+```sql
+create table test_boolean(cola boolean,colb boolean);
+mydb=# insert into test_boolean(cola,colb) values('true','false');
+INSERT 0 1
+mydb=# insert into test_boolean values('t','f');
+INSERT 0 1
+mydb=# insert into test_boolean values('TRUE','FALSE');
+INSERT 0 1
+mydb=# insert into test_boolean values('yes','no');
+INSERT 0 1
+mydb=# insert into test_boolean values('y','n');
+INSERT 0 1
+mydb=# insert into test_boolean values('1','0');
+INSERT 0 1
+mydb=# insert into test_boolean values(null,null);
+INSERT 0 1
+mydb=# select * from test_boolean;
+ cola | colb
+------+------
+ t    | f
+ t    | f
+ t    | f
+ t    | f
+ t    | f
+ t    | f
+      |
+(7 rows)
+```
+
+# 网络类型
+
+> 当有存储 IP 地址需求的业务场景时，一般会存储字符类型，实际上可以提供用于存储 IPv4、IPv6、MAC 网络地址的专有网络地址数据类型，使用网络地址类型存储会对数据合法性进行检查，也提供网络数据操作符和函数方便开发
+
+## 网络地址类型列表
+
+![image.png](http://ww1.sinaimg.cn/mw690/006rAlqhgy1gi29bnp6bkj30vc0a6adg.jpg)
+
+```sql
+-- inet 和 cidr 类型存储的网络地址格式为 address/y  ip地址/网络掩码
+-- 格式校验
+mydb=# select '192.168.2.1000'::inet;
+ERROR:  invalid input syntax for type inet: "192.168.2.1000"
+LINE 1: select '192.168.2.1000'::inet;
+-- 正确的
+mydb=# select '192.168.2.100'::inet;
+     inet
+---------------
+ 192.168.2.100
+(1 row)
+ -- cidr 带位数
+mydb=# select '192.168.2.100'::cidr;
+       cidr
+------------------
+ 192.168.2.100/32
+ -- 32 不显示
+(1 row)
+mydb=# select '192.168.2.100/32'::inet;
+     inet
+---------------
+ 192.168.2.100
+(1 row)
+-- 其他显示
+mydb=# select '192.168.2.100/16'::inet;
+       inet
+------------------
+ 192.168.2.100/16
+(1 row)
+```
+
+- cidr 会对合法性进行检查，而 inet 不会
+
+## 网络地址操作符
+
+![image.png](http://ww1.sinaimg.cn/mw690/006rAlqhgy1gi29kkt60nj30we0oitn5.jpg)
+
+## 网络地址函数
+
+```sql
+-- 取 ip
+mydb=# select host(cidr '192.168.1.0/24');
+    host
+-------------
+ 192.168.1.0
+(1 row)
+-- 取子网掩码
+mydb=# select netmask(cidr '192.168.1.0/24');
+    netmask
+---------------
+ 255.255.255.0
+(1 row)
+-- 全都取
+mydb=# select text(cidr '192.168.1.0/24');
+      text
+----------------
+ 192.168.1.0/24
+(1 row)
+```
+
+
+
+
+
 
 
 # 相关问题

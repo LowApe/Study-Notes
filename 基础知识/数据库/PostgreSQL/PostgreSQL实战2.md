@@ -153,8 +153,16 @@ mydb-# \di+ test_1_pkey
 
 ### \sf 查看函数代码
 
-```shell
-# 内容待定，书上的看不懂
+> \sf 后面可以只接函数的名称,或者函数名称及输入参数类型
+
+```sql
+-- 查看数组长度代码格式
+mydb=# \sf array_length
+CREATE OR REPLACE FUNCTION pg_catalog.array_length(anyarray, integer)
+ RETURNS integer
+ LANGUAGE internal
+ IMMUTABLE PARALLEL SAFE STRICT
+AS $function$array_length$function$
 ```
 
 ### \x 设置查询结果输出

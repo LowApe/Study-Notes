@@ -398,12 +398,626 @@ mydb=# select text(cidr '192.168.1.0/24');
 
 
 
+# 数组类型
+
+> PostgreSQL 支持**一维数组和多维数组**，常用的数组类型为数字类型数组和字符型数组，也支持枚举类型、复合类型数组
+
+## 数组类型定义
+
+```sql
+-- 数组类型定义
+create table test_array1(
+id integer,
+array_i integer[],
+array_t text[]
+);
+```
+
+## 数组类型值输入
+
+```sql
+-- 花括号方式
+'{ val1 delim val2 delim ...}'
+mydb=# select '{1,2,3}';
+ ?column?
+----------
+ {1,2,3}
+(1 row)
+-- 插入数据
+mydb=# insert into test_array1 values (1,'{1,2,3}','{"a","b","c"}');
+INSERT 0 1
+-- 显示数据
+mydb=# select * from test_array1;
+ id | array_i | arry_t
+----+---------+---------
+  1 | {1,2,3} | {a,b,c}
+(1 row)
+```
+
+```sql
+-- 使用 ARRAY 关键字
+mydb=# select array[1,2,3];
+  array
+---------
+ {1,2,3}
+(1 row)
+
+mydb=# create table test_array2(id integer,array_i integer[],array_y text[]);
+CREATE TABLE
+mydb=# insert into test_array2 values(1,array[4,5,6],array['a','b','c']);
+INSERT 0 1
+mydb=# select * from test_array2;
+ id | array_i | array_y
+----+---------+---------
+  1 | {4,5,6} | {a,b,c}
+(1 row)
+
+```
+
+## 查询数组元素
+
+```sql
+-- 下表查询数组
+mydb=# select array_i[1],arry_t[3] from test_array1 where id = 1;
+ array_i | arry_t
+---------+--------
+       1 | c
+(1 row)
+
+```
+
+> 下表的数字就是所在数组个位置，索引从 1 开始
+
+## 数组元素的追加、删除、更新
+
+```sql
+-- 追加 array_append(anyarray,anyelement) 末端追加一个元素
+mydb=# select array_append(array[1,2,3],4);
+ array_append
+--------------
+ {1,2,3,4}
+(1 row)
+-- 追加数组也可以使用操作符 ||
+mydb=# select array[1,2,3] || 4;
+ ?column?
+-----------
+ {1,2,3,4}
+(1 row)
+```
+
+```sql
+-- 数组元素删除 array_remove(anyarray,anyelement);
+mydb=# select array[1,2,2,3],array_remove(array[1,2,2,3],2);
+   array   | array_remove
+-----------+--------------
+ {1,2,2,3} | {1,3}
+(1 row)
+```
 
 
 
+```sql
+-- 数组元素的修改代码
+mydb=# select * from test_array1;
+ id | array_i | arry_t
+----+---------+---------
+  1 | {1,2,3} | {a,b,c}
+(1 row)
 
-# 相关问题
+mydb=# update test_array1 set array_i[3]=4 where id = 1;
+UPDATE 1
+mydb=# select * from test_array1;
+ id | array_i | arry_t
+----+---------+---------
+  1 | {1,2,4} | {a,b,c}
+(1 row)
+```
 
 
+
+## 数组操作符
+
+![image.png](http://ww1.sinaimg.cn/mw690/006rAlqhgy1gi2sksn5jvj30v20j47gj.jpg)
+
+```sql
+-- 前两个尝试
+mydb=# select array[1,2,3]<>array[1,2,4];
+ ?column?
+----------
+ t
+(1 row)
+
+mydb=# select array[1,2,3]::int[]=array[1,2,4];
+ ?column?
+----------
+ f
+(1 row)
+```
+
+## 数组函数
+
+```sql
+mydb=# select array_append(array[1,2],3),array_remove(array[1,2],2);
+ array_append | array_remove
+--------------+--------------
+ {1,2,3}      | {1}
+(1 row)
+
+-- 获取数组纬度
+mydb=# select array_ndims(array[1,2]);
+ array_ndims
+-------------
+           1
+(1 row)
+-- 获取数组长度 后面数字不清楚是什么意思(\sf 查看是返回类型)
+mydb=# select array_length(array['a','b','c','d'],1);
+ array_length
+--------------
+            4
+(1 row)
+
+-- 查看数组长度代码格式
+mydb=# \sf array_length
+CREATE OR REPLACE FUNCTION pg_catalog.array_length(anyarray, integer)
+ RETURNS integer
+ LANGUAGE internal
+ IMMUTABLE PARALLEL SAFE STRICT
+AS $function$array_length$function$
+
+-- 返回数组中某个数组元素第一次出现的位置
+mydb=# select array_position(array['a','b','c','d'],'d');
+ array_position
+----------------
+              4
+(1 row)
+-- 数组替换函数
+mydb=# select array_replace(array[1,2,5,4],5,3);
+ array_replace
+---------------
+ {1,2,3,4}
+(1 row)
+-- 将数组元素输出到字符串，可以使用 array_to_string(anyarray,text[,text])
+-- text[,text] 解读，将值为 null 的替换 text
+mydb=# select array_to_string(array[1,2,null,3],',','10');
+ array_to_string
+-----------------
+ 1,2,10,3
+(1 row)
+```
+
+> 最后一个函数 array_to_string 有些问题
+>
+> - \sf 无法查询到
+> - 共有两个参数，但是书上的例子上面是三个...
+
+# 范围类型
+
+> 常见的范围类型
+>
+> - 日期范围类型
+> - 整数范围类型
+> - ...
+>
+> 范围类型提供丰富的操作符和函数，对于日期安排、价格范围应用场景比较适用
+
+## 范围类型列表
+
+| 类型      | 描述                          |
+| --------- | ----------------------------- |
+| int4range | integer范围类型               |
+| int8range | bigint 范围类型               |
+| numrange  | numeric范围类型               |
+| tsrange   | 不带时区的 timestamp 范围类型 |
+| tszrange  | 带时区的 timestamp 范围类型   |
+| daterange | date 范围类型                 |
+
+```sql
+-- 自定义范围类型
+mydb=# select int4range(1,5);
+ int4range
+-----------
+ [1,5)
+(1 row)
+
+ mydb=# select daterange('2017-07-01','2020-07-31');
+        daterange
+-------------------------
+ [2017-07-01,2020-07-31)
+(1 row)
+```
+
+## 范围类型边界
+
+```sql
+-- 如果没有指定数据类型边界模式，指定上届为"]"
+mydb=# select int4range(4,7);
+ int4range
+-----------
+ [4,7)
+(1 row)
+-- 指定上下界都是包含
+  mydb=# select int4range(1,3,'[]');
+ int4range
+-----------
+ [1,4)
+(1 row)
+-- 指定下届包含 
+mydb=# select int4range(1,3,'(]');
+ int4range
+-----------
+ [2,4)
+(1 row)
+```
+
+> HINT:  Valid values are "[]", "[)", "(]", and "()".
+>
+> 不清楚为什么不管怎么指定，显示都是"[ )"
+
+## 范围类型操作符
+
+```sql
+-- 包含元素操作符
+mydb=# select int4range(4,7) @>4;
+ ?column?
+----------
+ t
+(1 row)
+-- 包含范围操作符
+mydb=# select int4range(4,7)@>int4range(4,6);
+ ?column?
+----------
+ t
+(1 row)
+-- 等于操作符
+mydb=# select int4range(4,7)=int4range(4,6,'[]');
+ ?column?
+----------
+ t
+(1 row)
+```
+
+> `@>`操作符在范围数据类型中比较常用，常用来查询范围数据类型是否包含某个指定元素
+
+## 范围类型函数
+
+```sql
+-- 取上下边界值
+mydb=# select lower(int4range(1,10));
+ lower
+-------
+     1
+(1 row)
+
+mydb=# select upper(int4range(1,10));
+ upper
+-------
+    10
+(1 row)
+-- 范围是否为 null ？
+mydb=# select isempty(int4range(1,10));
+ isempty
+---------
+ f
+(1 row)
+```
+
+## 给范围类型创建索引
+
+```sql
+mydb=# create index idx_ip_adress_range on ip_address using gist(ip_range);
+ERROR:  relation "ip_address" does not exist
+```
+
+> 书上解释太少，命令还有些问题
+
+# json/jsonb 类型
+
+
+
+## json 类型简介
+
+```sql
+-- json 简单例子
+mydb=# select '{"a":1,"b":2}'::json;
+     json
+---------------
+ {"a":1,"b":2}
+(1 row)
+
+mydb=# create table test_json1(id serial primary key,name json);
+CREATE TABLE
+mydb=# insert into test_json1(name) values('{"col1":1,"col2":"francs","col3":"male"}');
+INSERT 0 1
+mydb=# insert into test_json1(name) values('{"col1":1,"col2":"frances","col3":"male"}');
+INSERT 0 1
+mydb=# select * from test_json1;
+ id |                   name
+----+-------------------------------------------
+  1 | {"col1":1,"col2":"francs","col3":"male"}
+  2 | {"col1":1,"col2":"frances","col3":"male"}
+(2 rows)
+```
+
+## 查询 json 数据
+
+```sql
+-- 通过 "->" 操作符可以查询 json 数据的键值
+mydb=# select name -> 'col2' from test_json1 where id=1;
+ ?column?
+----------
+ "francs"
+(1 row)
+-- 文本格式返回 json 字段键值可以使用 "->>" 操作符
+mydb=# select name ->> 'col2' from test_json1 where id=1;
+ ?column?
+----------
+ francs
+(1 row)
+```
+
+## jsonb 与 json 差异
+
+| json                           | jsonb                             |
+| ------------------------------ | --------------------------------- |
+| 存储格式为文本(存储快，使用慢) | 存储格式为二进制(存储慢，使用快)  |
+| json输出键的顺序和输入完全一样 | 输出的键的顺序和输入不一样        |
+| 不会去掉空格                   | 去掉输入数据中键值的空格          |
+| 不会删除重复的键               | 会删除重复的键,**仅保留最后一个** |
+
+```sql
+-- 输出键值顺序差异
+mydb=# select '{"bar":"baz","balance":7.77,"active":false}'::jsonb;
+                      jsonb
+--------------------------------------------------
+ {"bar": "baz", "active": false, "balance": 7.77}
+(1 row)
+
+mydb=# select '{"bar":"baz","balance":7.77,"active":false}'::json;
+                    json
+---------------------------------------------
+ {"bar":"baz","balance":7.77,"active":false}
+(1 row)
+
+-- 输入空格差异
+mydb=# select '{"id":1,  "name":"francs"}'::jsonb;
+            jsonb
+-----------------------------
+ {"id": 1, "name": "francs"}
+(1 row)
+
+mydb=# select '{"id":1,  "name":"francs"}'::json;
+            json
+----------------------------
+ {"id":1,  "name":"francs"}
+(1 row)
+-- 重复键的差异
+mydb=# select '{"id":1,"name":"francs","remark":"a good guy!","name":"test"}'::jsonb;
+                       jsonb
+----------------------------------------------------
+ {"id": 1, "name": "test", "remark": "a good guy!"}
+(1 row)
+
+mydb=# select '{"id":1,"name":"francs","remark":"a good guy!","name":"test"}'::json;
+                             json
+---------------------------------------------------------------
+ {"id":1,"name":"francs","remark":"a good guy!","name":"test"}
+(1 row)
+```
+
+> 在大多数应用场景下建议使用 jsonb, 除非有特殊需求，比如对 json 键顺序
+
+## jsonb 与 json 操作符
+
+```sql
+-- 以文本格式返回 json 类型 "->>"
+mydb=# select name ->> 'col2' from test_json1 where id =1;
+ ?column?
+----------
+ francs
+(1 row)
+-- 字符串是否作为顶层键值
+mydb=# select '{"a":1,"b":2}'::jsonb ? 'a';
+ ?column?
+----------
+ t
+(1 row)
+-- 删除 json 数据的键/值
+mydb=# select '{"a":1,"b":"faasd"}'::jsonb - 'a';
+    ?column?
+----------------
+ {"b": "faasd"}
+(1 row)
+```
+
+## Jsonb 与 json 函数
+
+
+
+```sql
+-- 扩展最外层的 json 对象成为一组键/值结果集
+mydb=# select * from json_each('{"a":"foo","b":"bar"}');
+ key | value
+-----+-------
+ a   | "foo"
+ b   | "bar"
+(2 rows)
+-- 文本方式返回结果
+mydb=# select * from json_each_text('{"a":"foo","b":"bar"}');
+ key | value
+-----+-------
+ a   | foo
+ b   | bar
+(2 rows)
+-- row_to_json 函数按行输出
+mydb=# select * from test_copy where id =1;
+ id | name
+----+------
+  1 | a
+  1 | a
+(2 rows)
+
+mydb=# select row_to_json(test_copy) from test_copy where id =1;
+     row_to_json
+---------------------
+ {"id":1,"name":"a"}
+ {"id":1,"name":"a"}
+(2 rows)
+-- 返回最外层的 json 对象中的键的集合
+mydb=# select * from json_object_keys('{"a":"foo","b":"bar"}');
+ json_object_keys
+------------------
+ a
+ b
+(2 rows)
+```
+
+## jsonb 键/值的追加、删除、更新
+
+```sql
+-- || 追加
+mydb=# select '{"name":"francs","age":"31"}'::jsonb || '{"sex":"male"}'::jsonb;
+                    ?column?
+------------------------------------------------
+ {"age": "31", "sex": "male", "name": "francs"}
+(1 row)
+-- 删除  通过“-” 通过“#-” 常用于有嵌套的 json 数据删除
+mydb=# select '{"name":"james","email":"james@localhost"}'::jsonb - 'email';
+     ?column?
+-------------------
+ {"name": "james"}
+(1 row)
+-- 这里没弄明白 #- 后面那块内容(应该参数1：删除key，参数2 删掉嵌套的位置)
+mydb=# select '{"name":"James","contact":{"phone":"0234123123","fax":"1231231"}}'::jsonb #- '{contact,fax}'::text[];
+                       ?column?
+-------------------------------------------------------
+ {"name": "James", "contact": {"phone": "0234123123"}}
+(1 row)
+-- 删除嵌套 aliases 中位置 1的 键/值(⚠️这里因为是数组，所以是数组索引)
+mydb=# select '{"name":"asd","aliases":["ads","sdasd","asdasd"]}'::jsonb #- '{aliases,0}'::text[];
+                    ?column?
+-------------------------------------------------
+ {"name": "asd", "aliases": ["sdasd", "asdasd"]}
+(1 row)
+
+-- 更新 “||”操作符，即可连接 json 也可以覆盖重复的键值
+mydb=# select '{"name":"francs","age":"31"}'::jsonb || '{"age":"14"}'::jsonb;
+            ?column?
+---------------------------------
+ {"age": "14", "name": "francs"}
+(1 row)
+
+mydb=# select '{"name":"francs","age":"31"}'::jsonb || '{"age":"14"}';
+            ?column?
+---------------------------------
+ {"age": "14", "name": "francs"}
+(1 row)
+-- 更新2 jsonb_set(target jsonb,path text[],new_value jsonb[,create_missing],boolean);
+-- targer 源 jsonb 数据 path 路径，new_value 指更新后的键值 
+-- create_missing  true 如果键不存在则添加 false 如果键不存在则不添加
+mydb=# select jsonb_set('{"name":"francs","age":"31"}'::jsonb,'{age}','"123"'::jsonb,false);
+            jsonb_set
+----------------------------------
+ {"age": "123", "name": "francs"}
+(1 row)
+
+mydb=# select jsonb_set('{"name":"francs","age":"31"}'::jsonb,'{addAge}','"123"'::jsonb,true);
+                    jsonb_set
+--------------------------------------------------
+ {"age": "31", "name": "francs", "addAge": "123"}
+(1 row)
+```
+
+
+
+# 数据类型转换
+
+- 格式化函数
+- CAST函数
+- `::`操作符
+
+## 通过格式化函数进行转化
+
+![image.png](http://ww1.sinaimg.cn/mw690/006rAlqhgy1gi2wz9raznj30vu0di7fi.jpg)
+
+```sql
+-- 简单尝试
+mydb=# select to_date('05 Dec 2000','DD Mon YYYY');
+  to_date
+------------
+ 2000-12-05
+(1 row)
+
+mydb=# select to_number('123,131.4-','99F999D9S');
+ to_number
+-----------
+     12131
+(1 row)
+```
+
+> 数据格式参考相关链接
+
+## 通过CAST函数进行转换
+
+```sql
+-- varchar 字符转换为 text
+mydb=# select cast(varchar '123' as text);
+ text
+------
+ 123
+(1 row)
+-- varchar 字符类型转换 int4
+ mydb=# select cast(varchar '123' as int4);
+ int4
+------
+  123
+(1 row)
+```
+
+
+
+## 通过：：操作符进行转换
+
+```sql
+-- 转换成 int4 或 numeric 类型
+mydb=# select 1::int4,3/2::numeric;
+ int4 |      ?column?
+------+--------------------
+    1 | 1.5000000000000000
+(1 row)
+```
+
+```sql
+-- 查询表 test_json1 在系统表 pg_class 的 oid 和 relname
+mydb=# select oid,relname from pg_class where relname='test_json1';
+  oid  |  relname
+-------+------------
+ 16504 | test_json1
+(1 row)
+-- 根据 oid 在系统表 pg_attribute 中 attrelid 找到表的字段
+mydb=# select attname from pg_attribute where attrelid='16504' and attnum > 0;
+ attname
+---------
+ id
+ name
+(2 rows)
+-- :: 类型转换替换上面两条语句
+mydb=# select attname from pg_attribute where attrelid = 'test_json1'::regclass and attnum > 0;
+ attname
+---------
+ id
+ name
+(2 rows)
+```
+
+> 这里不明白 regclass 怎么就把对应的id转换了？
+
+> 解释:
+>
+> - pg_class 系统表存储 PostgreSQL 对象信息，比如表、索引、序列、试图等，OID 是隐藏字段，唯一标识 pg_class 中的一行，可以理解成 pg_class 系统表的对象ID；
+> - pg_attribute 系统表存储表的字段信息，数据库表的每一个字段在这个视图中都有相应的一条记录
+> - pg_attribute.attrelid 是指字段所属表 OID
 
 # 相关链接
+
+- [postgresql----JSON和JSONB类型](https://blog.csdn.net/u012129558/article/details/81453640)
+- [PostgreSQL中的时间戳格式转化常识](https://my.oschina.net/u/3760785/blog/1930575)

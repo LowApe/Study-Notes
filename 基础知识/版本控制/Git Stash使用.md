@@ -12,11 +12,18 @@ git stash save "message"
 # 查看存储列表
 git stash list
 stash@{0}: On brachName: message
+
 # 查看存储内容做的改动，
 # 默认显示第一个，后缀添加 stash@{number} 显示其他
 git stash show
-# 恢复工作目录，感觉跟 apply 相同...
+
+# 应用某一个存储的内容,并不删除存储
+git stash apply stash@{number}
+
+# 恢复工作目录，并且删除弹出来的 stash 存储
 git stash pop
+
+
 # 移除具体
 git stash drop stash@{number}
 # 清除所有缓存

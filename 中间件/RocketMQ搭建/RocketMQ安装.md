@@ -1,9 +1,11 @@
 # RocketMQ 安装
 
-前期准备
+## 系统要求
 
-- [安装 Java]()
-- [安装 Maven]()
+- 64bit 的 Linux、Unix 或 Mac 内存2G(可修改)
+- [安装 Java]()大于JDK1.8
+- [安装 Maven]()大于3.2.x
+- Git
 
 > ⚠️ 跳转到写的安装文章
 
@@ -20,13 +22,23 @@ $ cd rocketmq-all-4.6.1-source-release # 进入目录
 
 ```shell
 $ mvn -Prelease-all -DskipTests clean install -U # 使用 maven 编译,生成 target 编译后目录文件
+# 注意一定是进入 target 
 $ cd distribution/target/rocketmq-4.6.1/rocketmq-4.6.1/ # 进入目录
-$ ls # 
+$ ls
 LICENSE		README.md	bin		lib
 NOTICE		benchmark	conf		nohup.out
 $ nohup sh bin/mqnamesrv & # 启动 namesrv ,文件 nohup.out 查看日志
 $ nohup sh bin/mqbroker -n localhost:9876 & # 启动 broker
 ```
+
+> 内存不足问题参考下方
+
+- Benchmark  包括运行 benchmark 程序的 shell 脚本
+- bin 文件夹含有各种使用 RokcetMQ 的 shell 脚本，比如 nameServer 的脚本 mqnamesrv
+- conf 文件夹包含示例配置文件
+- lib 文件夹包括RokcetMQ 各个模块编译成的 jar 包。比如依赖的 Netty、commons-lang、FastJSON等
+
+
 
 自动创建 topic
 
@@ -60,25 +72,25 @@ $ sh bin/mqshutdown namesrv  # 关闭 namesrv
 
 ## 1.多机部署
 
-> 部署一个 双主、双从的 RoketMQ 集群，每台机器启动一个 Master 角色和 
+> 部署一个 双主、双从的 RoketMQ 集群，每台机器启动一个 Master 角色和 Slave角色
 
 示例配置在 `conf/2m-2s-sync` 文件夹下
 
 - 2m-2s 双主、双从
 - sync 同步
 
-准备两个**物理机**,分别启动 nameSrv
+准备两个**物理机**,分别启动 nameSrv,获得两个 ip 的 nameSrv
 
 ## 2.配置参数
 
-物理机 `1-master`配置 `broker-a.properties`:
+为 broker   `1-master`配置 `broker-a.properties`:
 
 ```properties
 # nameServer 地址可以用分号配置多个
 namesrvAddr=ip1:9876;ip2:9876
 # 集群机器如果多，可以通过名称划分多个 Cluster ，每个 Cluster 表示一个业务群
 brokerClusterName=DefaultCluster
-# Master 和 Salve 使用相同的名称表明相互关系
+# Master 和 Salve 使用相同的名称表明相互关系，以说明某个Slave是那个Master的 Slave
 brokerName=broker-a
 # 0-表示 Master 1-表示 SLAVE
 brokerId=0
@@ -93,7 +105,7 @@ flushDiskType=ASYNC_FLUSH
 # broker 监听端口
 listenPort=10911
 # 存储消息以及信息的根目录
-storePathRootDir=/Users/mac/Documents/AllMyDocuments/RocketStore
+storePathRootDir=/*/RocketStore
 ```
 
 物理机 `1-salve配置 `broker-b-s.properties`:
@@ -114,7 +126,7 @@ storePathRootDir=/Users/mac/Documents/AllMyDocuments/RocketStore1
 
 > 注意存储目录不同，还有关 RocketMQ 相关的配置参数请参考[相关配置参数](http://rocketmq.apache.org/docs/rmq-deployment/)
 >
-> 物理机2与之类似,唯一不同是，SLAVE 分别在对方那里(疑惑的地方🤔️)
+> 物理机2与之类似,唯一不同是，SLAVE 分别在对方那里(疑惑的地方🤔️,我理解把主从broker 放到同一个物理机，那就做不到其中一个不可以使用从broker，所以要放到不同物理机上)
 
 最后分别使用启动命令启动这 4个 broker
 
@@ -215,9 +227,44 @@ rocketmq.config.namesrvAddr=ip1:9876;ip2:9876
 > 1. 需要在`conf/2m-2s-sync`目录的配置文件添加 `brokerIP1=ip`否则连接失败
 > 2. 还需要注意服务器打开端口
 
+
+
+## 5. 常用管理命令
+
+MQAdmin 是 RocketMQ 自带的命令行管理工具，在bin目录下，使用mqadmin命令进行创建、修改topic ，更新broker 的配置信息，查询特定消息等各种操作
+
+> :sos:内容待定
+
+# 相关问题
+
+> mqnamesrv 启动失败，显示内存不足
+
+**解决：**
+
+- 找到`runserver.sh`和`runbroker.sh`
+- 修改内存大小
+
+```shell
+# runserver 改之前
+JAVA_OPT="${JAVA_OPT} -server -Xms2g -Xmx4g -Xmn2g -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=320m"
+
+# 改之后
+JAVA_OPT="${JAVA_OPT} -server -Xms218m -Xmx512m -Xmn1g -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=320m"
+
+# runbroker 改之前
+JAVA_OPT="${JAVA_OPT} -server -Xms8g -Xmx8g -Xmn4g"
+
+# 改之后
+JAVA_OPT="${JAVA_OPT} -server -Xms256m -Xmx512m -Xmn1g"
+```
+
+
+
 # 相关链接
 
 - [RocketMQ官方链接](http://rocketmq.apache.org/)
+
+- [搭建RocketMQ踩的坑-内存不足](https://www.cnblogs.com/williamjie/p/9377163.html)
 
 
 

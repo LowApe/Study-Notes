@@ -9,7 +9,7 @@
 - 映射
 - 遗留的集合
 
-# Java集合框架
+# Java集合框架(接口)
 
 
 
@@ -55,7 +55,7 @@ Queue<Customer> expressLane = new LinkedListQueue<>();
 
 > 书上说 API 文档，Abstract 开头的类是**为类库实现者而设计的**，那现阶段理解，实现是直接使用，抽象是增加功能
 
-### Collection接口
+## Collection接口
 
 这个接口比较重要的两个基本方法:
 
@@ -71,7 +71,7 @@ public interface Collection<E>
 > 1. 向集合添加一个元素
 > 2. 返回一个实现了 Iterator 接口的对象，通过这个迭代器对象依次访问集合的元素
 
-#### Collection 代码分析
+**Collection 代码分析**
 
 > 有些方法是 `destructive【毁灭性的】`,当操作集合的方法，不支持操作时，会抛出`UnsupportedOperationException` 异常
 >
@@ -138,13 +138,13 @@ public interface Collection<E> extends Iterable<E>{
 }
 ```
 
-#### Collection 类图
+**Collection 类图**
 
 ![image.png](http://ww1.sinaimg.cn/mw690/006rAlqhgy1giig6aaopfj30j60z2ju7.jpg)
 
-#### Collection 练习
+**Collection 练习**
 
-**使用已存在的集合**：
+> 使用ArrayList练习：
 
 ```java
 package core1.chapter9;
@@ -157,10 +157,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * @author: qujiacheng
- * @email: qujiacheng.qjc@bitsun-inc.com
- */
 public class CollectionPractice {
     public static Logger logger = LoggerFactory.getLogger(CollectionPractice.class);
     public static final int INIT_ARRAY_CAPACITY = 5;
@@ -277,9 +273,153 @@ public class CollectionPractice {
 
 
 
-### 迭代器
+### List 接口
 
-#### Iterator 代码分析：
+#### List 代码分析:
+
+```java
+public interface List<E> extends Collection<E>{
+    // 最大 Integer.MAX_VALUE;
+    int size(); 
+    boolean isEmpty();
+    boolean contains(Object o);
+    Iterator<E> iterator();
+    Object[] toArray();
+    // 如果符合运行时具体的类型
+    <T> T[] toArray(T[] a);
+    boolean add(E e);
+    boolean addAll(Collection<? extends E> c);
+    boolean remove(Object o);
+    boolean removeAll(Collection<?> c);
+    boolean containsAll(Collection<?> c);
+    
+    // 条件删除
+    default boolean removeIf(Predicate<? super E> filter){
+        Objects.requireNonNull(filter);
+        boolean removed = false;
+        final Iterator<E> each = iterator();
+        while(each.hasNext()){
+            if(filter.test(each.next())){
+                each.remove();
+                removed = true;
+            }
+        }
+        return removed;
+     }
+    
+    boolean retainAll(Collection<?> c);
+    void clear();
+    boolean equals(Object o);
+    int hashCode;
+    // 返回给定分隔符的分割迭代器
+    @Override
+    default Spliterator<E> spliterator() {
+        return Spliterators.spliterator(this, 0);
+    }
+    
+    default Stream<E> stream(){
+        return StreamSupport.stream(spliterator(), false);
+    }
+    
+    default Stream<E> parallelStream() {
+        return StreamSupport.stream(spliterator(), true);
+    }
+    
+    // 替换所有
+    default void replaceAll(UnaryOperator<E> operator){
+        Objects.requireNonNull(operator);
+        final ListIterator<E> li = this.listIterator();
+        while(li.hasNext()){
+            li.set(operator.apply(li.next()));
+        }
+    }
+    
+    // 排序
+    deafult void sort(Comparator<? super E> c){
+        Object[] a = this.toArray();
+        Arrays.sort(a, (Comparator) c);
+        ListIterator<E> i = this.listIterator();
+        for(Object e: a){
+            i.next();
+            i.set((E)e);
+        }
+    }
+    // 操作集合元素的接口
+    E get(int index);
+    E set(int index,E element);
+    void add(int index,E element);
+    E remove(int index);
+    
+    // 查询集合元素的接口
+    int indexOf(Object o);
+    int lastIndexOf(Object o);
+    
+    ListIterator<E> listIterator();
+    // 指定位置的List迭代器
+    ListIterator<E> listIterator(int index);
+    
+   	List<E> subList(int formIndex,int toIndex);
+    
+}
+```
+
+
+
+> 相比继承父类 Collection 多了用于随机访问的方法，和一些特殊方法,
+>
+> - ListIterator 接口是 Iterator 的一个子接口
+
+#### List 类图
+
+![image.png](http://ww1.sinaimg.cn/mw690/006rAlqhgy1gj4cbuvfkzj30mc11s425.jpg)
+
+#### List 练习
+
+```java
+
+```
+
+### Set接口
+
+#### Set 代码分析：
+
+```java
+
+```
+
+#### Set接口类图
+
+
+
+
+
+#### Set 练习
+
+```java
+
+```
+
+
+
+## Map接口
+
+### Map 代码分析：
+
+>  A map cannot contain duplicate keys; 一个 map 对象不能包含完全相同的key
+>
+> 
+
+### Map类图
+
+![image.png](http://ww1.sinaimg.cn/mw690/006rAlqhgy1gj4c2kh2wvj30re1bmq82.jpg)
+
+### Map 练习
+
+
+
+## Iterator迭代器
+
+**Iterator 代码分析：**
 
 ```java
 package java.util;
@@ -312,11 +452,13 @@ public interface Iterator<E>{
 > - 虽然迭代过程中遍历所有元素，**但是无法确定元素被访问的次序**
 > - **迭代器的查找和位置变更是紧密相连的**
 
-#### Iterator 类图
+**Iterator 类图**
 
 ![image.png](http://ww1.sinaimg.cn/mw690/006rAlqhly1gij9mpcc47j30n6090q3b.jpg)
 
-#### Iterator 练习
+**Iterator 练习**
+
+> 使用 ArrayList 实现的 Iterator 方法
 
 ```java
 package core1.chapter9;
@@ -326,10 +468,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
-/**
- * @author: qujiacheng
- * @email: qujiacheng.qjc@bitsun-inc.com
- */
+
 public class IteratorPractice {
 
     public static Logger logger = LoggerFactory.getLogger(IteratorPractice.class);
@@ -388,3 +527,114 @@ public class IteratorPractice {
 
 ```
 
+### ListIterator迭代器
+
+#### ListIterator 代码分析：
+
+```java
+public interface ListIterator<E> extends Iterabtor<E>{
+    boolean hasNext();
+    E next();
+    boolean hasPrevious();
+    E previous();
+    // 获取当前
+    int nextIndex();
+    int previousIndex();
+    void remove();
+    // set 替换游标越过的值
+    void set(E e);
+    // add 添加游标越过前的值
+    void add(E e);
+}
+```
+
+> ⚠️注意：
+>
+> next() 会移动迭代器位置
+>
+> - nextIndex() 获取游标前面(右边)索引，nextPrevious()获取后面(左边)，如果从左到右，再到坐可能存在索引为负
+> - add()添加到**游标前面位置**
+
+#### ListIterator 类图
+
+![image.png](http://ww1.sinaimg.cn/mw690/006rAlqhgy1gj4dc243g3j30ka0omjsx.jpg)
+
+#### ListIterator 练习
+
+> 使用 ArrayList 练习
+
+```java
+@Slf4j
+public class ListIteratorPractice {
+    private final static int INIT_CAPACITY = 5;
+
+    public static void main(String[] args) {
+        List<String> list = new ArrayList<>();
+        for (int i = 1; i < INIT_CAPACITY; i++) {
+            list.add("value" + i);
+        }
+        log.info("init List:{}", list);
+
+        // 获得 ListIterator
+        ListIterator<String> listIterator = list.listIterator();
+        log.info("listIterator:{}", listIterator);
+
+        // hasNext()
+        while (listIterator.hasNext()) {
+            String element = listIterator.next();
+            log.info("nextIndex:{}", listIterator.nextIndex());
+            log.info("hasNext-element:{}", element);
+            // set 替换游标前面的元素
+            listIterator.set("setValue");
+        }
+
+        System.out.println();
+        // listIterator.add(()
+        listIterator.add("addValue");
+
+        log.info("{}",list);
+        listIterator.previous();
+        // remove()
+        listIterator.remove();
+
+        System.out.println();
+
+        // hasPrevious()
+        while (listIterator.hasPrevious()) {
+            String element = listIterator.previous();
+
+            log.info("previousIndex:{}", listIterator.previousIndex());
+            log.info("hasPrevious-element:{}", element);
+        }
+
+        System.out.println();
+
+        // 获取指定位置 ListIterator(int index);
+        ListIterator<String> indexListIterator = list.listIterator(2);
+        while (indexListIterator.hasNext()) {
+            String element = indexListIterator.next();
+            log.info("indexListIterator-element:{}", element);
+        }
+
+
+    }
+}
+```
+
+
+
+# RandomAccess
+
+> 该接口不包含任何方法，用于测试特定具体集合是否支持高校的随机访问.在一些集合中，有两种有序集合，一种数组支持有序集合可以快速反问，一种链表支持有序
+
+```java
+if(c instanceof RandomAccess){
+    use random access algorithm
+}else{
+    use sequential access algorithm
+}
+```
+
+
+
+### 

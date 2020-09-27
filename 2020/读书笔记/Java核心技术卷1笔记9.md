@@ -548,12 +548,22 @@ public interface ListIterator<E> extends Iterabtor<E>{
 }
 ```
 
+> 不同实现类的迭代器实现代码不同，
+>
+> - LinkedList 的链表迭代器的设计能够检测到其他迭代器修改过元素，会抛出一个 `ConcurrentModificationException`异常
+> 	- 避免并发修改的异常，在每个迭代器方法开始处检查自己改写操作的技术值是否与集合的改写操作计数值一致，不一致，抛出一个 `ConcurrentModificationException`异常
+> - 虽然链表的迭代器也提供随机访问元素get方法，但效率很低(size()/2 从尾部开始搜索),避免链表迭代器使用 get 方法
+>
 > ⚠️注意：
 >
 > next() 会移动迭代器位置
 >
-> - nextIndex() 获取游标前面(右边)索引，nextPrevious()获取后面(左边)，如果从左到右，再到坐可能存在索引为负
+> - nextIndex() 获取游标前面(右边)索引，nextPrevious()获取后面(左边)，如果从左到右，再到坐可能存在索引为负(这是我的理解)
+> 	- nextIndex 方法返回下一次调用 next 方法时返回元素的整数索引
+> 	- previousIndex 方法返回下一次调用 previous 方法时返回元素的整数索引
 > - add()添加到**游标前面位置**
+> - 不能连续调用两次 remove
+> - add 方法只依赖于迭代器的位置，而 remove 方法依赖于迭代器的状态
 
 #### ListIterator 类图
 
@@ -621,9 +631,9 @@ public class ListIteratorPractice {
 }
 ```
 
+> 使用 LinkedList 练习,见具体的集合类...
 
-
-# RandomAccess
+## RandomAccess
 
 > 该接口不包含任何方法，用于测试特定具体集合是否支持高校的随机访问.在一些集合中，有两种有序集合，一种数组支持有序集合可以快速反问，一种链表支持有序
 
@@ -637,4 +647,56 @@ if(c instanceof RandomAccess){
 
 
 
-### 
+# 具体的集合类
+
+![image.png](http://ww1.sinaimg.cn/mw690/006rAlqhgy1gj5giji35fj31lm198n4k.jpg)
+
+> 该图集合类承接上一节的接口
+
+## LinkedList
+
+> - 数组的缺陷在于删除一个元素，该元素之后所有元素都要向前移动，稍不注意可以造成删除时索引不正确
+> - Java 程序设计这种，所有链表实际上都是**双向链接**的，每个结点还存放着指向前驱结点的引用
+> - 只有对**自然有序**的集合使用迭代器添加元素才有实际意义。例如：Set时无序的，在Iterator 接口就没有 add 方法,而 ListIterator 接口包含 add 方法
+
+### LinkedList 代码分析:
+
+
+
+### LinkedList 类图
+
+![image.png](http://ww1.sinaimg.cn/mw690/006rAlqhgy1gj5k3qaya3j314u0pwabx.jpg)
+
+![image.png](http://ww1.sinaimg.cn/mw690/006rAlqhgy1gj5k591synj30e21gawio.jpg)
+
+
+
+### LinkedList 练习
+
+```java
+
+```
+
+
+
+### LinkedList思考和问题
+
+**1. LinkedList extends AbstractSequentialList的类实现了List的接口，为什么还实现List?**
+
+> 因为继承了 AbstractSequentialList 的类间接实现 List 的接口，为了**避免代理时出现错误**
+
+**2. LinkedList 为什么实现 Deque 接口？**
+
+> java 的LinkedList是双向链表，本身就有addFirst addLast getFirst getLast等功能的需求，而队列是只是特定功能的LinkedList，二者实现的方法都是一样的，所以队列只是实现了接口
+
+##Set接口
+
+> Set 接口等同于 Collection 接口，不过其方法的行为有更严谨的定义
+
+
+
+### Set 类图
+
+
+
+![image.png](http://ww1.sinaimg.cn/mw690/006rAlqhgy1gj5ev3hxygj30gc19mae3.jpg)

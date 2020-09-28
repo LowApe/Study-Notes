@@ -661,7 +661,88 @@ if(c instanceof RandomAccess){
 
 ### LinkedList 代码分析:
 
+```java
+public class LinkedList<E>
+    extends AbstractSequentialList<E>
+    implements List<E>,Deque<E>,Cloneable,java.io.Serializable
+{
+    transient int size = 0;
+    transient Node<E> first;
+    transient Node<E> last;
+    
+    public LinedList(){
+        
+    }
+    
+    public LinedList(Collection<? extends E> c){
+        this();
+        addAll(c);
+    }
 
+     /**
+     * 头结点链接(从头结点链接一个元素-头插法):
+     * 1. 定义一个 f 变量获取头结点 first
+     * 2. 创建一个新的结点与头结点进行关联
+     * 3. 将新的结点赋值给头结点 (头插法，新的结点总是作为新的头部)
+     * 4. 判断:
+     *      1. 如果 f == null (头结点从来没使用过)
+     *      2. 这个新的结点也是尾结点
+     *      3. else (头结点已经存在了)
+     *      4. f.prev = newNode (双向链表，所有新结点还需要链接到 first上)
+     * 5. 链表 szie + 1
+     * 6. 修改 modCount + 1
+     * @param e 元素element
+     */
+    private void linkFirst(E e) {
+        final Node<E> f = first;
+        final Node<E> newNode = new Node<>(null, e, f);
+        first = newNode;
+        if (f == null)
+            last = newNode;
+        else
+            f.prev = newNode;
+        size++;
+        modCount++;
+    }
+
+    /**
+     * 尾部链接元素(尾插法)
+     * 1. 定义变量 l 获取尾结点 last
+     * 2. 构造这个新的结点
+     * 3. last = newNode; 构造的结点就是新的尾结点
+     * 4. 判断
+     *      1. l == null
+     *      2. 第一个结点即是头结点也是尾结点
+     *      3. else
+     *      4. l.next = newNode 单向尾结点，变成双向
+     * @param e 元素
+     */
+    void linkLast(E e) {
+        final Node<E> l = last;
+        final Node<E> newNode = new Node<>(l, e, null);
+        last = newNode;
+        if (l == null)
+            first = newNode;
+        else
+            l.next = newNode;
+        size++;
+        modCount++;
+    }
+    
+    private static class Node<E>{
+        E item;
+        Node<E> next;
+        Node<E> prev;
+        Node(Node<E> prev,E element,Node<E> next){
+            this.item = element;
+            this.next = next;
+            this.prev = prev;
+        }
+    }
+}
+```
+
+> transient 关键字表示不序列化
 
 ### LinkedList 类图
 
@@ -674,7 +755,21 @@ if(c instanceof RandomAccess){
 ### LinkedList 练习
 
 ```java
+@Slf4j
+public class LinkedListPractice {
 
+    private final static Integer INIT_CAPACITY = 5;
+
+    public static void main(String[] args) {
+        LinkedList<String> linkedList = new LinkedList<>();
+        // 头插入两个
+        linkedList.addFirst("element1");
+        linkedList.addFirst("element2");
+        // 尾部插入一个
+        linkedList.addLast("element3");
+        log.info("init:{}",linkedList);
+    }
+}
 ```
 
 
@@ -700,3 +795,7 @@ if(c instanceof RandomAccess){
 
 
 ![image.png](http://ww1.sinaimg.cn/mw690/006rAlqhgy1gj5ev3hxygj30gc19mae3.jpg)
+
+# 相关链接
+
+- [源码中文备注]()

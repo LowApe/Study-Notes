@@ -561,10 +561,87 @@ ALTER ROLE
 
 ![image.png](http://ww1.sinaimg.cn/mw690/006rAlqhgy1ggo1trnwylj324y0dg41d.jpg)
 
+
+
+## 迁移数据库文件后错误
+
+> 问题描述：我想讲数据库文件进行迁移，于是把 pgdata/12/data,当初整个文件迁移到我想存放的位置，然后 pg_ctl 重启postgresql ，但是发现 mydb 这个数据库连接不上了。
+
+```shell
+psql mydb mac
+psql: error: could not connect to server: FATAL:  database "mydb" does not exist
+DETAIL:  The database subdirectory "pg_tblspc/16430/PG_12_201909212/16432" is missing.
+```
+
+经过思考和分析，问题应该在我迁移后，当初的那个路径找不到了，于是我追溯了我创建数据的过程，发现 mydb 表空间路径已经不是原来那个。
+
+> 解决: 创建一个新的表空间，然后重新将数据库指定，然后把原来的文件复制过来，然后在删除旧路径的数据
+
+```shell
+# 创建新的表空间路径(需要提前将数据复制过来)
+mkdri -p xxx/xxx
+# 授权
+chown 用户 表空间路径
+# 设置新的表空间
+postgres=# create tablespace tbs_newdb owner testuser location '/Users/mac/Documents/AllMyDocuments/RunSoftware/PostgreSQL/database/pg12/pg_tbs/tbs_mydb';
+CREATE TABLESPACE
+
+# 重新指向(如果直接指向新的表空间可能报错，这里先指向默认 pg_default)
+postgres=# alter database mydb  set tablespace pg_default;
+ALTER DATABASE
+postgres=# alter database mydb  set tablespace tbs_newdb;
+ALTER DATABASE
+
+# 之后可以删除之前的
+postgres=# drop tablespace tbs_mydb
+DROP TABLESPACE
+```
+
+
+
+# PostgreSQL 表空间迁移
+
+> 如果我创建了一个新的数据库，然后指定一个新表空间，然后我迁移别的表空间
+
+```sql
+-- 创建新的表空间，可以发现tbs_test 空间为 0 bytes
+postgres=# create tablespace tbs_test owner mac location '/Users/mac/Documents/AllMyDocuments/RunSoftware/PostgreSQL/database/test';
+CREATE TABLESPACE
+postgres=# \db+
+                                                                         List of tablespaces
+    Name    | Owner |                                         Location                                         | Access privileges | Options |  Size   | Description
+------------+-------+------------------------------------------------------------------------------------------+-------------------+---------+---------+-------------
+ pg_default | mac   |                                                                                          |                   |         | 31 MB   |
+ pg_global  | mac   |                                                                                          |                   |         | 623 kB  |
+ tbs_newdb  | mac   | /Users/mac/Documents/AllMyDocuments/RunSoftware/PostgreSQL/database/pg12/pg_tbs/tbs_mydb | mac=C/mac         |         | 9972 kB |
+ tbs_test   | mac   | /Users/mac/Documents/AllMyDocuments/RunSoftware/PostgreSQL/database/test                 |                   |         | 0 bytes |
+(4 rows)
+
+-- 设置刚才创建表空间,将mydb 默认表空间迁移到 tbs_test中
+postgres=# alter database mydb set tablespace tbs_test;
+ALTER DATABASE
+
+-- 查看数据迁移成功空间 注意 tbs_newdb tbs_test 空间大小
+postgres=# \db+
+                                                                         List of tablespaces
+    Name    | Owner |                                         Location                                         | Access privileges | Options |  Size   | Description
+------------+-------+------------------------------------------------------------------------------------------+-------------------+---------+---------+-------------
+ pg_default | mac   |                                                                                          |                   |         | 23 MB   |
+ pg_global  | mac   |                                                                                          |                   |         | 623 kB  |
+ tbs_newdb  | mac   | /Users/mac/Documents/AllMyDocuments/RunSoftware/PostgreSQL/database/pg12/pg_tbs/tbs_mydb | mac=C/mac         |         | 8075 bytes |
+ tbs_test   | mac   | /Users/mac/Documents/AllMyDocuments/RunSoftware/PostgreSQL/database/test                 |                   |         | 9972 kB |
+(4 rows)
+
+
+```
+
+
+
 # 相关连接
 
 - [postgresql 表空间创建、删除](https://blog.csdn.net/weixin_34160277/article/details/93354538)
 - [PostgreSQL创建数据库时报错](https://blog.csdn.net/jueshengtianya/article/details/17420287/)
 - [role "testuser" is not permitted to log in](https://dba.stackexchange.com/questions/57723/superuser-is-not-permitted-to-login)
 - [PostgreSql 视图](https://www.postgresql.org/docs/10/static/monitoring-stats.html#pg-stat-activity-view)
+- [postgresql数据库表空间迁移](https://www.cnblogs.com/easonbook/p/11660987.html)
 

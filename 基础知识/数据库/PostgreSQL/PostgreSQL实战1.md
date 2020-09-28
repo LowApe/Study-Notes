@@ -1,4 +1,4 @@
-# 安装与基本配置
+# ps 安装与基本配置
 
 # 安装与基本配置
 
@@ -77,13 +77,6 @@ brew install postgresql
 
 - 一台数据库服务器可以管理多个数据库实例，PostgreSQL 通过数据目录的位置和这个数据集合实例的端口号引用它。
 
-```shell
-# 创建数据库目录
-mkdir -p /pgdata/12/{data,backups,scripts,archive_wals}
-```
-
-
-
 ## 创建操作系统用户
 
 在**创建数据库实例**之前第一件事先创建一个独立的操作系统用户，也可以称为本地用户。
@@ -102,10 +95,7 @@ chmod 0700 /pgdata/12/data
 ## 创建数据目录
 
 ```shell
-
-mkdir -p PostgreSQL/pgdata/12/{data,backups,scripts,archive_wals}
-# -W 参数，所有在初始化的过程中,initdb 工具会要求为数据库超级用户创建密码
-
+mkdir -p /pgdata/12/{data,backups,scripts,archive_wals}
 ```
 
 ## 初始化数据目录
@@ -113,6 +103,7 @@ mkdir -p PostgreSQL/pgdata/12/{data,backups,scripts,archive_wals}
 `initdb --help` 查看相关参数命令
 
 ```shell
+# -W 参数，所有在初始化的过程中,initdb 工具会要求为数据库超级用户创建密码
 initdb -D pgdata/12/data -W
 The files belonging to this database system will be owned by user "mac".
 This user must also own the server process.
@@ -258,7 +249,7 @@ pg_ctl: could not start server
 Examine the log output.
 ```
 
-查看了 logfile 文件，说是绑定地址失败，我又使用Postgres.app 去启动，出现端口号报错，然后我就去查看进程和端口号 `ps -ef | grep postgres`和 `losf -i:5432`，发现已经开启服务和占用了端口号。
+查看了 logfile 文件，说是绑定地址失败，我又使用Postgres.app 去启动，出现端口号报错，然后我就去查看进程和端口号 `ps -ef | grep postgres`和 `lsof -i:5432`，发现已经开启服务和占用了端口号。
 
 > 然后我回想起 mac 使用 `brew install postgresql`下载安装，并且启动，默认帮我初始化数据库目录到 `/usr/loacl/var/postgres`，因为是按照教程上来，所以结束服务`brew services postgresql`,使用上面启动命令启动，就成功了。 
 

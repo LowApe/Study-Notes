@@ -107,7 +107,7 @@ mydb=# select ceil(10.2),ceil(-10.2);
 
 ![image.png](http://ww1.sinaimg.cn/large/006rAlqhgy1ghwhwh464bj30vg07oq6b.jpg)
 
-- character varying(n) 变长字符类型，超过 n 报错(？那还叫变长。。。)
+- character varying(n) 变长字符类型，超过 n 报错
 
 - character(n) 定长字符类型，**不够长度时会用空白填充，浪费空间**
 - text 任意长度的字符串

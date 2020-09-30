@@ -678,6 +678,123 @@ public class LinkedList<E>
         this();
         addAll(c);
     }
+    
+    /**
+     * 返回集合第一个元素
+     * 1. 获取头结点
+     * 2. 如果头结点为空说明链表为空，抛出不匹配元素异常
+     * 3. 否则返回元素
+     * @return the first element in this list
+     * @throws NoSuchElementException if this list is empty
+     */
+    public E getFirst() {
+        final Node<E> f = first;
+        if(f == null)
+            throw new NoSuchElementException();
+        return f.item;
+    }
+    
+    public E getLast() {
+        final Node<E> l = last;
+        if(l == null)
+            throw new NoSuchElementException();
+        return l.item;
+    }
+    
+    public E removeFirst() {
+        final Node<E> f = first;
+        if(f == null)
+            throw new NoSuchElementException();
+        return unlinkFirst(f);
+    }
+    
+    public E removeLast() {
+        final Node<E> l = last;
+        if(l == null)
+            throw new NoSuchElementException();
+        return unlinkLast(l);
+    }
+    
+    public boolean contains(Object o){
+        return indexOf(o) !=-1;
+    }
+    /**
+     * 在列表返回当前第一个出现元素的索引,如果都不包含元素则返回 -1
+     * 更正式的，最低会返回这样的
+     * o == null ? get(i) == null:o.equals(get(i));
+     * 否则没有包含返回 -1;
+     * 1. 从索引 0 开始遍历
+     * 2. 如果对象为 null
+     *      1. for 循环遍历结点
+     *      2. 如果找到 null 则返回 index (index 为正 true)
+     * 3. else
+     *      1. for 循环遍历结点
+     *      2. 如果 o.equals(当前结点元素) 则返回 index (index 为正 true)
+     * 4. return -1;（false）
+     * @param o element to search for
+     * @return the index of the first occurrence of the specified element in
+     *         this list, or -1 if this list does not contain the element
+     */
+    public int indexOf(Object o){
+        int index = 0;
+        if(o ==null){
+            for(Node<E> x = first,x != null,x = x.next){
+                if(x==null){
+                    return index;
+                }
+                index++;
+            }
+        }else{
+            for(Node<E> x = first,x != null,x = x.next){
+                if(o.equals(x.item)){
+                    return index;
+                }
+                index++;
+            }
+        }
+    }
+    /**
+     * 断开链表的第一个结点 f
+     * 1. 检查f是头结点和第一个元素(目前确认是)
+     * 2. 获得头结点的元素
+     * 3. 获取下一结点(为断开作准备)
+     * 4. 将结点的元素、下一集结点设置为空(单向断开)
+     * 5. next 结点设置为头结点
+     * 6. 如果 next 为空，则尾结点为空
+     * 7. 否则下一结点前一结点设置为空(反向断开)
+     * 8. 整体数量和修改数量改动
+     */
+    private E unlinkFirst(Node<E> f) {
+        final E element = f.item;
+        Node<E> next = f.next;
+        f.item = null;
+        f.next = null; // GC
+        first = next;
+        if(next == null){
+            last = null;
+        }else{
+            next.prev = null;
+        }
+        size--;
+        modCount++;
+        return element;
+    }
+    
+    public E unlinkLast(Node<E> l){
+        final E element = l.item;
+        Node<e> prev = l.prev;
+        l.item = null;
+        l.prev = null;
+        last = prev;
+        if(prev == null){
+            first = null;
+        }else{
+            prev.next = null;
+        }
+        size--;
+        modCount++;
+        return element;
+    }
 
      /**
      * 头结点链接(从头结点链接一个元素-头插法):
@@ -729,6 +846,19 @@ public class LinkedList<E>
         modCount++;
     }
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     private static class Node<E>{
         E item;
         Node<E> next;
@@ -760,7 +890,7 @@ public class LinkedListPractice {
 
     private final static Integer INIT_CAPACITY = 5;
 
-    public static void main(String[] args) {
+        public static void main(String[] args) {
         LinkedList<String> linkedList = new LinkedList<>();
         // 头插入两个
         linkedList.addFirst("element1");
@@ -768,6 +898,18 @@ public class LinkedListPractice {
         // 尾部插入一个
         linkedList.addLast("element3");
         log.info("init:{}",linkedList);
+        // getFirst
+        log.info("getFirst:{}",linkedList.getFirst());
+        // getLast
+        log.info("getLast:{}",linkedList.getLast());
+        // removeFirst
+        log.info("removeFirst:{}",linkedList.removeFirst());
+        // removeLast
+        log.info("removeLast:{}",linkedList.removeLast());
+        // contains
+        linkedList.addLast(new String());
+        log.info("contains:{}",linkedList.contains(new String()));
+
     }
 }
 ```

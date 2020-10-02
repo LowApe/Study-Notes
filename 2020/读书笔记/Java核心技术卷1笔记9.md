@@ -716,7 +716,193 @@ public class LinkedList<E>
     }
     
     public boolean contains(Object o){
-        return indexOf(o) !=-1;
+        return indexOf(o) != -1;
+    }
+    
+    public int size(){
+        return size;
+    }
+    
+    public boolean add(E e){
+        linkLast(e);
+        return true;
+    }
+    
+    public boolean remove(Object o){
+        if(o == null){
+            for(Node<E> x = first,x!=null,x = x.next){
+                if(x.item == null){
+                    unlink(x);
+                    return true;
+                }
+            }
+        }else{
+            for(Node<E> x = first,x!=null,x = x.next){
+                if(o.equals(x.item)){
+                    unlink(x);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    public boolean addAll(Collection <? extends E> c){
+        return addAll(size,c);
+    }
+    /**
+     * 开始具体的位置插入所有元素。有重复则按照顺序
+     * 1 检验位置索引 (不存在则抛出异常 IndexOutOfBoundsException)
+     * 2 插入集合转为 Object[] 遍历使用
+     * 3 定义添加集合数量
+     * 4 如果数量为零，返回 false 表示没有添加内容
+     * 5 定义两个结点: pred(插入前结点) succ(插入后结点)
+     * 6 如果索引位置等于原大小总数(尾部插入)
+     *      1. 设置succ = null  pred = last
+     *      2. else succ = node(index)(拼接的尾部) pred =  succ.prev （拼接的头部）
+     * 7 for 循环新的集合每一个结点并关联
+     *      1 如果pred == null (集合为 null )
+     *      2 first = newNode
+     *      3 else pred.next = newNode (反向连接)
+     *      4 pred = newNode (变动插入前结点)
+     * 8 如果 succ == null (也就是全部插入尾部)
+     *      else （也就是从中间插入）
+     *      需要双向绑定
+     * 9 总数量增加，修改数量修改
+     * @param index index at which to insert the first element
+     *              from the specified collection
+     * @param c collection containing elements to be added to this list
+     * @return {@code true} if this list changed as a result of the call
+     * @throws IndexOutOfBoundsException {@inheritDoc}
+     * @throws NullPointerException if the specified collection is null
+     */
+    public boolean addAll(int index,Collection <? extends E> c){
+        checkPositionIndex(index);
+        
+        Object[] a = c.toArray();
+        int newNum = a.length;
+        if(newNum == 0){
+            return false;
+        }
+        Node<E> pred,succ;
+        if(index == size){
+            succ = null;
+            pred = last;
+        }else{
+            succ = node(index);
+            pred = succ.prev;
+        }
+        for(Object o : a){
+            E e = (E)o;
+            Node<E> newNode = new Node<E>(pred,e,null);
+            if(pred == null){
+                first = newNode;
+            }else{
+                pred.next = newNode;
+            }
+            pred = newNode;
+        }
+        
+        if(succ == null){
+            last = pred;
+        }else{
+            pred.next = succ;
+            succ.prev = pred;
+        }
+        size+=newNum;
+        modCount++;
+        return true;
+    }
+     /**
+     * 从列表中移除所有元素
+     * 在调用之后列表为空
+     * 1 for 循环
+     *      1 获得下一个结点，处理完后赋值
+     *      2 三个数据域设置为 null
+     *      3 赋值
+     * 2 收尾结点设置为空
+     * 3 总数设置为 0 ，modCount++;
+     */
+    public void clear(){
+        for(Node<E> x = first;x!=null;){
+            Node<E> next = x.next;
+            x.item = null;
+            x.prev = null;
+            x.next = null;
+            x = next;
+        }
+       first = last = null;
+       size = 0;
+        modCount++;
+    }
+    
+    public E get(int index){
+        checkPositionIndex(index);
+        return node(index).item;
+    }
+    private void checkPositionIndex(int index){
+        if(!isPositionIndex){
+            throw new IndexOutOfBoundsException("这部分忽略");
+        }
+    }
+    
+    private boolean isPositionIndex(int index){
+        return index>=0 && index<=size;
+    }
+        /**
+     * 在具体索引返回非空结点
+     * 1 size 右移1位( M >> n = M/2^n) (二分查找，>> 速度比算术运算符快)
+     *      1 如果索引小于二分之一从前开始找
+     *      2 else 从尾结点开始找
+     * Returns the (non-null) Node at the specified element index.
+     */
+    Node<E> node(int index){
+        if(index < (size >> 1)){
+            Node<E> x = first;
+            for(int i=0;i<index;i++){
+                x = x.next;
+            }
+            return x;
+        }else{
+            Node<E> x = last;
+            for(int i = size-1;i > index;i--){
+                x = x.prev;
+            }
+            return x;
+        }
+    }
+    /**
+     * 断开结点连接
+     * 1. 获得断开的元素
+     * 2. 获得该结点的前后结点
+     * 3. 分别处理前后结点是否为空(是否删除的是头结点或者尾结点)
+     *      1. 如果为空
+     *      2. 将next 设置头结点/将 prev设置为尾结点
+     *      3. else 连接前后结点 并 断开前后结点的连接
+     * 4. 修改数量，设置结点对象的数据引用为空
+     */
+    private E unlink(Node<E> x){
+        E element = x.item;
+        Node<E> next = x.next;
+        Node<E> prev = x.prev;
+        
+        if(prev == null){
+            first = next;
+        }else{
+            prev.next = next;
+            x.prev = null;
+        }
+        
+        if(next == null){
+            last = prev;
+        }else{
+           next.prev = prev;
+            x.next = null;
+        }
+        x.item = null;
+        size--;
+        modCount++;
+        return element;
     }
     /**
      * 在列表返回当前第一个出现元素的索引,如果都不包含元素则返回 -1

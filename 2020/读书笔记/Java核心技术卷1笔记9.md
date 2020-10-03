@@ -750,6 +750,77 @@ public class LinkedList<E>
     public boolean addAll(Collection <? extends E> c){
         return addAll(size,c);
     }
+    
+     /**
+     * 替换列表具体位置的元素
+     * 1 检查
+     * 2 查找具体索引下的结点
+     * 3 获得旧元素
+     * 4 替换新元素
+     * 5 返回旧的元素
+     * @param index index of the element to replace
+     * @param element element to be stored at the specified position
+     * @return 具体位置的元素先前的值
+     * @throws IndexOutOfBoundsException {@inheritDoc}
+     */
+    public E set(int index,E element){
+        checkElementIndex(index);
+        Node<E> x = node(index);
+        E oldValue = x.item;
+        x.item = element;
+        return oldValue;
+    }
+    /**
+     * 列表插入具体的元素到具体的位置
+     * 如果存在移动当前位置并且随后的元素在右边(添加一个索引)
+     * 1 检查索引
+     * 2 如果 index == size 尾结点插入
+     *      linkLast 连接尾部
+     * 3 else linkBefore(E e, Node<E> e); 在之前连接
+     * @param index index at which the specified element is to be inserted
+     * @param element element to be inserted
+     * @throws IndexOutOfBoundsException {@inheritDoc}
+     */
+    public void add(int index,E e){
+        checkPositionIndex(index);
+        if(index == size){
+            linklast(e);
+        }else{
+            linkBefore(e,node(index));
+        }
+    }
+    /**
+     * 列表具体位置移除元素。
+     * 移动随后元素到左边(减去一个索引)
+     * 返回列表这个移除的元素
+     *
+     * @param index the index of the element to be removed
+     * @return the element previously at the specified position
+     * @throws IndexOutOfBoundsException {@inheritDoc}
+     */
+    public E remove(int index){
+        checkElementIndex(index);
+        return unlink(node(index));
+    }
+    
+    private int lastIndexOf(Object o){
+        int index = size;
+        if(o == null){
+            for(Node<E> x = last;x!=null;x = x.prev){
+                if(x.item == null){
+                    return index;
+                }
+                
+            }
+        }else{
+            for(Node<E> x = last;x!=null;x = x.prev){
+                if(o.equals(x.item)){
+                    return index;
+                }
+            }
+        }
+        return -1;
+    }
     /**
      * 开始具体的位置插入所有元素。有重复则按照顺序
      * 1 检验位置索引 (不存在则抛出异常 IndexOutOfBoundsException)
@@ -846,10 +917,18 @@ public class LinkedList<E>
         }
     }
     
+    private void checkElementIndex(int index){
+        if(!isElementIndex){
+            throw new IndexOutOfBoundsException("这部分忽略");
+        }
+    }
+    private boolean isElementIndex(int index) {
+        return index >= 0 && index < size;
+    }
     private boolean isPositionIndex(int index){
         return index>=0 && index<=size;
     }
-        /**
+    /**
      * 在具体索引返回非空结点
      * 1 size 右移1位( M >> n = M/2^n) (二分查找，>> 速度比算术运算符快)
      *      1 如果索引小于二分之一从前开始找
@@ -1033,18 +1112,262 @@ public class LinkedList<E>
     }
     
     
+    // Queue operations. 队列的操作
+    public E peek(){
+        Node<E> f = first;
+        return f == null ? null:f.item;
+    }
     
+        /**
+     * 检索，但不移除列表第一个元素
+     * 不能返回 null
+     * Retrieves, but does not remove, the head (first element) of this list.
+     *
+     * @return the head of this list
+     * @throws NoSuchElementException if this list is empty
+     * @since 1.5
+     */
+    public E element() {
+        return getFirst();
+    }
     
+    public E poll(){
+        final Node<E> f = first;
+        return f == null? null:unlinkFirst(f);
+    }
     
+    public E remove(){
+        return removeFirst();
+    }
     
+    public boolean offer(E e) {
+        return add(e);
+    }
     
+    // Deque operations 双端队列的操作
+    // 在列表最前部分插入元素
+    public boolean offerFirst(E e){
+        addFirst(e);
+        return true;
+    }
+    // 在列表尾部插入元素
+    public boolean offerLast(E e){
+        addLast(e);
+        return true;
+    }
+    public E peekFirst(){
+        final Node<E> f = first;
+        reutrn f == null ? null : f.item;
+    }
     
+    public E peekLast(){
+        final Node<E> l = last;
+        reutrn l == null ? null : l.item;
+    }
     
+    public E pollFirst(){
+        final Node<E> f = first;
+        reutrn f == null ? null : unlinkFirst(f);
+    }
     
+    public E pollLast(){
+        final Node<E> l = last;
+        reutrn l == null ? null : unlinkLast(l);
+    }
+    // 将这个元素压入堆栈代表的列，换句话说，插入列表头部
+    public void push(E e){
+        addFirst(e);
+    }
+    public E pop() {
+        return removeFirst();
+    }
     
+    public boolean removeFirstOccurrence(Object o) {
+        return remove(o);
+    }
+    public boolean removeLastOccurrence(Object o) {
+        if (o == null) {
+            for (Node<E> x = last; x != null; x = x.prev) {
+                if (x.item == null) {
+                    unlink(x);
+                    return true;
+                }
+            }
+        } else {
+            for (Node<E> x = last; x != null; x = x.prev) {
+                if (o.equals(x.item)) {
+                    unlink(x);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    public ListIterator<E> listIterator(int index) {
+        checkPositionIndex(index);
+        return new ListItr(index);
+    }
     
-    
-    
+private class ListItr implements ListIterator<E> {
+        private Node<E> lastReturned;
+        private Node<E> next;
+        private int nextIndex;
+        private int expectedModCount = modCount;
+
+        ListItr(int index) {
+            // assert isPositionIndex(index);
+            next = (index == size) ? null : node(index);
+            nextIndex = index;
+        }
+
+        public boolean hasNext() {
+            return nextIndex < size;
+        }
+
+        /**
+         * 1 检查修改数与期望数是否一，不一致抛出并发修改异常
+         * 2 如果 hasNext 不存在，则抛出 NoSuchElementException
+         * 3 lastReturned = next
+         * 4 next = next.next
+         * 5 nextIndex++: 下一个索引数+1
+         * 6 返回上一个(越过的值)
+         * @return
+         */
+        public E next() {
+            checkForComodification();
+            if (!hasNext())
+                throw new NoSuchElementException();
+
+            lastReturned = next;
+            next = next.next;
+            nextIndex++;
+            return lastReturned.item;
+        }
+
+        /**
+         * 是否存在上一个
+         * @return
+         */
+        public boolean hasPrevious() {
+            return nextIndex > 0;
+        }
+
+        /**
+         * 返回上一个结点
+         * 1 检查并发修改
+         * 2 检查元素匹配
+         * 3 lastReturned
+         * 4 nextIndex--
+         * 5 返回越过的元素
+         * @return
+         */
+        public E previous() {
+            checkForComodification();
+            if (!hasPrevious())
+                throw new NoSuchElementException();
+
+            lastReturned = next = (next == null) ? last : next.prev;
+            nextIndex--;
+            return lastReturned.item;
+        }
+
+        public int nextIndex() {
+            return nextIndex;
+        }
+
+        public int previousIndex() {
+            return nextIndex - 1;
+        }
+
+        /**
+         * 删除当前结点
+         * 1 检查并发修改
+         * 2 lastReturned 是否存在 抛出 IllegalStateExceptions
+         * 3 获得 lastNext 结点(删除前下一个结点)
+         * 4 断开 lastReturne（删除）
+         * 5 如果 next ==  lastReturned （lastReturned 要被删除，不能为next结点）？
+         *      next = lastNext
+         * 5 else nextIndex-- 移除后索引减1
+         * 6 移除的 lastReturned = null
+         * 7 预期移动数量++
+         */
+        public void remove() {
+            checkForComodification();
+            if (lastReturned == null)
+                throw new IllegalStateException();
+
+            Node<E> lastNext = lastReturned.next;
+            unlink(lastReturned);
+            if (next == lastReturned)
+                next = lastNext;
+            else
+                nextIndex--;
+            lastReturned = null;
+            expectedModCount++;
+        }
+
+        /**
+         * 替换元素
+         * 1 检查越过的结点
+         * 2 检查并发修改
+         * 3 替换越过元素
+         * @param e
+         */
+        public void set(E e) {
+            if (lastReturned == null)
+                throw new IllegalStateException();
+            checkForComodification();
+            lastReturned.item = e;
+        }
+
+        /**
+         * 1 检查并发修改
+         * 2 设置 lastReturned = null ？
+         * 3 if next == null 尾部连接
+         * 4 else linkBefore(e,next) 中部连接
+         * 5 nextIndex ++
+         * 6 expectedModCount++;
+         * @param e
+         */
+        public void add(E e) {
+            checkForComodification();
+            lastReturned = null;
+            if (next == null)
+                linkLast(e);
+            else
+                linkBefore(e, next);
+            nextIndex++;
+            expectedModCount++;
+        }
+
+        public void forEachRemaining(Consumer<? super E> action) {
+            Objects.requireNonNull(action);
+            while (modCount == expectedModCount && nextIndex < size) {
+                action.accept(next.item);
+                lastReturned = next;
+                next = next.next;
+                nextIndex++;
+            }
+            checkForComodification();
+        }
+
+        /**
+         * 检查修改的数量与期望是否一致
+         * 1 modCount != expectedModCount throw ConcurrentModificationException
+         */
+        final void checkForComodification() {
+            if (modCount != expectedModCount)
+                throw new ConcurrentModificationException();
+        }
+    }
+    public Object[] toArray(){
+        Object[] result = new Object[size];
+        int i = 0;
+        for(Node<E> x = first;x!=null; x = x.next){
+            result[i++] = x.item;
+        }
+        return reuslt;
+    }
     private static class Node<E>{
         E item;
         Node<E> next;
@@ -1054,6 +1377,31 @@ public class LinkedList<E>
             this.next = next;
             this.prev = prev;
         }
+    }
+    
+    private void writeObject(java.io.ObjectOutputStream s)
+        throws java.io.IOException {
+        // Write out any hidden serialization magic
+        s.defaultWriteObject();
+
+        // Write out size
+        s.writeInt(size);
+
+        // Write out all elements in the proper order.
+        for (Node<E> x = first; x != null; x = x.next)
+            s.writeObject(x.item);
+    }
+    private void writeObject(java.io.ObjectOutputStream s)
+        throws java.io.IOException {
+        // Write out any hidden serialization magic
+        s.defaultWriteObject();
+
+        // Write out size
+        s.writeInt(size);
+
+        // Write out all elements in the proper order.
+        for (Node<E> x = first; x != null; x = x.next)
+            s.writeObject(x.item);
     }
 }
 ```

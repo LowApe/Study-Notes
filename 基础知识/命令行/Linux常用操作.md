@@ -112,7 +112,74 @@ didiaoyuan:$6$le4/DwzY$vUNqGXtv.5DKtm8lE6C7SBAMw9eHMhWtI794lMWSFfxYMuzAZF9KuIxdl
 - 默认删除会删除 `/etc/passwd` 和 `/etc/shadow`的文件，为了安全考虑保留家目录
 - `-r`参数删除对应的家目录
 
+## Linux 用户组管理
 
+```shell
+# 用户组信息记录在 /etc/group文件中
+cat /etc/group
+```
+
+### 1 groupadd 增加用户组
+
+```shell
+$ groupadd testGroup
+$ cat /etc/group
+...
+testGroup:x:1001:
+# 用户组名:密码:数字id:组成员
+```
+
+### 2 groupdel 删除用户组
+
+
+
+```shell
+$ groupdel testGroup
+```
+
+> ⚠️ 如果已有用户属于试图删除的组，该操作会失败。
+
+
+
+## Linux 检查用户信息
+
+### 1 users、who、w 查看用户
+
+```shell
+# 查看当前系统有哪些用户
+[root@centos-7 parallels]# users
+parallels parallels
+# who 查看会话
+[root@centos-7 parallels]# who
+parallels :0           2020-10-12 21:31 (:0)
+parallels pts/0        2020-10-12 21:31 (:0)
+# w 查看更详细信息
+[root@centos-7 parallels]# w
+ 21:41:10 up 10 min,  2 users,  load average: 0.02, 0.19, 0.18
+USER     TTY      FROM             LOGIN@   IDLE   JCPU   PCPU WHAT
+parallel :0       :0               21:31   ?xdm?  46.41s  0.19s /usr/libexec/gnome-session-binary --session gnome-classic
+parallel pts/0    :0               21:31    0.00s  0.20s  2.17s /usr/libexec/gnome-terminal-server
+
+```
+
+**w显示字段**
+
+- 登陆用户的用户名
+- 用户登陆终端
+- 从网络登陆，显示远程主机或ip地址
+- 用户登陆时间
+- 用户闲置时间
+- 当前 WHAT 列所对应进程消耗的 CPU时间
+- 用户当前运行的进程
+
+### 2 finger 调查用户
+
+> 我的没有，需要安装，既然默认系统没有带，那就演示了
+
+
+
+- 显示系统登陆用户信息
+- 命令跟对应用户显示多一些的信息
 
 ## Linux 查看命令
 

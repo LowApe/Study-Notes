@@ -112,6 +112,62 @@ didiaoyuan:$6$le4/DwzY$vUNqGXtv.5DKtm8lE6C7SBAMw9eHMhWtI794lMWSFfxYMuzAZF9KuIxdl
 - 默认删除会删除 `/etc/passwd` 和 `/etc/shadow`的文件，为了安全考虑保留家目录
 - `-r`参数删除对应的家目录
 
+
+
+### 5 切换用户
+
+**su 默认 root 用户切换**
+
+```shell
+[parallels@centos-7 ~]$ su
+Password: 
+[root@centos-7 parallels]# 
+
+# 添加 - 参数切换并进入 root 环境（其实就是一进去 /root 目录）
+[parallels@centos-7 ~]$ su -
+Password: 
+Last login: Tue Oct 13 21:08:05 CST 2020 on pts/0
+[root@centos-7 ~]# 
+
+# su 后面添加指定切换的用户
+```
+
+> ⚠️  root 环境下使用 su 切换用户可以不需要输入密码
+
+**sudo 可配置的方式执行的命令**
+
+> sudo 以 root 身份去操作命令
+
+`sudo passwd user` 使用 root 的身份修改 user 的密码。运行这个命令，系统首先检查 `/etc/sudoers` ,判断该用户是否有执行 sudo 的权限，如果有，则 root 身份运行 `passwd user`
+
+```shell
+# visudo 修改 sudo 命令，并且保存后 自动检查语法设置
+[parallels@centos-7 etc]$ sudo visudo
+...
+##      user    MACHINE=COMMANDS
+##
+## The COMMANDS section may have other options added to it.
+##
+## Allow root to run any commands anywhere
+root    ALL=(ALL)       ALL
+...
+```
+
+> 在上述 root 下方添加用户，添加的用户就能使用 sudo root身份操作命令
+>
+> - 第一列：这个用户
+> - 第二列：可以任何地方登陆
+> - 第三列：任何人
+> - 第四列：执行任何命令
+>
+> `%groupName ALL=(ALL) ALL`表示所属的组...
+>
+> 如果不想每次添加密码 `xxx ALL=（ALL）NOPASSWD：ALL`
+>
+> 也可定义专门的命令 `xxx ALL=（ALL）NOPASSWD：/sbin/shutdown /user/bin/reboot` 比如关闭服务器或者重启
+
+
+
 ## Linux 用户组管理
 
 ```shell
@@ -265,3 +321,101 @@ root
 
 
 ### who 查看在线用户
+
+```shell
+[parallels@centos-7 etc]$ who
+parallels :0           2020-10-13 21:06 (:0)
+parallels pts/0        2020-10-13 21:17 (:0)
+
+```
+
+
+
+### 例行任务管理
+
+> Linux 中有两种处理定时任务的方法
+>
+> - 任务周期性执行 `cron`
+> - 某个特定的时间执行一次 `at`
+
+
+
+**at**
+
+```shell
+# 三十分钟后自动关机 第一行回车 第二行执行的动作
+# 第三行 ctrl+D 表示输入结束 第四行表示执行时间
+at now + 30 minutes 
+at> /sbin/shutdown -h now
+at> <EOT>
+job 1 at Tue Oct 13 21:35:00 2020
+# atq 查看队列任务
+[parallels@centos-7 sbin]$ atq
+2	Tue Oct 13 21:38:00 2020 a parallels
+# atrm 2 删除号码为 2 的任务
+[parallels@centos-7 sbin]$ atrm 2
+[parallels@centos-7 sbin]$ atq
+[parallels@centos-7 sbin]$ 
+
+# 如果禁用某些用户这个功能，可以将用户名添加 /etc/at.deny 中
+```
+
+
+
+**cron**
+
+- 首先确定 crond 进程在运行
+- 通过 `crontab` 来设置自己的计划任务，`-e`参数编辑任务
+
+```shell
+# 首先确定 crond 进程在运行
+[parallels@centos-7 sbin]$ service crond start
+Redirecting to /bin/systemctl start crond.service
+
+
+[parallels@centos-7 sbin]$ crontab -e
+no crontab for parallels - using an empty one
+crontab: installing new crontab
+
+# crontab -l 查看任务
+[parallels@centos-7 sbin]$ crontab -l
+* * * * * service httpd restart
+
+# crontab 语法格式 分钟 小时 日期 星期 command
+# 每分钟启动 httpd 进程
+
+
+
+# crontab -r 删除说要任务
+
+# root 用户查看其他用户的任务列表 crontab -u user -l	
+
+# 如果禁用某些用户这个功能，可以将用户名添加 /etc/cron.deny 中
+```
+
+
+
+**/etc/crontab 的管理**
+
+> 直接在这个文件里定义周期性任务
+
+```shell
+SHELL=/bin/bash
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+MAILTO=root
+
+# For details see man 4 crontabs
+
+# Example of job definition:
+# .---------------- minute (0 - 59)
+# |  .------------- hour (0 - 23)
+# |  |  .---------- day of month (1 - 31)
+# |  |  |  .------- month (1 - 12) OR jan,feb,mar,apr ...
+# |  |  |  |  .---- day of week (0 - 6) (Sunday=0 or 7) OR sun,mon,tue,wed,thu,fri,sat
+# |  |  |  |  |
+# *  *  *  *  * user-name  command to be executed
+
+~                                                                               
+~                                              
+```
+

@@ -331,7 +331,7 @@ parallels pts/0        2020-10-13 21:17 (:0)
 
 
 
-### 例行任务管理
+# Linux 例行任务管理
 
 > Linux 中有两种处理定时任务的方法
 >
@@ -340,7 +340,7 @@ parallels pts/0        2020-10-13 21:17 (:0)
 
 
 
-**at**
+## at
 
 ```shell
 # 三十分钟后自动关机 第一行回车 第二行执行的动作
@@ -362,7 +362,7 @@ job 1 at Tue Oct 13 21:35:00 2020
 
 
 
-**cron**
+## cron
 
 - 首先确定 crond 进程在运行
 - 通过 `crontab` 来设置自己的计划任务，`-e`参数编辑任务
@@ -417,5 +417,156 @@ MAILTO=root
 
 ~                                                                               
 ~                                              
+```
+
+# Linux 文件管理
+
+> FHS 文件系统层次标准，定义了目录下的主要目录以及每个目录应该存放什么文件
+
+| 目录        | 目录的用途                                             |
+| ----------- | ------------------------------------------------------ |
+| /bin        | 常见的用户指针                                         |
+| /boot       | 内核和启动文件                                         |
+| /dev        | 设备文件                                               |
+| /etc        | 系统和服务的配置文件                                   |
+| /home       | 系统默认的普通用户的家目录                             |
+| /lib        | 系统函数库目录                                         |
+| /lost+found | ext3 文件系统需要的目录，用于磁盘检查(centOS 貌似没有) |
+| /mnt        | 系统加载文件系统时常用的挂载点                         |
+| /opt        | 第三方软件安装目录                                     |
+| /proc       | 虚拟文件系统                                           |
+| /root       | root 用户的家目录                                      |
+| /sbin       | 存放系统管理命令                                       |
+| /tmp        | 临时文件的存放目录                                     |
+| /usr        | 存放与用户相关的文件和目录                             |
+| /media      | 系统用来挂载光驱等临时文件系统的挂载点                 |
+
+## 1 绝对路径与相对路径
+
+**1 绝对路径**
+
+> Linux 从 `/`根目录开始寻找，从`/`开始的一定是绝对路径
+
+
+
+**2 当前目录:pwd**
+
+
+
+**3 特殊目录(.)和(..)**
+
+> 每个目录下，都会固定存在两个特殊目录，`(.)`目录代表当前目录，两个`(..)`代表的是当前目录的上层目录。**在 Linux 下，所有以点开始的文件都是隐藏文件**，使用 `ls -a` 才可以看到
+
+**4 相对路径**
+
+> 假设当前目录在 `/usr/local`下，那么它的上层目录(/usr目录) 可以用 `../`表示,而 `/usr/local`下的 src 目录可以用 `./src`
+
+## 2 文件的相关操作
+
+介绍文件的:
+
+- 创建
+- 删除
+- 移动
+- 重命名
+- 查看文件
+
+### 1 创建文件：touch
+
+```shell
+[parallels@centos-7 Desktop]$ touch test.txt
+[parallels@centos-7 Desktop]$ ls -l test.txt 
+-rw-rw-r--. 1 parallels parallels 0 Oct 14 20:35 test.txt
+[parallels@centos-7 Desktop]$ touch test.txt
+[parallels@centos-7 Desktop]$ ls -l test.txt 
+-rw-rw-r--. 1 parallels parallels 0 Oct 14 20:43 test.txt
+
+```
+
+> ⚠️：如果已存在文件，不会修改文件的内容，但会**更新文件的创建时间属性。
+
+### 2 删除文件：rm
+
+```shell
+[parallels@centos-7 Desktop]$ rm test.txt 
+```
+
+
+
+### 3 移动或重命名文件：mv
+
+参数1：被移动的文件 参数2 移动到的目录
+
+```shell
+# mv 还能重命名文件
+[parallels@centos-7 Desktop]$ touch test.txt
+[parallels@centos-7 Desktop]$ mv test.txt test.dic
+[parallels@centos-7 Desktop]$ ls 
+Parallels Shared Folders  test.dic
+
+# mv 还能在移动的同时重命名文件
+[parallels@centos-7 Desktop]$ mkdir ADocument
+[parallels@centos-7 Desktop]$ mv test.dic ./ADocument/test.txt
+[parallels@centos-7 Desktop]$ ls ./ADocument/
+test.txt
+
+```
+
+### 4 查看文件：cat
+
+
+
+### 5 查看文件头：head
+
+> 有时候文件非常大，使用 cat 命令显示出来的内容太多，可以使用 head 查看具体行数
+
+```shell
+# -n 参数指定显示行数
+head -n 10
+```
+
+### 6 查看文件尾：tail
+
+> tail 命令与 head 命令非常类似。最重要的功能是可以**动态地查看文件尾**。查看日志文件使用 -f 参数就可以做到，一旦有新的日志写入，该命令会立即将新内容显示出来。
+
+```shell
+tail -f /var/log/messages
+```
+
+### 7 文件格式转换：dos2unix
+
+> DOS to UNIX 简写，可以把 DOS 格式的文本转变为 UNIX 下的文本文件。场景是 Linux 和 Windows 系统是可以通过文件共享的方式共享文件的，当把 Windows 下的文本文件移动到 Linux 下，会由于系统之间**文本文件的换行符不同而造成文件在 Linux 下的读写操作有问题**。命令使用后直接加上需要转换的文件名。
+
+## 3 目录相关的操作
+
+### 1 进入目录：cd
+
+### 2 创建目录：mkdir
+
+> 使用 `-p`参数一次性创建所有目录 `mkdir -p /a/b/c/d`
+
+### 3 删除目录：rmdir和rm
+
+```shell
+# 如果存在文件则不能直接删除,需要从下往上删除
+[parallels@centos-7 Desktop]$ rmdir test
+rmdir: failed to remove ‘test/’: Directory not empty
+# 如果层级特别的就很低效，使用 rm 命令 
+[parallels@centos-7 Desktop]$ rm -r test/
+```
+
+> ⚠️ rm 中 `-r` 递归删除目录层级，单每一层会有提示，所以常用 `-rf`
+>
+> 删除命令几乎是不可能恢复的，所以权限很高 
+>
+> 禁止运行`rm -rf /` ，一定是暗示什么...
+
+### 4 文件和目录复制：cp
+
+```shell
+# 直接复制,也可以重新命名文件
+cp abc.log /test/
+# 复制目录增加 -r 参数
+cp -r /a /b
 ```
 

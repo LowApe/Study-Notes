@@ -1,4 +1,4 @@
-# Linux 常用操作
+## Linux 常用操作
 
 
 
@@ -574,11 +574,11 @@ cp -r /a /b
 
 > 之前 两次 touch 文件，最后一次虽然没有修改文件，但是文件的修改属性，时间戳是最新的，实际上目录一包含时间戳这一特性，利用这一特性可以实现有选择的备份。**比如：我们有两个目录，一个目录是目标目录，包含三个文件，一个目录是备份目录，现在使用 cp 将三个文件复制到备份目录中，如果未来我们希望目标目录变化的文件才进行备份，我们可以利用文件时间戳这一特性，比较两个位置的文件时间戳，如果不相同则进行备份**
 
-# Linux 文件和目录权限
+## 4 Linux 文件和目录权限
 
 > Linux 系统之所以更安全，是因为对文件权限有着非常严格的控制
 
-## 1 查看文件或目录的权限 ls -al
+### 1 查看文件或目录的权限 ls -al
 
 `ls -al`命令虽然能查看目录文件的详细信息，但其中
 
@@ -629,7 +629,7 @@ lrwxrwxrwx.  1 root      root         10 Oct  6 15:02 Parallels Shared Folders -
 	- 如果拥有写权限，每组第二个字符显示 r，否则是小横线
 	- 如果拥有执行权权限，每组第三个字符显示x,否则是小横线
 
-## 2 文件隐藏属性
+### 2 文件隐藏属性
 
 > `lsattr`查看文件隐藏属性
 
@@ -649,7 +649,7 @@ lrwxrwxrwx.  1 root      root         10 Oct  6 15:02 Parallels Shared Folders -
 >
 > 还有 i 属性，不能写入、改名、删除，文件隐藏属性对提升系统安全性有较大的帮助，更多隐藏属性使用 `man chattr`查看
 
-## 3 改变文件权限: chmod
+### 3 改变文件权限: chmod
 
 下面命令 u 、g、o 分别表示**用户、拥有组、其他人**，而具体权限使用 `rwx` 的组合来定义，增加权限`+`，删除权限使用`-`号，详细权限使用`=`号
 
@@ -671,7 +671,7 @@ lrwxrwxrwx.  1 root      root         10 Oct  6 15:02 Parallels Shared Folders -
 > - 如果设定一个文件的权限是: 拥有者的权限是`读、写、执行(rwx)`，拥有组的权限是读、执行(r-x),其他人的权限是只读(r--)，那么可以使用命令 `chmod 754 fileName`来设置
 > - 如果需要修改的不是一个文件而是一个目录，使用 **-R**参数递归赋予目录下的权限
 
-## 4 改变文件的拥有者: chown
+### 4 改变文件的拥有者: chown
 
 > 改变文件拥有者、拥有组的功能。**默认情况下，使用什么用户登陆系统，那么该用户新创建的文件和目录的拥有者就是这个用户**
 
@@ -682,9 +682,9 @@ lrwxrwxrwx.  1 root      root         10 Oct  6 15:02 Parallels Shared Folders -
 | 改变文件的拥有者和拥有组 | `chown user:group filename`    |
 | 改变目录下的             | `chown -R user:group dirctory` |
 
-## 5 改变文件的用户组 chgrp
+### 5 改变文件的用户组 chgrp
 
-## 6 文件特殊属性: SUID/SGID/Sticky
+### 6 文件特殊属性: SUID/SGID/Sticky
 
 > 由用户修改密码，对 passwd 和 shadow 访问权限，引出 suid权限，意味着用户可以使用 root 权限的身份来执行这个命令
 
@@ -711,7 +711,7 @@ drwxrwxrwt. 13 root root 4096 Nov  4 08:18 /tmp/
 
 ```
 
-## 7 默认权限和遮罩 umask 
+### 7 默认权限和遮罩 umask 
 
 - **root 创建文件的默认权限是 644 创建目录的默认权限是 755**
 - 普通用户 创建文件的默认权限是 664 创建目录的默认权限是 775
@@ -734,7 +734,7 @@ fi
 
 - 777 用字符串表示:rwxrwxrwx，如果遮罩值为022 ，用字符串表示 ----w--w-，第五位和第八位遮罩掉，权限就变味 rwxr-xr-x 权限数字表示 755. 002遮罩后为 775
 
-## 8 查看文件类型 file
+### 8 查看文件类型 file
 
 > file 文件可以查看更多文件信息
 
@@ -762,9 +762,9 @@ fi
 	```
 
 
-# Linux 查找文件
+## 5 Linux 查找文件
 
-## 1 一般查找: find
+### 1 一般查找: find
 
 ```shell
 # 一般查找 语法(精确查找)
@@ -800,7 +800,7 @@ find / -name filename
 
 
 
-## 2 数据库查找: locate
+### 2 数据库查找: locate
 
 与 find 不同，**locate 命令来依赖与一个数据库文件**
 
@@ -814,7 +814,7 @@ find / -name filename
 /home/parallels/Desktop/test2/hello.txt
 ```
 
-## 3 查找执行文件: which/ whereis
+### 3 查找执行文件: which/ whereis
 
 > which 用于从系统的 PATH 变量所定义的目录中查找可执行文件的绝对路径。
 
@@ -830,5 +830,419 @@ find / -name filename
 passwd: /usr/bin/passwd /etc/passwd /usr/share/man/man1/passwd.1.gz /usr/share/man/man5/passwd.5.gz
 ```
 
-# Linux 文件压缩和打包
+## 6 Linux 文件压缩和打包
+
+### 1 gzip/gunzip
+
+> gzip/gunzip 是用来压缩和解压缩**单个文件的工具**
+
+```sh
+[parallels@centos-7 Desktop]$ gzip install.log 
+[parallels@centos-7 Desktop]$ ls
+install.log.gz  Parallels Shared Folders  tesst  test2
+[parallels@centos-7 Desktop]$ gunzip install.log.gz 
+install.log  Parallels Shared Folders  tesst  test2
+```
+
+### 2 tar
+
+> tar 不但可以打包文件，还可以将**整个目录中的全部文件整合成一个包**,整合包的同时还使用 gzip 的功能进行压缩。整合后的包习惯使用 `.tar`作为其后缀名，使用 gzip 压缩后的后缀使用 `.gz`作为其后缀名。因为 tar 有同时整合和压缩的功能，所以可使用`.tar.gz`作为后缀名，或者简写为`.tgz`
+
+```shell
+[parallels@centos-7 Desktop]$ ls
+install.log  Parallels Shared Folders  tesst  test2
+[parallels@centos-7 Desktop]$ tar -zcvf testTar.tgz test2
+test2/
+test2/hello.txt
+[parallels@centos-7 Desktop]$ ls
+install.log  Parallels Shared Folders  tesst  test2  testTar.tgz
+```
+
+> - -z 表示使用 gzip 压缩
+> - -c 创建压缩文件
+> - -v 显示当前被压缩的文件
+> - -f 指使用文件名
+
+```shell
+[parallels@centos-7 Desktop]$ tar -zxvf testTar.tgz 
+test2/
+test2/hello.txt
+```
+
+> - -z 解压
+> - -C 指定目录解压
+
+### 3 bzip2
+
+> 使用 bzip2 压缩文件时,默认会产生以`.bz2`扩展名结尾的文件，这里使用`-z`参数进行压缩，使用`-d`参数进行解压缩
+
+```shell
+bzip2 install.log
+[parallels@centos-7 Desktop]$ ls -l install.log.bz2 
+-rwxrw-r--. 1 parallels parallels 560 Oct 14 20:55 install.log.bz2
+[parallels@centos-7 Desktop]$ bzip2 -d install.log.bz2 
+[parallels@centos-7 Desktop]$ ls
+install.log  Parallels Shared Folders  tesst  test2  testTar.tgz
+[parallels@centos-7 Desktop]$ 
+
+```
+
+### 4 cpio
+
+> 该命令和 find 命令一同使用。**当由 find 按照条件找出需要备份的文件列表后，可通过管道的方式传递给 cpio 进行备份，生成 /tmp/conf.cpio 文件夹**，然后再将生成的 `/tmp/conf.cpio` 文件中包含的文件列表完全还原回去
+
+```shell
+[parallels@centos-7 Desktop]$ find /etc -name *.conf | cpio -cov > /tmp/conf.cpio
+[parallels@centos-7 Desktop]$ cpio --absolute-filenames -icvu < /tmp/conf.cpio
+```
+
+> ⚠️：man cpio 查看命令帮助
+
+# Linux 文件系统
+
+## 1 文件系统
+
+Linux 使用了树形文件存储结构，在磁盘上存储文件的时候，使用的则 **目录加文件的形式**。但磁盘的存储是磁性 0 1，这里有个明显的问题 :**磁盘的物理存储方式决定了其根本没有文件和目录的概念**。
+
+> Linux 采用的是文件系统+虚拟文件系统(VFS)的解决方案
+
+### 1 什么是文件系统
+
+> 磁盘上组织文件的方法。在使用前，都需要针对磁盘做初始化操作，并将记录的数据结构写入磁盘上，这种操作就是建立文件系统。Linux 支持多种文件系统格式 ext2、ext3、ext4、zfs、iso9660、vfat、msdos 、smnfs、nfs
+
+大部分Linux 系统都有通用结构
+
+- 超级块(superblock)
+- i节点(inode)
+- 数据块(data block)是存放真实文件数据 4kb 单位
+- 目录块(directory block)等是存放文件名和文件在目录中的位置，并包括文件的 i 节点信息
+
+### 2 ext2 文件系统
+
+弱点：不支持日志功能。这很容易造成一些情况下丢失数据
+
+### 3 ext3 文件系统
+
+兼容 ext2，带有日志功能
+
+## 2 磁盘分区、创建文件系统、挂载
+
+```flow
+
+op=>operation: 磁盘分区
+op2=>operation: 创建文件系统
+op3=>operation: 挂载
+op4=>operation: 设置启动自动挂载
+
+op->op2
+op2->op3->op4
+
+```
+
+
+
+磁盘分区
+
+- 主分区
+- 扩展分区
+
+分区表大小(MBR 512字节，其中分区表站64字节)
+
+> 在完成磁盘分区后，需要进行创建文件系统的操作，最后将该分区挂载到系统中的某个挂在点才可以使用
+
+### 1 创建文件系统：fdisk
+
+```shell
+# 查看磁盘在操作系统中对应的设备
+fdisk -l
+
+# 分区
+fdisk /dev/sdb
+
+Welcome to fdisk (util-linux 2.23.2).
+
+Changes will remain in memory only, until you decide to write them.
+Be careful before using the write command.
+
+Device does not contain a recognized partition table
+Building a new DOS disklabel with disk identifier 0x99fef6e7.
+
+The device presents a logical sector size that is smaller than
+the physical sector size. Aligning to a physical sector (or optimal
+I/O) size boundary is recommended, or performance may be impacted.
+# 输入 n
+Command (m for help): n
+# 输入 p
+Partition type:
+   p   primary (0 primary, 0 extended, 4 free)
+   e   extended
+Select (default p): p
+Partition number (1-4, default 1): 1
+First sector (2048-132118527, default 2048): 2222
+w
+```
+
+假设创建了一个 `/dev/sdb2`分区，使用命令`mkfs -t ext3/dev/sdb2`**为创建的分区中格式 ext3 文件系统**
+
+### 2 磁盘挂载：mount
+
+创建了文件系统的分区后，在 Linux 系统下还需要经过挂载才能使用，
+
+```shell
+# 语法格式 DEVICE ： 具体的设备 MOUNT_POINT 是指挂载点,挂载点只能是目录
+mount DEVICE MOUNT_POINT
+
+# mount 没有参数则显示所有挂载
+/dev/disk0s2 on / (hfs, local, journaled)
+devfs on /dev (devfs, local, nobrowse)
+map -hosts on /net (autofs, nosuid, automounted, nobrowse)
+map auto_home on /home (autofs, automounted, nobrowse)
+# 显示设备组件
+juejianangdemac:~ mac$ df -h | grep disk0s2
+/dev/disk0s2   233Gi  195Gi   38Gi    84% 2462560 4292504719    0%   /
+juejianangdemac:~ mac$
+
+```
+
+### 3 设置启动自动挂载:/etc/fstab 🌟
+
+> mount 命令挂载的设备在你重启计算机之后就会消失，所以必须通过 `/etc/fstab` 使得系统在重启后能自动挂载
+
+```shell
+echo "/dev/sdb1 /root/newDisk ext3 defaults 0 0" >> /etd/fstab
+```
+
+这条命令的意思显而易见:`/dev/sdb1`挂载到 `/root/newDisk` ，文件系统是 `ext3`，使用系统默认的挂载参数(defaults)，第五部分是决定 dump 命令在进行备份时是否对该设备进行 `fsck`(命令用于检查与修复 Linux 档案系统)，这个值只可能是 3 种。 1 保留给根分区，其他分区使用 2（检查完根分区后检查）或 0(不检查)
+
+### 4 磁盘检验: fsck 、badblocks
+
+当机器突然掉电时可能引起。该命令的经典使用
+
+```shell
+fsck -t TYPE(ext2|ext3) /DEVICE/PATH
+```
+
+> ⚠️：fsck 在检查磁盘的时候，**需要磁盘时未挂载的状态，否则会造成文件损坏**
+>
+> 对于已挂载的设备需要先进行 `umount`操作
+
+```shell
+# 解除挂载设备
+umount /DEVEICE/PATH
+# 解除挂载点
+umount MOUNT_POINT
+```
+
+**系统的根文件系统出现问题需要fsck怎么办呢?**
+
+> 因为系统在运行时，根时无法被 umount 的。这使用只有重启计算机，因为确认根文件系统出现问题，系统重启会检测到问题，然后提示**用户输入 root 密码进入单用户模式**。然后使用 fsck 来修复根文件系统.🤔：root 用户的文件啥的不都是放在 root 文件吗，有问题还怎么登陆
+
+
+
+**badblocks 检测磁盘的物理坏道，一般怀疑磁盘有坏道的时候才使用**
+
+## 3 Linux 逻辑卷
+
+> 在一个分区经过挂载使用后，随着存储文件的不断增多，可用空间越来越少。如果原先分配的磁盘空间不够使用的情况，**这时候是没有办法扩大这个分区**
+>
+> 为了更好地使用磁盘空间，提高系统空间的可扩展性，此时就需要使用逻辑卷
+
+### 1 什么是逻辑卷
+
+使用逻辑卷组(Logic Volume Manager)创建出来的设备，也是 Linux 下操作系统可以认识的设备。**LVM介于硬盘裸设备和文件系统的中间层**
+
+- 物理卷(Physical Volume PV) 物理磁盘分区，比如说`dev/sdb1`
+- 卷组(Volume Group，VG)也就是 PV 的集合
+- 逻辑卷(Logic Volume,LV)也就是 PV 中划出来的一 小块逻辑磁盘
+
+> **逻辑卷就是从某个物理卷中抽象出来的一块磁盘空间**
+
+```flow
+op1=>operation: PV
+op2=>operation: VG
+op3=>operation: LV
+op1->op2->op3
+```
+
+> :sos:目前还不知道依次创建卷组然后到LV 的目的是什么​
+
+### 2 如何制作逻辑卷
+
+
+
+**创建物理卷：pvcreate、pvdisplay**
+
+先将物理卷fdisk 创建一个分区，各个分区的 ID 值是 83，还需要更**改 ID 值为 8e**，表明该分区是一个特殊的用于逻辑卷管理的分区
+
+![image.png](http://ww1.sinaimg.cn/mw690/006rAlqhgy1gkel8qpbxyj310i03ymyd.jpg)
+
+![image.png](http://ww1.sinaimg.cn/large/006rAlqhgy1gkelaswbmgj318u0t2h2d.jpg)
+
+```shell
+fdisk /dev/DEVEICE
+# t 表示修改当前设备下的分区
+t
+# 输入西拐的分区数
+1 
+# 查看当前修改的编码
+Hex code (type L to list all codes): L
+
+ 0  Empty           24  NEC DOS         81  Minix / old Lin bf  Solaris        
+ 1  FAT12           27  Hidden NTFS Win 82  Linux swap / So c1  DRDOS/sec (FAT-
+ 2  XENIX root      39  Plan 9          83  Linux           c4  DRDOS/sec (FAT-
+ 3  XENIX usr       3c  PartitionMagic  84  OS/2 hidden C:  c6  DRDOS/sec (FAT-
+ 4  FAT16 <32M      40  Venix 80286     85  Linux extended  c7  Syrinx         
+ 5  Extended        41  PPC PReP Boot   86  NTFS volume set da  Non-FS data    
+ 6  FAT16           42  SFS             87  NTFS volume set db  CP/M / CTOS / .
+ 7  HPFS/NTFS/exFAT 4d  QNX4.x          88  Linux plaintext de  Dell Utility   
+ 8  AIX             4e  QNX4.x 2nd part 8e  Linux LVM       df  BootIt         
+ 9  AIX bootable    4f  QNX4.x 3rd part 93  Amoeba          e1  DOS access     
+ a  OS/2 Boot Manag 50  OnTrack DM      94  Amoeba BBT      e3  DOS R/O        
+ b  W95 FAT32       51  OnTrack DM6 Aux 9f  BSD/OS          e4  SpeedStor      
+ c  W95 FAT32 (LBA) 52  CP/M            a0  IBM Thinkpad hi eb  BeOS fs        
+ e  W95 FAT16 (LBA) 53  OnTrack DM6 Aux a5  FreeBSD         ee  GPT            
+ f  W95 Ext'd (LBA) 54  OnTrackDM6      a6  OpenBSD         ef  EFI (FAT-12/16/
+10  OPUS            55  EZ-Drive        a7  NeXTSTEP        f0  Linux/PA-RISC b
+11  Hidden FAT12    56  Golden Bow      a8  Darwin UFS      f1  SpeedStor      
+12  Compaq diagnost 5c  Priam Edisk     a9  NetBSD          f4  SpeedStor      
+14  Hidden FAT16 <3 61  SpeedStor       ab  Darwin boot     f2  DOS secondary  
+16  Hidden FAT16    63  GNU HURD or Sys af  HFS / HFS+      fb  VMware VMFS    
+17  Hidden HPFS/NTF 64  Novell Netware  b7  BSDI fs         fc  VMware VMKCORE 
+18  AST SmartSleep  65  Novell Netware  b8  BSDI swap       fd  Linux raid auto
+1b  Hidden W95 FAT3 70  DiskSecure Mult bb  Boot Wizard hid fe  LANstep        
+1c  Hidden W95 FAT3 75  PC/IX           be  Solaris boot    ff  BBT            
+1e  Hidden W95 FAT1 80  Old Minix   
+# w 将修改写入分区表
+w
+```
+
+> 这样分区就具备称为PV的条件，使用 `pvcreate /dev/DEVEICE`
+
+**pvscan 查看系统中的 PV pvdisplay 查看更详细的内容**
+
+```shell
+[parallels@centos-7 Desktop]$ sudo pvscan
+  PV /dev/sda2   VG cl              lvm2 [<63.00 GiB / 4.00 MiB free]
+  Total: 1 [<63.00 GiB] / in use: 1 [<63.00 GiB] / in no VG: 0 [0   ]
+[parallels@centos-7 Desktop]$ sudo pvdisplay
+  --- Physical volume ---
+  PV Name               /dev/sda2
+  VG Name               cl
+  PV Size               <63.00 GiB / not usable 3.00 MiB
+  Allocatable           yes 
+  PE Size               4.00 MiB
+  Total PE              16127
+  Free PE               1
+  Allocated PE          16126
+  PV UUID               GZXwoc-7Zia-AdE3-ZFwD-SUgd-8hK3-j003qr
+   
+```
+
+**创建并查询卷组:vgcreate、vgdispaly**
+
+有了 PV 就可以创建卷组了。命令 vgcreate 的用法如下(其中 VG_NAME) 是创建 VG 名
+
+```shell
+# 创建 VG 语法
+vgcreate VG_NAME DEVICE1 ... DEVICEn
+# 查看当前系统上的所有 VG
+[parallels@centos-7 Desktop]$ sudo vgscan
+  Reading volume groups from cache.
+  Found volume group "cl" using metadata type lvm2
+# 查看详细VG 信息
+[parallels@centos-7 Desktop]$ sudo vgdisplay
+  --- Volume group ---
+  VG Name               cl
+  System ID             
+  Format                lvm2
+  Metadata Areas        1
+  Metadata Sequence No  4
+  VG Access             read/write
+  VG Status             resizable
+  MAX LV                0
+  Cur LV                3
+  Open LV               3
+  Max PV                0
+  Cur PV                1
+  Act PV                1
+  VG Size               <63.00 GiB
+  PE Size               4.00 MiB
+  Total PE              16127
+  Alloc PE / Size       16126 / 62.99 GiB
+  Free  PE / Size       1 / 4.00 MiB
+  VG UUID               joX1Bf-Eo5C-s0TL-UcAT-2f7q-E3Tf-Ki1xkG
+
+```
+
+**扩容卷组:vgextend**
+
+使用过程中如果要扩大 VG，可以使用 `vgextend`
+
+```shell
+vgextend VG_NAME DEVICE1 ... DEVICEn
+```
+
+**创建逻辑卷:lvcreate、lvdisplay**
+
+有了卷组(First_VG),可以创建逻辑卷了，在创建逻辑卷时需要 **定义大小、名称，以及使用哪个卷组的空间等信息，**
+
+```shell
+# -L 逻辑卷的大小 -n 逻辑卷名称 最后从什么卷组中分配空间
+lvcreate -L SIZE -n LV_NAME VG_NAME
+```
+
+LV 创建后和物理分区一样，逻辑卷也需要在创建文件系统、挂载后才能被系统使用， **对逻辑卷创建文件系统的时候，其全路径是 /dev/卷组名/逻辑卷名**
+
+
+
+```shell
+# 创建文件系统
+mkfs.ext3 /dev/VG/LV 
+# 创建一个挂载点
+mkdir /root/newLV
+# 挂载
+mount /dev/VG/LV /root/newLV 
+```
+
+## 4 硬链接和软链接
+
+### 1 什么是硬链接
+
+> 硬链接又称为实际链接，是指**通过索引节点**来进行链接。在 Linux 文件系统中，所有的文件都会有一个编号，称为 inode ，多个文件名指向同一索引节点被允许的，这种链接就是硬链接。**硬链接的作用是允许一个文件拥有多个有效路径名，这样用户就可以创建硬链接指向同一文件，删除一个链接并不会影响索引节点本身和其他的链接，只有最后一个链接被删除时，文件的数据块及目录的链接才会被释放。**
+
+硬链接有两个限制：
+
+- 不允许给目录创建硬链接
+- 只有在同一文件系统中的文件之间才能创建链接，即不同分区上的两个文件之间不能够建立硬链接
+
+```shell
+[parallels@centos-7 test2]$ ls -li
+total 0
+322 -rw-rw-r--. 1 parallels parallels  0 Nov  5 21:37 hard01
+[parallels@centos-7 test2]$ ln hard01 hard01_hlink
+[parallels@centos-7 test2]$ ls -li
+total 0
+322 -rw-rw-r--. 2 parallels parallels  0 Nov  5 21:37 hard01
+322 -rw-rw-r--. 2 parallels parallels  0 Nov  5 21:37 hard01_hlink
+
+```
+
+> 创建硬链接后发现，第三列的值发生了变化从 1 变为 2 **这个值时源文件的关联数，当次数为 0 的时候该文件才能正真地被文件系统创建**
+
+## 2 什么是软链接
+
+是一个包含了另一个文件路径名的文件，**可以指向任意文件或目录**，也可以跨不同的文件系统。。
+
+> 软链接和 Windows 下的 "快捷方式"十分类似，删除软链接并不会删除其所指向的源文件，如果删除了源文件则会出现"断链"
+
+```shell
+[parallels@centos-7 test2]$ ln -s file01 file01_slink
+[parallels@centos-7 test2]$ ls -l
+total 0
+-rw-rw-r--. 1 parallels parallels  0 Nov  5 21:55 file01
+lrwxrwxrwx. 1 parallels parallels  6 Nov  5 21:58 file01_slink -> file01
+
+```
+
+> 创建软链接需要使用 -s 参数 
 

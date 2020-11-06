@@ -1,4 +1,4 @@
-## Linux 常用操作
+# Linux 常用操作
 
 
 
@@ -1245,4 +1245,151 @@ lrwxrwxrwx. 1 parallels parallels  6 Nov  5 21:58 file01_slink -> file01
 ```
 
 > 创建软链接需要使用 -s 参数 
+
+# Linux 字符处理
+
+
+
+## 1 管道
+
+在 Linux中也存在着管道，它是一个固定大小的缓冲区，该缓冲区的大小为 1 页，即 4k 字节。管道是一种使用非常频繁的通信机制，我们可以用管道符"|"来连接进程，由管道连接起来的进程可以自动运行，如同一个数据流一样，所以管道表现为 **输入输出重定向的一种方法，它可以把命令的输入内容当作下一个命令的输入内容，两个命令之间只需要使用管道符连接即可**
+
+利用管道功能，将命令的输出使用 more 程序一页一页地显示出来。
+
+```shell
+# 管道前面的内容当作more命令的输入
+ls -l /etc/init.d | more
+```
+
+## 2 使用 grep 搜索文本
+
+> grep 如果匹配到相关信息就会打印出符合条件的所有行
+
+```shell
+grep [-ivnc] '需要匹配的字符'文件名
+# -i 不区分大小写
+# -v 反向匹配
+# -n 输出行号
+# -c 统计包含匹配的行数
+
+# 创建测试装备
+cat tomAndJerry.txt
+
+The cat's name is Tom, what's the mouse's name?
+The mouse's NAME is Jerry
+They are good friends
+
+# 找出含有 name 的内容
+juejianangdemac:LinuxPractice mac$ grep "name" tomAndJerry.txt
+The cat's name is Tom, what's the mouse's name?
+# -n 含 name 的行号
+juejianangdemac:LinuxPractice mac$ grep -n "name" tomAndJerry.txt
+2:The cat's name is Tom, what's the mouse's name?
+
+# -i 不区分大小写
+juejianangdemac:LinuxPractice mac$ grep -in "name" tomAndJerry.txt
+2:The cat's name is Tom, what's the mouse's name?
+3:The mouse's NAME is Jerry
+
+# -v 反转不包含 name 的行
+juejianangdemac:LinuxPractice mac$ grep -nv "name" tomAndJerry.txt
+1:
+3:The mouse's NAME is Jerry
+4:They are good friends
+# -c 统计行数
+juejianangdemac:LinuxPractice mac$ grep -cnv "name" tomAndJerry.txt
+3
+```
+
+> 以上的命令都可以使用 cat 命令 + 管道符改写。
+
+```shell
+$ cat tomAndJerry.txt | grep -i 'name'
+The cat's name is Tom, what's the mouse's name?
+The mouse's NAME is Jerry
+```
+
+## 3 使用 sort  排序
+
+很多情况下需要对无序的数据进行排序，这时就要用到 sort 排序了
+
+```shell
+sort [-ntkr] 文件名
+# -n 采取数字排序
+# -t 指定分隔符
+# -k 指定第几列
+# -r 反向排序
+
+# 创建测试准备
+$ cat sort.txt
+b:3
+c:2
+a:4
+e:5
+d:1
+f:11
+# 首字母排序
+$ cat sort.txt | sort
+a:4
+b:3
+c:2
+d:1
+e:5
+f:11
+# -r 反向排序
+$ cat sort.txt | sort -r
+f:11
+e:5
+d:1
+c:2
+b:3
+a:4
+# -t 分割 -k 指定第几列
+$ cat sort.txt | sort -t ":" -k 2
+d:1
+f:11
+c:2
+b:3
+a:4
+e:5
+
+# -n 按照数值排序
+$ cat sort.txt | sort -t ":" -k 2 -n
+d:1
+c:2
+b:3
+a:4
+e:5
+f:11
+```
+
+## 4 使用 uniq 删除重复内容
+
+> 如果文件中有多行完全相同的内容，我们很自然希望能删除重复的行，并且统计完全相同的行出现次数
+
+```shell
+# uniq 语法 [-ic]
+# -i 忽略大小写
+# -c 计算重复行数
+
+# 创建测试前准备
+$ cat uniq.txt
+abc
+123
+abc
+123
+
+# 
+```
+
+- uniq 一般需要和 sort 命令一起使用，也就是先排序后去重.**因为 uniq 命令只会对相邻的行删除重复内容，输出一行**
+
+```shell
+$ sort uniq.txt | uniq -c
+   2 123
+   2 abc
+$ cat uniq.txt | sort | uniq
+123
+abc
+```
 

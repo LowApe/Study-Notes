@@ -1,3 +1,5 @@
+
+
 # Linux 常用操作
 
 
@@ -1693,3 +1695,249 @@ baidu.com mail is handled by 20 mx1.baidu.com.
 **traceroute 如何确认该 IP 包成功地被目的主机接收?**
 
 > 目的主机在接受到 TTL 为1的包也不会发送 ICMP 通知源主机，这时 tracroute 发送一个接收端口为主机不可能存在的 UDP 的包给目的主机，由于端口不可达，则主机会返回一个 “端口不可达" 的通知，这样就能确认
+
+### 4 常见网络故障排查
+
+```flow
+one=>operation: 确认网卡本身(ping 127.0.0.1)
+two=>operation: 确认网卡是否出现了物理或驱动故障(ping 本地IP)
+three=>operation: ping 通同网段的其他主机。
+four=>operation: ping 通网关 IP
+five=>operation: ping 通公网上的某个IP
+six=>operation: ping 通公网上的某个域名
+one->two->three->four->five->six
+```
+
+- 确认网卡本身
+- 确认网卡是否出现了物理或驱动故障
+- 主要确认二层网络设备(交换机或者HUB)
+- 确认主机和本地网络都工作正常
+- **本地路由设置**正确，否则确认路由设备是否做了正确的 nat 或路由设置
+- **DNS 设置**
+
+# Linux 进程管理
+
+> Linux 如何控制这些进程，包括查看、启动、关闭、设置优先级等
+
+## 1 什么是进程
+
+进程是操作系统当前运行的程序。进程包括动态执行的程序和数据两个部分。现代操作系统支持多进程处理，这些进程可以接受操作系统的调度，所以说每一个进程都是操作系统进行资源调度和分配的一个独立单位
+
+所有进程都包含 3 种状态: 
+
+- 运行态：表示程序当前实际占用着 CPU 等资源
+- 就绪态：程序除 CPU 之外的一切运行资源都已经就绪，等操作系统分配 CPU 资源
+- 阻塞态：程序在运行的过程中由于需要请求外部资源(例如I/O资源，打印机等低速的或同一时刻只能独享的资源)而当前无法继续执行，从而主动放弃当前 CPU 资源转而等待所请求资源
+
+进程之间存在互斥和同步的关系。互斥也就是说进程间不能同时运行，必须等待一个进程运行完毕，另一个进程才能运行。比如打印机。进程同步指的是进程间通过某种通信机制实现信息交互。现代计算机使用信号量机制来实现进程间的互斥和同步，它的基本原理是：两个或者多个进程可以通过简单的信号进行合作，一个进程可以被迫在某一位置停止，直到它接受到一个特定的信号。任何复杂的合作需求都可以通过适当的信号结构得到满足。🤔
+
+## 2 进程和程序的区别
+
+进程是动态的，而程序是静态的，进程是程序以及数据在计算机上的一次执行，没有静态的程序也就没有动态的执行
+
+## 3 进程的观察：ps、top
+
+```shell
+
+# ps 参数
+# -A 列出所有的进程，和 -e 有同样的效果
+# -a 列出不和本终端有关的所有进程
+# -w 显示加宽可以显示较多信息
+# -u 显示有效使用者相关的进程
+# aux 显示所有包含其他使用者的进程
+# aux 参数的输出
+# User pid %CPU %MEM VSZ RSS TTY STAT START TIME COMMAND
+# VSZ 占用虚拟内存大小
+# RSS 占用的内存大小
+# TTY 运行的终端的号码
+# STAT 进程状态
+# 	S：休眠 D：不可中断：R：运行中 T：暂停
+```
+
+ps 是当前查询状态的瞬间的状态信息，如果要想及时动态地查看进程就需要使用 top 命令
+
+```shell
+top - 17:32:52 up  3:36,  3 users,  load average: 0.07, 0.04, 0.05
+Tasks: 234 total,   1 running, 233 sleeping,   0 stopped,   0 zombie
+%Cpu(s):  3.9 us,  2.0 sy,  0.0 ni, 94.1 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st
+KiB Mem :  1878448 total,   333096 free,   977536 used,   567816 buff/cache
+KiB Swap:  2097148 total,  2089980 free,     7168 used.   666272 avail Mem 
+
+  PID USER      PR  NI    VIRT    RES    SHR S  %CPU %MEM     TIME+ COMMAND     
+13024 paralle+  20   0 3393872 158812  30952 S   4.0  8.5   0:30.30 gnome-shell 
+ 1548 root      20   0  306236  37408   7108 S   3.7  2.0   0:35.29 X           
+14024 paralle+  20   0  753476  30284  17132 S   3.0  1.6   0:04.24 gnome-term+ 
+13451 paralle+  20   0   21096   1532   1292 S   0.3  0.1   0:02.33 prlshprof   
+24210 paralle+  20   0  162072   2360   1580 R   0.3  0.1   0:00.09 top         
+    1 root      20   0  128348   5716   3800 S   0.0  0.3   0:03.12 systemd     
+    2 root      20   0       0      0      0 S   0.0  0.0   0:00.01 kthreadd    
+    3 root      20   0       0      0      0 S   0.0  0.0   0:00.11 ksoftirqd/0 
+```
+
+- 第一行：服务器基础信息
+	- 刷新时间
+	- 启动时长
+	- 当前用户
+	- 1分钟平均系统负载为0.07，5分钟的平均系统负载为0.04，最近15分钟内的平均系统负载0.05
+- 第二行：当前系统进程状况，一共有 234个进程，其中 1 个运行，233 休眠，没有停止进程，没有僵尸进程
+- 3.9 us,  2.0 sy,  0.0 ni, 94.1 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st
+- 第三行是 CPU 信息，
+	- us代表用户空间占用CPU百分比
+	- sy代表内核空间占用的CPU百分比
+	- ni代表改变过优先级的进程占用的CPU百分比
+	- id代表空闲CPU百分比
+	- wa代表I/O等待百分比
+	- hi代表硬中断占用的CPU百分比
+	- si代表软中断占用的CPU百分比
+- 第四行是物理内存的使用状态
+	- 物理内存总量
+	- 空闲内存
+	- 已使用内存
+	- 空闲内存
+	- 缓存使用的内存
+- 第五行是虚拟内存的使用状态，
+	- ...
+	- 最后一个代表缓冲的交换区总量
+
+**top命令动态进程信息中每列的含义**
+
+| 字段 | 含义                                             |
+| ---- | ------------------------------------------------ |
+| PID  | 进程Id                                           |
+| user | 进程所有者                                       |
+| PR   | 进程优先级                                       |
+| NI   | nice 值，负值表示高优先级，正值表示低优先级      |
+| VIRT | 进程使用的虚拟内存总量，单位为 Kb，VIRT=SWAP+RES |
+| RES  | 进程使用的未被换出的物理内存大小                 |
+| SHR  | 共享内存大小，单位为 Kb                          |
+|      |                                                  |
+
+按 f 选择展示列，其中提示 space 空格切换显示还是不显示，* 表示当前显示的列
+
+![image.png](http://ww1.sinaimg.cn/large/006rAlqhgy1gkgraigik6j30xc0nujwf.jpg)
+
+
+
+## 4 进程的终止：kill、killall
+
+一般来说，kill 命令需要和ps命令联合使用。原因是kill后面跟的应该是需要被终止的进程的PID。典型用法是使用 ps 查出进程的 PID
+
+```shell
+kill [信号代码] 进程 ID
+
+$ ps -ef | grep 待终止名称
+# pidof 快速找到pid
+$ pidof dhcpd
+# 3872
+$ kill 3872
+
+# kill 可用的信号代码
+# kill -l
+ 1) SIGHUP	 2) SIGINT	 3) SIGQUIT	 4) SIGILL	 5) SIGTRAP
+ 6) SIGABRT	 7) SIGBUS	 8) SIGFPE	 9) SIGKILL	10) SIGUSR1
+11) SIGSEGV	12) SIGUSR2	13) SIGPIPE	14) SIGALRM	15) SIGTERM
+16) SIGSTKFLT	17) SIGCHLD	18) SIGCONT	19) SIGSTOP	20) SIGTSTP
+21) SIGTTIN	22) SIGTTOU	23) SIGURG	24) SIGXCPU	25) SIGXFSZ
+26) SIGVTALRM	27) SIGPROF	28) SIGWINCH	29) SIGIO	30) SIGPWR
+31) SIGSYS	34) SIGRTMIN	35) SIGRTMIN+1	36) SIGRTMIN+2	37) SIGRTMIN+3
+38) SIGRTMIN+4	39) SIGRTMIN+5	40) SIGRTMIN+6	41) SIGRTMIN+7	42) SIGRTMIN+8
+43) SIGRTMIN+9	44) SIGRTMIN+10	45) SIGRTMIN+11	46) SIGRTMIN+12	47) SIGRTMIN+13
+48) SIGRTMIN+14	49) SIGRTMIN+15	50) SIGRTMAX-14	51) SIGRTMAX-13	52) SIGRTMAX-12
+53) SIGRTMAX-11	54) SIGRTMAX-10	55) SIGRTMAX-9	56) SIGRTMAX-8	57) SIGRTMAX-7
+58) SIGRTMAX-6	59) SIGRTMAX-5	60) SIGRTMAX-4	61) SIGRTMAX-3	62) SIGRTMAX-2
+63) SIGRTMAX-1	64) SIGRTMAX
+```
+
+> 常用的 
+>
+> - 1）sighup 重启。`kill -1 pid`
+> - 9）sigkill 强行杀掉 `kill -9 pid`
+> - 15）sigterm 正常结束 `kill -15 pid`
+
+> killall 命令后直接跟需要结束的名称
+
+## 5 查询进程打开的文件：lsof
+
+list open files 是一个列出当前系统中所有打开文件的工具, 
+
+**如何知晓现在系统打开的是哪些文件呢，这时 lsof 命令就有用武之地**。
+
+```shell
+# lsof [options] fielname
+# 常用的参数列表
+# lsof filename 显示打开指定文件的所有进程
+$ lsof  /usr/sbin/vsftpd
+COMMAND PID USER  FD   TYPE DEVICE SIZE/OFF   NODE NAME
+vsftpd  777 root txt    REG  253,1   168200 275045 /usr/sbin/vsftpd
+# lsof -c string 显示 command 列包含指定字符的进程所有打开的文件
+$ lsof  -c vsftpd
+COMMAND PID USER   FD   TYPE             DEVICE SIZE/OFF    NODE NAME
+vsftpd  777 root  cwd    DIR              253,1     4096       2 /
+vsftpd  777 root  rtd    DIR              253,1     4096       2 /
+vsftpd  777 root  txt    REG              253,1   168200  275045 /usr/sbin/vsftpd
+vsftpd  777 root  mem    REG              253,1    14608 1193802 /lib/x86_64-linux-gnu/libdl-2.23.so
+vsftpd  777 root  mem    REG              253,1   117288 1180140 /lib/x86_64-linux-gnu/libaudit.so.1.0.0
+vsftpd  777 root  mem    REG              253,1    93128 1193812 /lib/x86_64-linux-gnu/libnsl-2.23.so
+vsftpd  777 root  mem    REG              253,1  1868984 1193817 /lib/x86_64-linux-gnu/libc-2.23.so
+vsftpd  777 root  mem    REG              253,1    23128 1180146 /lib/x86_64-linux-gnu/libcap.so.2.24
+vsftpd  777 root  mem    REG              253,1  2365984 1179728 /lib/x86_64-linux-gnu/libcrypto.so.1.0.0
+vsftpd  777 root  mem    REG              253,1   428384 1179788 /lib/x86_64-linux-gnu/libssl.so.1.0.0
+vsftpd  777 root  mem    REG              253,1    55904 1180185 /lib/x86_64-linux-gnu/libpam.so.0.83.1
+vsftpd  777 root  mem    REG              253,1    36632 1180120 /lib/x86_64-linux-gnu/libwrap.so.0.7.6
+vsftpd  777 root  mem    REG              253,1   162632 1193803 /lib/x86_64-linux-gnu/ld-2.23.so
+vsftpd  777 root    0r   CHR                1,3      0t0       6 /dev/null
+vsftpd  777 root    1u  unix 0xffff88007c044000      0t0   13574 type=STREAM
+vsftpd  777 root    2u  unix 0xffff88007c044000      0t0   13574 type=STREAM
+vsftpd  777 root    3u  IPv6              14149      0t0     TCP *:ftp (LISTEN)
+# lsof -u username 显示所属于 user 进程打开的文本
+
+# lsof -g gid 显示归属于 gid 的进程情况 🤔 进程列不显示 gid 选项
+
+# lsof +d /DIR 显示目录下被进程打开的文件 🤔 没显示效果
+# lsof +D /DIR 会搜索目录下的所有目录，时间相对较长
+
+# lsof 其所输出的是目前系统中所有打开的文件，需要很大的权限
+# 输出的字段
+# command：进程的名称
+# PID：进程标示符
+# USER：进程所有者
+# FD:文件描述符，应用程序通过文件描述符识别该文件
+# TYPE： 文件类型，如 DIR，REG 等
+# DEVICE：磁盘的名称
+# SIZE：文件大小
+# NODE：索引节点
+# NAME：打开文件的全路径名称
+
+```
+
+
+
+**使用 lsof 查找使用了某个端口的进程**
+
+比如系统中运行了 sshd 进程(基本上都是默认运行的)，则进程默认会绑定 22 端口：
+
+```shell
+# lsof  -i:22
+```
+
+> 这块感觉代码用的不太熟，而且好多都没有实际的使用场景
+
+### 6 进程优先级调整：nice、renice
+
+在学习 top 时，我们看到其输出中有 NI 字段，标记了对应进程的优先级，该字段的取值范围是 `-20~19`,**数值越低代表优先级越高，也就能被操作系统调度运行，如果一个进程在启动时并没有设定 nice 优先级，则默认使用0**
+
+top 中 PR 字段，也是进程的“优先级”，这两个概念怎么理解呢？实际上，Linux 使用了“动态优先级”的调度算法来确定每一个进程的优先级，一个进程的最终优先级=优先级+nice优先级
+
+如果你自己写了一个脚本 job.sh , 你想以比较高的优先级来运行它
+
+```shell
+$ nice -n -10 ./job.sh
+```
+
+对于已经启动的进程，**可以用 renice 命令进行修改**，不过，这需要先查询出该进程的 PID (使用 ps 命令)。假设现在需要将 PID 为 5555 进程的 nice 优先级调整为 `-10`,则可以这样做：
+
+```shell
+$ renice -10 -p 5555
+```
+
+**除了使用 renice 外，还可以使用 top 提供的功能来修改，前提也是要查到该进程的 PID，然后在 top界面中按 r 键，在出现的 PID to renice 后输入PID,然后输入对应的 nice 优先级值**

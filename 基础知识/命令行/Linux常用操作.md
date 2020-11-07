@@ -1393,3 +1393,303 @@ $ cat uniq.txt | sort | uniq
 abc
 ```
 
+## 5 使用 cut 截取文本
+
+> 它能处理的对象是"一行"文本，可以从中选取出用户所需要的部分。在有 **特定的分隔符时，可以指定分隔符，然后打印出从分隔符隔开的具体某一列或某几列**
+
+```shell
+# 语法
+cut -f指定的列 -d'分隔符'
+NAME
+     cut -- cut out selected portions of each line of a file
+
+SYNOPSIS
+     cut -b list [-n] [file ...]
+     cut -c list [file ...]
+     cut -f list [-d delim] [-s] [file ...]
+# 打印系统中的所有用户
+# 每行有七列 如:root:*:0:0:System Administrator:/var/root:/bin/sh
+cat /etc/passwd | cut -f1 -d':'
+
+# 同时打印出用户和这个用户的家目录
+cat /etc/passwd | cut -f1,6 -d':'
+# 同时打印出每位用户的登陆 shell
+cat /etc/passwd | cut -f1,6-7 -d':'
+
+# 截取指定列的字符
+cut -c指定列的字符
+# -c 指定列范围的字符，感觉这个不好用,可能会截断
+cat /etc/passwd | cut -c1-5,7-10
+```
+
+## 6 使用 tr 做文本转换
+
+> 主要作用在于**文本转换或删除**。
+
+这里假设要把文件 `/etc/passwd` 中的小写字母转换为大写字母，然后再尝试删除文本中的冒号
+
+```shell
+# 语法
+NAME
+     tr -- translate characters
+
+SYNOPSIS
+     tr [-Ccsu] string1 string2
+     tr [-Ccu] -d string1
+     tr [-Ccu] -s string1
+     tr [-Ccu] -ds string1 string2
+# 小写字母转换为大写字母
+$ cat /etc/passwd | tr '[a-z]' '[A-Z]'
+# 删除文本中的冒号
+$ cat /etc/passwd | tr -d ':'
+```
+
+## 7 使用 paste 做文本合并
+
+> paste 的作用在于将文本按照行进行合并，中间使用 tab 隔开。
+
+假设有两个文件下面使用 paste 命令来合并文件,-d指定合并的分隔符
+
+```shell
+$ paste sort.txt uniq.txt
+b:3	abc
+c:2	123
+a:4	abc
+e:5	123
+d:1
+f:11
+$ paste -d':' sort.txt uniq.txt
+b:3:abc
+c:2:123
+a:4:abc
+e:5:123
+d:1:
+f:11:
+```
+
+## 8 使用 split 分割大文件
+
+> Linux 使用 split 命令来实现文件的分割，支持按照**行数分割**和按照大**小分割**这两个模式.
+>
+> ⚠️：因为二进制没有行的概念，所以二进制文件无法使用行分割，**而只能按照文件大小进行分割**
+
+```shell
+# split -l n 按照行数分割，每 n 个分成一个文件
+$ cat sort.txt
+b:3
+c:2
+a:4
+e:5
+d:1
+f:11
+$ split -l 2 sort.txt split_
+$ ls
+sort.txt	split_aa	split_ab	split_ac	tomAndJerry.txt	uniq.txt
+
+# 按照文件大小进行分割 -b 字节大小分割
+$ split -b 64m xx_bin split_
+
+```
+
+# Linux 网络管理
+
+## 1 网络接口配置
+
+### 1 使用 ifconfig 检查和配置网卡
+
+> 如果不使用任何参数，输入 ifconfig 命令时将会输出当前系统中所有处于活动状态的网络接口
+
+下面展示的是 阿里云服务器 ubuntu 的系统
+
+```shell
+# ifconfig
+eth0      Link encap:Ethernet  HWaddr 00:16:3e:00:3f:d6
+          inet addr:172.17.47.148  Bcast:172.17.63.255  Mask:255.255.192.0
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:303143361 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:334405686 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:93538203986 (93.5 GB)  TX bytes:92137235992 (92.1 GB)
+
+lo        Link encap:Local Loopback
+          inet addr:127.0.0.1  Mask:255.0.0.0
+          UP LOOPBACK RUNNING  MTU:65536  Metric:1
+          RX packets:526294 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:526294 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1
+          RX bytes:434029215 (434.0 MB)  TX bytes:434029215 (434.0 MB)
+
+```
+
+eth0表示的是以太网的第一块网卡。其中 eth 是 Ethernet 的前三个字母表示 **以太网** 0代表第一块网卡，第二块以太网网卡则是 eth1 ，依次类推
+
+- Link encap 是指封装方式为以太网
+- HWaddr 是网卡的硬件地址(MAC 地址)
+- inet addr:是指该网卡当前的 IP 地址
+- Broadcast 是广播地址(系统根据IP和掩码算出来)
+- Mask 是指掩码
+- UP 说明了该网卡目前处于活动状态
+- **MTU 代表最大存储单元，网卡一次所能传输的最大分包**
+- RX 和 TX 分别代表接收和发送的包
+- collisions 代表发生的冲突数，如果发现值不为 0 则很可能网络存在故障
+- txqueuelen 代表传输缓冲区长度大小
+
+
+
+lo 表示主机的环回地址，这个地址是用于本地通信的
+
+> ifconfig + 具体设备 显示具体的信息
+
+### 2 操作
+
+```shell
+# 手动设置 eth0 的 IP 地址
+$ ifconfig eth0 192.168.159.130 netmask 255.255.255.0
+$ ifconfig eth0 192.168.159.130/24
+
+# 手动断开/启动网卡⚠️阿里云不要这样操作，否则ssh会断开
+$ ifconfig eth0 down
+$ ifconfig eth0 up
+
+# 上两条等同于
+$ ifdown eth0
+$ ifup eth0
+# -a 显示所有包括当前不活动的网卡
+$ ifconfig -a
+```
+
+### 3 将 IP 配置信息写入配置文件
+
+> ifconfig 直接配置网卡 IP ，这属于一种动态的配置，所配置的信息只是保存在当前运行的内核中。一旦系统重启，这些信息将丢失
+
+RedHat 和 CentOS 系统的网络配置文件所处的目录为 `/etc/sysconfig/network-scripts/`,eh0 的配置文件为 ifcfg-eth0，如果有第二个块物理网卡，则配置文件为ifcfg-eth1,以此类推
+
+```shell
+cat ifcfg -eth0
+# Advanced Micro Devices [AMD] 79c970 [PCnet32 LANCE]
+DEVICE = eho0
+BOOTRROTO=dhcp
+ONROOT=yes
+```
+
+- DEVICE 变量定义了设备的名称;
+- BOOTPROTO=dhcp 系统启用这块网卡时，IP将会通过dhcp的方式获得，static 可选值，表示静态设置的IP ，后读取 IPADDR = xxx的 ip 地址
+- ONROOT 变量定义了启动时是否激活使用该设备，yes 表示激活，no 表示不激活
+
+> 修改完成后，如果要想立即生效，可以将端口先停用再启用，或者重启网络服务
+>
+> `service network restart`
+
+## 2 路由和网关设置
+
+> Linux 主机之间使用 IP 进行通信。一般来说，路由器属于 IT 设备的基础,**路由器属于 IT 设备的基础设备，每一个网段都应该有至少一个网关**
+
+`route -n` 查看系统当前的路由表
+
+```shell
+$ route -n
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+0.0.0.0         10.211.55.1     0.0.0.0         UG    100    0        0 eth0
+10.211.55.0     0.0.0.0         255.255.255.0   U     100    0        0 eth0
+192.168.122.0   0.0.0.0         255.255.255.0   U     0      0        0 virbr0
+```
+
+ 
+
+在 route 命令添加默认网关，假设添加默认网关
+
+```shell
+$ route add default gw 192.168.159.2
+```
+
+将 add 改成 del，就能删除刚才添加的路由。
+
+```shell
+$ route del default gw 192.168.159.2
+# 或者
+$ route del default
+```
+
+> 如果只使用 route 命令添加网关，一旦系统重启，配置信息就不存在了，必须将这种配置信息写到相关配置文件中(网关，只需要添加部分`GATEWAY=xxx.xxx.xxx.x`)
+
+另外，在配置文件 `/etc/sysconfig/network`中添加这段配置
+
+
+
+
+
+## 3 DNS 客户端配置
+
+### 1 /etc/hosts
+
+网络初期，联网的主机数量有限，想要访问对方主机时，就需要使用 IP 了，由于主机的增长 **人们使用 hosts 文件来记录主机名和IP的对应关系，这样访问对方的主机，就不需要使用ip 而是主机名**，后来发明了 DNS 系统。
+
+hosts 文件的作用主要如下：
+
+- 加快域名解析。当访问网站时，系统首先查看 hosts 文件中是否有记录，如果记录存在则直接解析出对应的 IP，这时则不需要请求 DNS 服务器
+- 方便小型局域网用户使用的内部设备。假设公司 A、B 两台主机，B主机的 IPx.x.x.145,为了方便访问 B 主机，可以在 A 主机的 `/etc/hosts`文件中添加记录`x.x.x.145 hostB`， 在 A `ping hostB -c 1`会正确地解析地址
+
+### 2 /etc/resolv.conf
+
+设置**主机为 DNS 客户端的配置文件**就是 `/etc/resolv.conf`,其中包含 nameserver、search、domain 这个关键字
+
+```shell
+$ cat /etc/resolv.conf 
+# Generated by NetworkManager
+search localdomain shared
+nameserver 10.211.55.1
+
+```
+
+- nameserver 关键字后面紧跟一个 DNS 主机的 IP地址，可以设置**2～3**个 nameserver(一次查询知道查到)
+- search 关键字后紧跟一个**域名**。
+- domain 与 search 类似，不同的是 domain 后面只能跟一个域名
+
+## 4 网络测试工具
+
+### 1 ping
+
+> ping 命令会向对端主机发送一个 ICMP 的 echo 请求包，对端主机接收到这个包后会回应一个 ICMP 的 reply 回应包。`ctrl+c`停止
+>
+> ```shell
+> ping baidu.com
+> PING baidu.com (220.181.38.148) 56(84) bytes of data.
+> 64 bytes from 220.181.38.148 (220.181.38.148): icmp_seq=1 ttl=128 time=33.1 ms
+> --- baidu.com ping statistics ---
+> 12 packets transmitted, 12 received, 0% packet loss, time 11021ms
+> rtt min/avg/max/mdev = 27.493/45.914/154.317/37.425 ms
+> ```
+
+**ping 常用参数**
+
+- -c 指定 ping 的次数
+- -i 指定 ping 包的发送间隔
+- -w 如果 ping 没有回应，则在指定超时时间后退出
+
+### 2 host
+
+> host 命令是用来查询 DNS 记录的，如果使用域名作为 host 的参数，命令返回该域名的 IP 
+
+```shell
+$ host baidu.com
+baidu.com has address 220.181.38.148
+baidu.com has address 39.156.69.79
+baidu.com mail is handled by 20 jpmx.baidu.com.
+baidu.com mail is handled by 20 mx50.baidu.com.
+baidu.com mail is handled by 15 mx.n.shifen.com.
+baidu.com mail is handled by 10 mx.maillb.baidu.com.
+baidu.com mail is handled by 20 mx1.baidu.com.
+```
+
+### 3 traceroute
+
+> traceroute 检测数据包是如何经过路由器的工具
+
+在 IP 包结构中有一个定义数据包生命周期的 TTL(Time To Live)字段，该字段用于表明IP数据包的生命值，**当IP数据包在网络上传输时，每经过一个路由器该值就减1，当该值减为 0 时此包被路由器抛弃**（抛弃同时，向宿主机发送一个 ICMP “超时”消息，同时获得该路由的IP地址）。 这种设计避免出现一些由于某种原因始终无法到达目的地的包不断地在互联网上传递。
+
+假设先构造出一个TTL值为 1 的数据包发送给目的主机，这个数据包在经由第一个路由器时，TTL 减 1 变为0，然后将该 IP 包丢弃，同时发送一个ICMP 消息，发送主机就获得了第一个路由器的IP地址，然后在构造出一个 TTL值为 2的数据包，以此类推，得到该 IP 包经历的整条链路的路由器 IP
+
+**traceroute 如何确认该 IP 包成功地被目的主机接收?**
+
+> 目的主机在接受到 TTL 为1的包也不会发送 ICMP 通知源主机，这时 tracroute 发送一个接收端口为主机不可能存在的 UDP 的包给目的主机，由于端口不可达，则主机会返回一个 “端口不可达" 的通知，这样就能确认

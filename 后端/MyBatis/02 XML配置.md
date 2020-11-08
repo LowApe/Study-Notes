@@ -20,8 +20,10 @@
 
 <!-- /TOC -->
 
-
 # MyBatis XML 配置文件
+
+> Mybatis 可以通过 XML 或者 注解的方式配置数据库相关的信息，比如数据库的URL地址、数据库用户名和密码、别名等相关配置，下面是XML 配置文件的规范
+
 配置文件顶层结构:
 - configuration（配置）
     - properties（属性）
@@ -40,7 +42,9 @@
 
 
 ## properties:
-- 外部引用,替换动态配置属性值,可以有默认值`:`这个特性默认是[关闭的](http://www.mybatis.org/mybatis-3/zh/configuration.html#properties)
+> 这部分既可以引用外部`.properties`文件，动态替换，也可以使用内部属性标签设置，也就是说如果在XML中设置了相关属性名称和值，在下文中就可以引用设置的变量名称，如果没有则去读取引用的外部`.properties`文件相关变量
+
+- 外部引用,替换动态配置属性值,可以有默认值
 - 可以将 properties 值传到 SqlSessionFactory
 - properties 加载顺序
     - 指定属性
@@ -508,6 +512,14 @@ UNPOOLED 类型的数据源仅仅需要配置以下 5 种属性：
 </mappers>
 ```
 
-# 参考链接
+
+
+# 相关问题
+
+## MyBatis 是如何读取XML配置文件的？
+
+> 待定，等查看到相关源码
+
+# 相关链接
 
 [mybatis-3](http://www.mybatis.org/mybatis-3/zh/sqlmap-xml.html#Parameters)

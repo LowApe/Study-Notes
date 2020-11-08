@@ -104,6 +104,22 @@ public class RedisTest {
 
 当程序调用jedis的方法时，并不会真正触发jedis的方法，而是返回一个设定的值。
 
+
+
+## Mockito 注解
+
+### @MockBean
+
+> 将 Bean 添加到 Spring 的上下文环境中,一旦加入，当测试执行到被添加该注解的服务，如果没有进行打桩，则默认为空
+>
+> 我的理解：使用这个注解的一般是外部系统调用：如 Redis、Mq
+
+![image.png](http://ww1.sinaimg.cn/mw690/006rAlqhgy1gimouva4hlj31f00k4whs.jpg)
+
+### @Mock
+
+> 不添加到 Spring 的上下文环境中
+
 # 认识单元测试的打桩
 
 因为第一次理解这个概念，英文 stubbing，桩是用来代替**关联代码或者未实现的代码**。如果函数 B 用 B1 来代替，那么，B称为原函数，B1 称为桩函数。**打桩就说编写或生成桩代码**。 下面是官网的示例(stub method calls ):
@@ -168,6 +184,8 @@ public int A(){
 
 
 
+> 桩代码并不是 Mock 代码
+
 # 单元测试相关
 
 其实单元测试类型从小到大一般有以下：
@@ -185,3 +203,4 @@ public int A(){
 - [Mockito官方网站](https://site.mockito.org/)
 - [Mockito官方Javadoc](https://www.javadoc.io/doc/org.mockito/mockito-core/2.11.0/org/mockito/Mockito.html)
 - [认识单元测试中的打桩](https://blog.csdn.net/wangwencong/article/details/8189778)
+- [Mockito 单元测试打桩神器][https://www.bookstack.cn/read/hands-on-microservices/spring-boot-sb-mockito.md]

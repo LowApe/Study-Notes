@@ -4,13 +4,7 @@
 
 
 
-
-
-# Linux 常用命令
-
-
-
-## Linux 用户管理
+# Linux 用户管理
 
 ### 1 useradd 添加用户
 

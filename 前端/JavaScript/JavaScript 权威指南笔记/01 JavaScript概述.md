@@ -237,7 +237,6 @@ JavaScript 代码可以通过`<script>`标签来嵌入到 HTML 文件中
             log.appendChild(pre); // 
         }
         debug("Change World!");
-        
     </script>
 </body>
 </html>
@@ -264,7 +263,7 @@ JavaScript 代码可以通过`<script>`标签来嵌入到 HTML 文件中
                 e.style.visibility = "hidden"; // 隐藏，但是保留所占空间
             }
         }
-
+		
         function highlight(e){
             if(!e.className){
                 e.className = "hilite";

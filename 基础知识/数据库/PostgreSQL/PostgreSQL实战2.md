@@ -64,7 +64,7 @@ INSERT 0 1
 postgres=# create role testuser with encrypted password 'testuser';
 CREATE ROLE
 # 创建表空间目录
-root$mkdir -p database/pg12/pg_tbs/tbs_mydb
+root$ mkdir -p database/pg12/pg_tbs/tbs_mydb
 # 创建表空间
 postgres=# create tablespace tbs_mydb owner testuser location '/Users/mac/Documents/AllMyDocuments/Working/02/PostgreSQL/database/pg12/pg_tbs/tbs_mydb';
 CREATE TABLESPACE

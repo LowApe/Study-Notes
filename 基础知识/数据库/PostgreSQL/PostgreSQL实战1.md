@@ -10,7 +10,7 @@ Mac 下使用 Homebrew 下载
 brew install postgresql
 ```
 
-> 其他方式可以查看[官网下载](https://www.postgresql.org/download/)
+> 其他方式可以查看[官网下载安装方式](https://www.postgresql.org/download/)
 
 ## 客户端程序和服务器程序
 
@@ -77,6 +77,14 @@ brew install postgresql
 
 - 一台数据库服务器可以管理多个数据库实例，PostgreSQL 通过数据目录的位置和这个数据集合实例的端口号引用它。
 
+## 创建数据目录
+
+```shell
+mkdir -p /pgdata/12/{data,backups,scripts,archive_wals}
+```
+
+
+
 ## 创建操作系统用户
 
 在**创建数据库实例**之前第一件事先创建一个独立的操作系统用户，也可以称为本地用户。
@@ -86,17 +94,11 @@ brew install postgresql
 > 之前一直创建不上，之后重启又可以初始化了，也可能是因为initdb 的数据目录没有开启权限
 
 ```shell
-chown -R 用户组：用户 /pagedata/12
+chown -R 用户:用户组 pgdata/12
 chmod 0700 /pgdata/12/data
 ```
 
 > initdb 会回收除 PostgreSQL 用户之外所有用户访问权限。但是我们有明确的数据库存储目录，所以使用上述命令保护。因为我是 mac 系统经过测试，发现下载完后初始化默认使用管理员身份当作用户名，我也没有进行用户切换，文件夹授权也是给了当前登陆用户
-
-## 创建数据目录
-
-```shell
-mkdir -p /pgdata/12/{data,backups,scripts,archive_wals}
-```
 
 ## 初始化数据目录
 

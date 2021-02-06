@@ -19,6 +19,8 @@
 
 ## 2 运行 Etcd
 
+> 因为2.2.2版本翻github太长了，决定装最新版 3.4.14
+
 ```shell
 wget ${github Url}
 tar -zxvf xxx.tar.gz
@@ -47,5 +49,26 @@ $ etcdctl endpoint health --endpoints=[127.0.0.1:2379]
 "error":"rpc error: code = DeadlineExceeded desc = latest balancer error: all SubConns are in TransientFailure, latest connection error: connection error: desc = \"transport: Error while dialing dial tcp: address [127.0.0.1:2379]: missing port in address\""}
 [127.0.0.1:2379] is unhealthy: failed to commit proposal: context deadline exceeded
 Error: unhealthy cluster
+```
+
+> 暂时停止，因为健康状态有些问题
+
+## 3 获取 Kubernetes 发布包
+
+从[GitHub 下载 当前时间最新V1.20.2](https://github.com/kubernetes/kubernetes/releases/tag/v1.20.2),
+
+```shell
+$ tar zxvf kubernetes.tar.gz
+```
+
+
+
+# 验证
+
+```shell
+$ kubectl version
+$ kubectl config current-context
+$ kubectl cluster-info
+$ kubectl get nodes
 ```
 

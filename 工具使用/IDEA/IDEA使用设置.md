@@ -11,6 +11,18 @@
 1. `打开Settings`->`Editor`->`General`->`Code Folding`
 2. 取消 `imports` 勾选
 
+## 设置自动导包功能
+
+> 场景：在使用相关类，必须使用快捷键导包，通过设置，自动导入
+
+解决：
+
+1. `Settings`->`Editor`->`General`->`Auto Import`
+
+![image.png](http://ww1.sinaimg.cn/large/006rAlqhgy1go5w2xhj6nj30je05w0t1.jpg)
+
+
+
 
 
 # 相关链接

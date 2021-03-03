@@ -31,6 +31,14 @@
 
 ![image.png](http://ww1.sinaimg.cn/large/006rAlqhgy1go5wj14t6kj31480nemzd.jpg)
 
+# IDEA设置打开多个文件显示在多行tab上
+
+解决：
+
+1. `Settings`->`Editor`->`General`->`Editor Tabs`
+
+![image.png](http://ww1.sinaimg.cn/large/006rAlqhgy1go6zys1bp9j31em13kag0.jpg)
+
 # 相关链接
 
 - [IDEA知识点总结](https://blog.csdn.net/zhaogot/article/details/105203823)

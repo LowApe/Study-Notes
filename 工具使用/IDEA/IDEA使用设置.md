@@ -23,7 +23,13 @@
 
 
 
+## Ieda 注释快捷键格式
 
+解决
+
+1. ->`Settings`->`Editor`->`Code Style` 需要修改对应文件格式位置
+
+![image.png](http://ww1.sinaimg.cn/large/006rAlqhgy1go5wj14t6kj31480nemzd.jpg)
 
 # 相关链接
 

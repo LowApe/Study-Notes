@@ -37,3 +37,4 @@
 
 ![image.png](http://ww1.sinaimg.cn/large/006rAlqhgy1gobrefaq06j31ao254gt1.jpg)
 
+- 这就意味着只要 `message` 还没有发生改变，多次访问 `reversedMessage` 计算属性会立即返回之前的计算结果，而不必再次执行函数。

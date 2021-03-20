@@ -49,11 +49,13 @@
 - `collect(toList())`方法由Stream里的值生成一个列表，是一个及早求值操作
 - `Stream.of()`初始化Stream流
 - `map`：如果有一个函数可以将一种类型的值**转换**成另外一种类型，map 操作就可以使用该函数，将一个流中的值转换成一个新的流
-	- ![image.png](http://ww1.sinaimg.cn/large/006rAlqhgy1gogvt71rq7j30f60543yh.jpg)
-
+	
+- ![image.png](http://ww1.sinaimg.cn/large/006rAlqhgy1gogvt71rq7j30f60543yh.jpg)
+	
 - `filter`:遍历数据并检查符合条件的元素
-	- ![image-20210312095159957](/Users/mac/Library/Application Support/typora-user-images/image-20210312095159957.png)
-
+	
+- ![image-20210312095159957](/Users/mac/Library/Application Support/typora-user-images/image-20210312095159957.png)
+	
 - `flatMap`：方法可用Stream**替换值**，然后将多个Stream连接成一个Stream
 
 - `max`和`min`求最大值和最小值
@@ -73,4 +75,52 @@
 ## 高阶函数
 
 - 高阶函数是指接受另外一个函数作为参数或返回一个函数的函数
+- Function
+- ToLongFunction
+- LongFunction
+
+## 类库
+
+> Java8 中的另一个变化是引入了**默认方法(default 关键字)**和**接口的静态方法**
+
+- 为了减少性能开销，Stream 类的某些方法对基本类型和装箱类型做了区分。**在Java8 中，仅对整型、长整型和双浮点型做了特殊处理，提高系统效率**
+
+- 如果方法返回类型为基本类型，则在基本类型前加 To
+
+	- ![image.png](http://ww1.sinaimg.cn/large/006rAlqhgy1gontdbi1dyj30ge04mdfu.jpg)
+
+	
+
+- 如果参数是基本类型，则不加前缀只需类型名即可
+
+	- ![image.png](http://ww1.sinaimg.cn/large/006rAlqhgy1gontaoiav6j30f803gweg.jpg)
+
+- BinaryOperator 是一种特殊的BiFunction类型，**参数的类型和返回值的类型相同**。
+- Lambda 表达式作为参数时，其类型由它的目标类型推导得出，推导过程遵循如下规则：
+	- 如果只有一个可能的目标类型，由相应函数接口里的参数类型推导得出
+	- 如果有多个可能的目标类型，由最具体的类型推导得出
+	- 如果有多个可能的目标类型且最具体的类型不明确，则需人为指定类型
+- `@FunctionInterface`注解，用作函数接口，并不是所有只含有一个方法的接口就可以是函数接口。该注解会强制检查一个接口是否符合函数接口的标准
+
+## 默认方法
+
+- `Iterable`接口中也新增了一个默认方法：forEach，该方法功能和 for 循环类似，
+
+	- ```java
+		default void forEach(Consumer<? super T> action) {
+		    for (T t : this){
+		        action.accept(t);
+		    }
+		}
+		```
+
+- 默认方法没有重写，实现类不需要实现默认方法
+- 任何时候，一旦与类中定义的方法产生冲突，都要优先选择类中定义的方法 **类中定重写的方法优先级高于接口中定义的默认方法**。原因在于，与接口中定义的默认方法相比，类中重写的方法更具体
+	- 对默认方法的工作原理，特别是在多重继承下的行为还没有把握，如下三条简单的定律可以帮助大家
+	- 类胜于接口
+	- 子类胜于父类
+	- 如果两条都不适用，子类要么需要实现该方法，要么将该方法声明为抽象方法
+- 静态类是防止工具的好方式
 - 
+
+> 权衡，接口和抽象类之间还是存在明显的区别。**接口允许多重继承，没有成员变量；抽象类可以继承成员变量，却不能多重继承**

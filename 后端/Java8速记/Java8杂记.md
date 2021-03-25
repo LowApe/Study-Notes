@@ -124,3 +124,150 @@
 - 
 
 > 权衡，接口和抽象类之间还是存在明显的区别。**接口允许多重继承，没有成员变量；抽象类可以继承成员变量，却不能多重继承**
+
+## 高级集合类和收集器
+
+### 方法引用
+
+- Lambda 表达式经常调用参数，
+- **方法引用，格式 [类名：方法名]**
+- **构造方法引用，格式[类名：new]**
+- **创建数组，格式String[]::new**
+
+### 元素顺序
+
+- 出现顺序的定义依赖于数据源和对流的操作，**在一个有序集合中创建一个流时，流中的元素就按出现顺序排序**
+- 流的目的不仅是在集合类之间做转换，而且同时提供了一组处理数据的通用操作。有些集合本身是无序的，但这些操作后时会产生顺序
+- 一些操作在有序的流上开销更大，调用`unorderd`方法消除这种顺序就能解决该问题。**大多数操作都是在有序流上效率更高，比如 fliter、map和reduce**
+
+### 使用收集器
+
+- 一种通用的、从流生成复杂值的结构。只要将它传给`collect 方法`，所有的流都可以使用它,`Collectors`
+
+	- `toList()`
+	- `toSet()`
+	- `toMap()`
+	- `toCollection()` 定制的集合收集元素`stream.collect(toCollection(TreeSet::new))`
+
+- **可以利用收集器让流生成一个值。**
+
+- `collect(MaxBy(comparing(xxx)))`
+
+- `collect(averagingInt(Function))`
+
+- **另外一个常用的流操作是将其分解成两个集合**
+
+-  `partitioningBy`它接收一个流，并将其分成两个部分。他使用 `Predicate` 对象判断一个元素应该属于哪个部分，并根据布尔值返回一个 Map 到列表
+
+	- ```java
+		public Map<Boolean,List<Object>> bansAndSolo(Stream<Artist> artists){
+		    return artists.collect(partitioningBy(artist -> artist.isSolo()));
+		}
+		```
+
+- **数据分组是一种更自然的分割数据操作**
+
+	- ```java
+		public Map<Artist,List<Album>> albumsByArtist(Stream<Alum> albums){
+		    return albums.collect(groupingBy(album) -> album.getMainMusicaian()));
+		}
+		```
+
+- `Collectors.joining()` **收集流中的数据都是为了在最后生成一个字符串**
+
+
+
+### 组合收集器
+
+- 先分组后计数
+
+	- ```java
+		public Map<Artist,Long> numberOfAlbums(Stream<Alum> alblums){
+		    return albums.collect(Collectors.groupingBy(album -> album.getMainMusician(),Collectors.counting()))
+		}
+		```
+
+	- 第二个方法可以将分组的流，进行二次处理输出值
+
+### 重构和定制收集器
+
+> 尽管在常用流操作里，Java 内置的收集器已经相当好用，但收集器框架本身是极其通用的。可以定制我们自己的收集器
+
+**定义字符串收集器**
+
+```java
+public class StringCollector implements Collector<String,StringCombiner,String>{
+    
+}
+```
+
+
+
+- Collector<T,A,R> 收集器接口，三个泛型
+
+	- 代收集元素的类型
+	- 累加器的类型
+	- 最终结果的类型
+
+	> 一个收集器由四部分组成。首先是一个 Supplier，这是一个工厂方法，用来创建容器
+
+	```java
+	public Supplier<T> supplier(){
+	    return ()->new T();
+	}
+	```
+
+	
+
+## 数据并行化
+
+- 使用并行化流还是串行化，**基于流的代码是否比串行化运行更快**，通常数据量少的情况使用普通的流，如果数据量大使用并行化流效率较大
+- 输入流的大小并不是决定并行化是否会带来速度提升的唯一元素，**性能还会受到编写代码的方式和核的数量的影响**
+- 影响并行流性能的主要因素：
+	- 数据大小
+	- 源数据结构
+	- 装箱
+	- 核的数量
+	- 单元处理开销
+- 在要对流求值时，不能同时处于两种模式，要么是并行的，要么是串行的。如果同时调用了 `parallel`和`sequential`方法，最后调用的那个方法起效
+- 我们可以根据性能的好坏，将核心类库提供的通用数据结构分为以下3组
+	- 性能好：ArrayList、数组或 IntStream.range，这些数据结构支持随机读取，也就是说它们能轻而易举地被任务分解
+	- 性能一般：HashSet、TreeSet
+	- 性能差：LinkedList
+
+- 数据并行化是把工作拆分，同时在多核CPU上执行的方式
+- 如果使用流编写代码，可通过调用 parallel 或者 parallelStream 方法实现数据并行化操作
+
+## 并行化数组操作
+
+这些操作都在工具类`Arrays`中
+
+| 方法名         | 操作                           |
+| -------------- | ------------------------------ |
+| parallelPrefix | 任意给定一个函数，计算数组的和 |
+| parallelSetAll | 使用 Lambda 表达式更新数组元素 |
+| parallelSort   | 并行化对数组元素排序           |
+
+```java
+/**
+* for 循环初始化数组
+*/
+public static double[] imperativeInitilize(int size){
+    double[] values = new double[size];
+    for(int i = 0; i < values.length;i++){
+        values[i] = i;
+    }
+    return values;
+}
+/**
+* 使用并行化数组操作初始化数组
+*/
+public static double[] parallelInitialize(int size){
+    double[] values = new double[size];
+    Arrays.parallelSetAll(values,i -> i);
+    return values;
+}
+```
+
+- `parallelPrefix`操作擅长对时间序列数据做累加，它会更新一个数组，将每一个元素替换为当前元素和其前驱元素的和，这里的"和"是一个宽泛的概念，它不必是加法，可以是任意一个`Binaryoperator`
+- 
